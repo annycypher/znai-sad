@@ -68,21 +68,21 @@
 
 
 
-\- \[ ] LocalWP: сайт sadznaniy, PHP 8.2, язык админки — русский
+\- \[x] LocalWP: сайт sadznaniy, PHP 8.2, язык админки — русский
 
-\- \[ ] VS Code + Cline + DeepSeek подключены
+\- \[x] VS Code + Cline + DeepSeek подключены
 
-\- \[ ] git init, первый коммит «чистый WordPress»
+\- \[x] git init, первый коммит «чистый WordPress»
 
-\- \[ ] WP\_DEBUG\_LOG включён (wp-config.php)
+\- \[x] WP\_DEBUG\_LOG включён (wp-config.php)
 
-\- \[ ] Шрифты Golos Text (400/600/700 woff2) скачаны вручную → wp-content/themes/sad-znaniy/assets/fonts/
+\- \[x] Шрифты Golos Text (400/600/700 woff2) скачаны вручную → wp-content/themes/sad-znaniy/assets/fonts/
 
-\- \[ ] Макет \_design/index.html сохранён в тему
+\- \[x] Макет \_design/index.html сохранён в тему
 
-\- \[ ] .clinerules создан (правила: только локально, ничего стороннего)
+\- \[x] .clinerules создан (правила: только локально, ничего стороннего)
 
-\- \[ ] Этот файл PROJECT-PLAN.md в корне
+\- \[x] Этот файл PROJECT-PLAN.md в корне
 
 
 
@@ -98,25 +98,25 @@
 
 
 
-\- \[ ] Тема sad-znaniy: style.css, functions.php, index.php
+\- \[x] Тема sad-znaniy: style.css, functions.php, index.php
 
-\- \[ ] header.php / footer.php из макета (классы макета = контракт)
+\- \[x] header.php / footer.php из макета (классы макета = контракт)
 
-\- \[ ] front-page.php — главная из макета, пока статичная
+\- \[x] front-page.php — главная из макета, пока статичная
 
-\- \[ ] CSS: design-tokens.css (переменные) + main.css
+\- \[x] CSS: design-tokens.css (переменные) + main.css
 
-\- \[ ] Шрифты локально через @font-face, НОЛЬ внешних запросов
+\- \[x] Шрифты локально через @font-face, НОЛЬ внешних запросов
 
-\- \[ ] wp\_nav\_menu вместо статической навигации (главное + футер-меню)
+\- \[x] wp\_nav\_menu вместо статической навигации (главное + футер-меню)
 
-\- \[ ] Логотип-символ инлайн-SVG, favicon
+\- \[x] Логотип-символ инлайн-SVG, favicon
 
-\- \[ ] Фото-заглушки: локальные SVG вместо loremflickr
+\- \[x] Фото-заглушки: локальные SVG вместо loremflickr
 
-\- \[ ] Проверка Network в DevTools: все запросы = localhost
+\- \[x] Проверка Network в DevTools: все запросы = localhost
 
-\- \[ ] git commit «Этап 1: тема-каркас»
+\- \[x] git commit «Этап 1: тема-каркас»
 
 
 
