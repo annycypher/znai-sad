@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сад знаний — полезная база садовода: сад, огород, цветы</title>
+<meta name="description" content="Сад знаний (znai-sad.ru) — полезная база садовода: калькуляторы полива и удобрений, планировщик участка, календарь работ и проверенные советы.">
+<link rel="canonical" href="https://znai-sad.ru/">
+<meta name="theme-color" content="#E3E6EA">
+<meta property="og:site_name" content="Сад знаний">
+<meta property="og:title" content="Сад знаний — полезная база садовода">
+<meta property="og:description" content="Калькуляторы полива, планировщик участка и календарь работ — всё в одном месте.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://znai-sad.ru/">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44.17 51.39'%3E%3Cpath fill='%233FA46F' fill-rule='evenodd' d='M22.09%2051.39c0.05,0%200.11,0%200.16,0%203.99,-0.05%208.43,-1.2%2011.36,-3.45%201.19,-0.9%202.57,-2.29%203.41,-3.52%200.3,-0.45%200.62,-0.88%200.9,-1.37%201.9,-3.25%202.88,-6.92%202.87,-10.88%20-3.89,-0.13%20-7.99,1.74%20-10.23,3.51%20-2.51,1.98%20-4.27,4.1%20-5.77,7.95l0.01%20-11.77c0.78,-0.48%201.7,-1.05%202.65,-1.6%202.27,-1.32%201.74,-1.37%202.97,-0.88%202.48,1.01%204.91,1.28%207.47,0.42%202.12,-0.7%203.63,-2.09%204.8,-3.99%201.2,-1.93%201.58,-4.46%201.47,-7.26%20-1.9,-1.06%20-3.49,-2.06%20-6.23,-2.18%20-5.57,-0.24%20-9.48,4%20-9.83,9.07%20-0.06,1%200.03,0.89%20-0.72,1.35%20-0.54,0.32%20-2.27,1.44%20-2.68,1.48%20-0.05,-1.61%20-0.01,-3.28%20-0.01,-4.9%200,-0.42%200,-0.84%200,-1.25%20-0.01,-1.01%200.04,-0.46%201.78,-1.9%201.77,-1.47%203.16,-3.24%204.04,-5.76%200.92,-2.65%200.52,-5.91%20-0.62,-8.18%20-1.07,-2.13%20-2.83,-3.93%20-4.61,-5.1%20-1.42,-0.94%20-2.87,-1.21%20-3.19,-1.18%20-0.33,-0.03%20-1.78,0.24%20-3.2,1.18%20-1.77,1.17%20-3.53,2.97%20-4.61,5.1%20-1.14,2.27%20-1.54,5.53%20-0.61,8.18%200.88,2.52%202.26,4.29%204.04,5.76%201.73,1.44%201.79,0.89%201.78,1.9%20-0.01,0.41%20-0.01,0.83%20-0.01,1.25%200,1.62%200.04,3.29%20-0.01,4.9%20-0.41,-0.04%20-2.14,-1.16%20-2.68,-1.48%20-0.75,-0.46%20-0.65,-0.35%20-0.72,-1.35%20-0.34,-5.07%20-4.26,-9.31%20-9.82,-9.07%20-2.75,0.12%20-4.33,1.12%20-6.23,2.18%20-0.12,2.8%200.26,5.33%201.46,7.26%201.18,1.9%202.68,3.29%204.8,3.99%202.56,0.86%204.99,0.59%207.48,-0.42%201.22,-0.49%200.69,-0.44%202.97,0.88%200.94,0.55%201.86,1.12%202.65,1.6l0.01%2011.77c-1.51,-3.85%20-3.27,-5.97%20-5.77,-7.95%20-2.25,-1.77%20-6.35,-3.64%20-10.23,-3.51%20-0.01,3.96%200.96,7.63%202.86,10.88%200.29,0.49%200.6,0.92%200.91,1.37%200.83,1.23%202.22,2.62%203.4,3.52%202.93,2.25%207.38,3.4%2011.36,3.45%200.06,0%200.11,0%200.17,0z'/%3E%3C/svg%3E">
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"Сад знаний","url":"https://znai-sad.ru/","description":"Полезная база садовода","inLanguage":"ru-RU"}
+</script>
+
+<!-- Локальные шрифты (без внешних запросов) -->
+<link href="../assets/fonts/fonts.css" rel="stylesheet">
+
+<style>
+/* ==========================================================
+   СТИЛЬ: серебристый неоморфизм + матовое стекло
+   Брейкпоинты: 1180 / 1020 / 700 / 560
+   ========================================================== */
+:root{
+    --bg:            #E3E6EA;
+    --ink:           #20241F;
+    --muted:         #5C645D;
+    --accent:        #2E6B4F;
+    --accent-soft:   #E7F0E9;
+
+    --glass:         linear-gradient(150deg, rgba(255,255,255,.78), rgba(248,250,250,.52));
+    --glass-strong:  rgba(255,255,255,.88);
+    --glass-border:  rgba(255,255,255,.95);
+
+    --neu:    8px 8px 20px rgba(160,168,176,.45), -8px -8px 20px rgba(255,255,255,.95);
+    --neu-sm: 4px 4px 10px rgba(160,168,176,.4),  -4px -4px 10px rgba(255,255,255,.9);
+    --sh-glass: 0 16px 40px rgba(100,112,124,.20);
+
+    --r-lg: 28px; --r-md: 20px; --r-tile: 18px;
+
+    /* H1 уменьшен — больше не конфликтует с шапкой */
+    --fs-h1: clamp(25px, 3.3vw, 40px);
+    --fs-h2: clamp(20px, 2.4vw, 27px);
+    --fs-body: 17px;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{
+    scroll-behavior:smooth;
+    scroll-padding-top:92px;   /* якоря не прячутся под прилипающей шапкой */
+}
+body{
+    font-family:'Golos Text', system-ui, sans-serif;
+    font-size:var(--fs-body); line-height:1.6;
+    color:var(--ink); background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;         /* страховка от горизонтального скролла */
+}
+img{ max-width:100%; display:block; height:auto; }
+a{ color:inherit; text-decoration:none; }
+ul{ list-style:none; }
+:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; border-radius:6px; }
+
+.skip-link{ position:absolute; left:-9999px; top:0; z-index:200; background:var(--ink); color:#fff; padding:10px 20px; border-radius:0 0 12px 0; }
+.skip-link:focus{ left:0; }
+
+.ambient{ position:fixed; inset:0; z-index:0; pointer-events:none; background:
+    radial-gradient(700px 480px at 88% 4%,  rgba(122,168,138,.28), transparent 70%),
+    radial-gradient(560px 420px at 4% 26%,  rgba(150,160,168,.30), transparent 70%),
+    radial-gradient(720px 520px at 55% 96%, rgba(122,168,138,.20), transparent 70%);
+}
+.leaf{ position:fixed; z-index:0; pointer-events:none; color:#3F7A58; opacity:.09; filter:blur(2px); }
+.leaf-1{ left:-70px; bottom:-40px; width:260px; transform:rotate(-14deg); }
+.leaf-2{ right:-60px; top:6%; width:210px; transform:rotate(18deg); }
+
+.frame{
+    position:relative; z-index:1;
+    max-width:1280px; margin:20px auto 40px;
+    border-radius:40px;
+    background:linear-gradient(165deg, rgba(255,255,255,.72), rgba(243,246,247,.5));
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow:0 40px 90px rgba(90,102,114,.35), inset 0 1px 0 rgba(255,255,255,.95);
+    -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px);
+}
+.inner{ padding:0 44px; }
+
+/* ============ ШАПКА-ПИЛЮЛЯ ============ */
+.topbar{
+    position:sticky; top:12px; z-index:100;
+    display:flex; align-items:center; gap:16px;
+    margin:16px auto 0; max-width:1180px;
+    padding:10px 12px 10px 20px;
+    border-radius:999px;
+    /* фон плотнее — контент под шапкой не просвечивает текстом */
+    background:linear-gradient(120deg, rgba(255,255,255,.94), rgba(250,251,251,.86));
+    border:1px solid var(--glass-border);
+    box-shadow:0 14px 34px rgba(100,112,124,.26), inset 0 1px 0 #fff;
+    -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px);
+    min-height:64px;
+}
+.logo{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.logo-mark{ color:var(--ink); display:flex; transition:color .25s, transform .25s; }
+.logo:hover .logo-mark{ color:var(--accent); transform:scale(1.05); }
+.logo-name{ font-weight:700; font-size:16px; letter-spacing:.1em; text-transform:uppercase; line-height:1.2; white-space:nowrap; }
+.logo-tag{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); line-height:1.4; white-space:nowrap; }
+
+.nav{ display:flex; margin-left:auto; min-width:0; }
+.nav a{
+    position:relative; padding:9px 13px;
+    font-size:14px; font-weight:500; letter-spacing:.03em;
+    color:var(--ink); white-space:nowrap;
+    transition:color .2s;
+}
+.nav a:hover{ color:var(--accent); }
+.nav a:not(:last-child)::after{
+    content:""; position:absolute; right:0; top:50%; transform:translateY(-50%);
+    width:1px; height:13px; background:rgba(32,36,31,.18);
+}
+
+.topbar-actions{ display:flex; align-items:center; gap:9px; flex-shrink:0; }
+.icon-btn{
+    width:42px; height:42px; border-radius:50%;
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    box-shadow:var(--neu-sm);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--ink);
+    transition:color .2s, box-shadow .25s;
+}
+.icon-btn:hover{ color:var(--accent); box-shadow:var(--neu); }
+.btn-cab{
+    display:inline-flex; align-items:center; gap:9px;
+    padding:10px 18px 10px 14px; border-radius:999px;
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    box-shadow:var(--neu-sm);
+    font-size:13px; font-weight:600; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--ink); white-space:nowrap;
+    transition:color .2s, box-shadow .25s;
+}
+.btn-cab:hover{ color:var(--accent); box-shadow:var(--neu); }
+.btn-cab .cab-ava{
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    background:var(--ink); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+}
+
+.nav-toggle-input{ display:none; }
+.nav-burger{ display:none; }
+
+/* ============ КНОПКИ ============ */
+.btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    padding:13px 26px; border-radius:999px;
+    font-family:inherit; font-size:14px; font-weight:600;
+    letter-spacing:.08em; text-transform:uppercase;
+    border:1px solid transparent; cursor:pointer;
+    transition:transform .22s ease, box-shadow .28s ease, background .25s, color .25s;
+    min-height:48px;
+}
+.btn:hover{ transform:translateY(-2px); }
+.btn .arr{ transition:transform .2s; }
+.btn:hover .arr{ transform:translateX(4px); }
+
+.btn-dark{
+    background:linear-gradient(160deg, #3A423B, #22271F);
+    color:#fff; border:1px solid rgba(255,255,255,.25);
+    box-shadow:0 14px 30px rgba(35,42,34,.35), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.btn-dark:hover{ box-shadow:0 18px 38px rgba(35,42,34,.45), inset 0 1px 0 rgba(255,255,255,.3); }
+.btn-light{
+    background:var(--glass-strong);
+    border:1px solid var(--glass-border);
+    box-shadow:var(--neu-sm), inset 0 1px 0 #fff;
+    color:var(--ink);
+}
+.btn-light:hover{ box-shadow:var(--neu), inset 0 1px 0 #fff; color:var(--accent); }
+.hero-buttons .btn{ padding:12px 20px; min-height:46px; font-size:13px; }
+
+.circle-go{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    box-shadow:var(--neu-sm);
+    display:inline-flex; align-items:center; justify-content:center;
+    color:var(--ink); transition:transform .22s, color .2s;
+}
+a:hover > .circle-go, .tile:hover .circle-go, .tool-card:hover .circle-go{ transform:translateX(3px); color:var(--accent); }
+
+.h-cap{ font-size:var(--fs-h2); font-weight:700; letter-spacing:.09em; text-transform:uppercase; }
+.h-sub{ font-size:14px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+
+/* ============ HERO ============ */
+.hero{ padding:46px 0 36px; }
+.hero-grid{ display:grid; grid-template-columns:1.04fr .96fr; gap:44px; align-items:center; }
+.hero-left{ min-width:0; }
+.hero h1{
+    font-size:var(--fs-h1); font-weight:700; line-height:1.14;
+    letter-spacing:.01em; text-transform:uppercase;
+    margin:0 0 12px;
+    text-wrap:balance;
+}
+.hero-sub{ color:var(--muted); font-size:16px; max-width:430px; margin-bottom:22px; }
+.hero-buttons{ display:flex; gap:11px; flex-wrap:wrap; }
+
+.popular{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:22px; }
+.popular-label{ letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-size:12px; font-weight:600; }
+.popular-chip{
+    padding:6px 15px; border-radius:999px; font-size:13px;
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    box-shadow:var(--neu-sm);
+    transition:color .2s;
+}
+.popular-chip:hover{ color:var(--accent); }
+
+/* Коллаж */
+.collage{ min-width:0; }
+.collage-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.collage-grid img{
+    width:100%; aspect-ratio:4/3; object-fit:cover;
+    border-radius:var(--r-tile);
+    box-shadow:var(--neu-sm);
+    border:1px solid rgba(255,255,255,.9);
+}
+/* Лёгкие сдвиги — только на широких экранах */
+@media(min-width:1181px){
+    .collage-grid img:nth-child(2){ transform:translateY(12px); }
+    .collage-grid img:nth-child(3){ transform:translateY(-6px); }
+}
+/* Стеклянный CTA поверх коллажа — только на широких */
+.glass-cta{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(56%, 236px);
+    background:linear-gradient(150deg, rgba(255,255,255,.68), rgba(248,250,250,.5));
+    border:1px solid rgba(255,255,255,.95);
+    border-radius:var(--r-md);
+    box-shadow:0 24px 60px rgba(80,92,104,.35), inset 0 1px 0 #fff;
+    -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+    padding:20px 18px; text-align:center;
+    transition:transform .25s ease;
+}
+.glass-cta:hover{ transform:translate(-50%,-50%) scale(1.03); }
+.glass-cta .tile-ico{ margin:0 auto 10px; }
+.glass-cta strong{ display:block; font-size:13px; letter-spacing:.08em; text-transform:uppercase; }
+.glass-cta .cta-note{ display:block; font-size:12px; color:var(--muted); margin:4px 0 12px; }
+.collage{ position:relative; }
+
+/* ============ СЕКЦИИ ============ */
+.section{ padding:32px 0; }
+.section-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:20px; flex-wrap:wrap; }
+
+.tile-ico{
+    width:54px; height:54px; border-radius:16px;
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    box-shadow:var(--neu-sm), inset 0 1px 0 #fff;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink);
+    transition:transform .22s ease;
+}
+
+/* ИНСТРУМЕНТЫ: всегда 2 в ряд */
+.tools-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+.tool-card{
+    position:relative;
+    background:var(--glass); border:1px solid var(--glass-border);
+    border-radius:var(--r-md);
+    box-shadow:var(--sh-glass), inset 0 1px 0 rgba(255,255,255,.9);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    padding:26px 24px 24px; text-align:center;
+    transition:transform .25s ease, box-shadow .3s ease;
+}
+.tool-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 22px 48px rgba(100,112,124,.26), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.tool-card:hover .tile-ico{ transform:scale(1.06); }
+.tool-card .tile-ico{ margin:0 auto 13px; }
+.tool-card h3{ font-size:14.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px; }
+.tool-card p{ font-size:13.5px; color:var(--muted); max-width:340px; margin:0 auto; }
+.tool-card .circle-go{ position:absolute; right:15px; bottom:15px; width:31px; height:31px; }
+
+.ad-slot{
+    margin:26px auto 0; max-width:960px; height:90px;
+    border:2px dashed rgba(32,36,31,.14); border-radius:var(--r-md);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:13px; letter-spacing:.06em;
+    background:rgba(255,255,255,.4);
+}
+
+/* БЛОГ + КАЛЬКУЛЯТОРЫ */
+.blog-grid{ display:grid; grid-template-columns:1.05fr .95fr; gap:30px; align-items:start; }
+.posts{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.post-card{
+    background:var(--glass); border:1px solid var(--glass-border);
+    border-radius:var(--r-md); overflow:hidden;
+    box-shadow:var(--sh-glass), inset 0 1px 0 rgba(255,255,255,.9);
+    -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+    transition:transform .25s ease, box-shadow .3s ease;
+    display:flex; flex-direction:column;
+}
+.post-card:hover{ transform:translateY(-4px); box-shadow:0 20px 44px rgba(100,112,124,.26), inset 0 1px 0 rgba(255,255,255,.9); }
+.post-card img{ width:100%; aspect-ratio:16/10; object-fit:cover; }
+.post-body{ padding:15px 17px 16px; display:flex; flex-direction:column; gap:6px; flex:1; }
+.post-body h3{ font-size:15.5px; font-weight:700; line-height:1.35; }
+.post-body h3 a{ transition:color .2s; }
+.post-body h3 a:hover{ color:var(--accent); }
+.post-body p{
+    font-size:13px; color:var(--muted);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.post-date{ font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:auto; }
+
+.calc-tiles{ display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+.tile{
+    position:relative;
+    background:var(--glass); border:1px solid var(--glass-border);
+    border-radius:var(--r-tile);
+    box-shadow:var(--sh-glass), inset 0 1px 0 rgba(255,255,255,.9);
+    -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+    padding:17px 14px 15px; text-align:center;
+    transition:transform .25s ease, box-shadow .3s ease;
+}
+.tile:hover{ transform:translateY(-3px); box-shadow:0 18px 40px rgba(100,112,124,.26), inset 0 1px 0 rgba(255,255,255,.9); }
+.tile:hover .tile-ico{ transform:scale(1.06); }
+.tile .tile-ico{ width:46px; height:46px; border-radius:14px; margin:0 auto 9px; }
+.tile strong{ display:block; font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; line-height:1.4; }
+.tile .circle-go{ position:absolute; right:9px; bottom:9px; width:29px; height:29px; }
+.tile-wide{ grid-column:1 / -1; display:flex; align-items:center; gap:15px; text-align:left; padding:15px 18px; }
+.tile-wide .tile-ico{ margin:0; }
+.tile-wide strong{ font-size:13.5px; }
+.tile-wide .circle-go{ margin-left:auto; position:static; }
+
+/* РАЗДЕЛЫ + КАЛЕНДАРЬ */
+.sx-grid{ display:grid; grid-template-columns:.92fr 1.08fr; gap:30px; align-items:start; }
+.sx-tiles{ display:grid; grid-template-columns:repeat(3,1fr); gap:13px; }
+.sx-tile{
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    border-radius:var(--r-tile);
+    box-shadow:var(--neu-sm);
+    padding:15px 8px 13px; text-align:center;
+    transition:transform .25s ease, box-shadow .3s ease, color .2s;
+    color:var(--ink);
+}
+.sx-tile:hover{ transform:translateY(-3px); box-shadow:var(--neu); color:var(--accent); }
+.sx-tile .tile-ico{ width:44px; height:44px; border-radius:13px; margin:0 auto 7px; background:transparent; border:none; box-shadow:none; }
+.sx-tile strong{ font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+
+.panel-cal{
+    background:var(--glass); border:1px solid var(--glass-border);
+    border-radius:var(--r-md);
+    box-shadow:var(--sh-glass), inset 0 1px 0 rgba(255,255,255,.9);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    padding:22px;
+}
+.event{ display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid rgba(32,36,31,.08); }
+.event:last-of-type{ border-bottom:none; }
+.date-block{
+    min-width:56px; text-align:center; padding:7px 6px;
+    border-radius:14px;
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    box-shadow:var(--neu-sm);
+}
+.date-num{ font-size:21px; font-weight:700; line-height:1.1; display:block; }
+.date-month{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.event-body{ flex:1; min-width:0; }
+.event-body h3{ font-size:15px; font-weight:700; line-height:1.35; }
+.event-meta{ display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12.5px; color:var(--muted); margin-top:3px; }
+.event-meta span{ display:inline-flex; align-items:center; gap:5px; }
+.region-tag{
+    display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--accent-soft); color:var(--accent);
+    border:1px solid rgba(46,107,79,.25);
+    padding:3px 10px; border-radius:999px; margin-top:6px;
+}
+
+.tg-banner{
+    margin-top:16px;
+    display:flex; align-items:center; gap:14px;
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    border-radius:var(--r-tile);
+    box-shadow:var(--neu-sm), inset 0 1px 0 #fff;
+    padding:13px 16px;
+    transition:transform .25s ease, box-shadow .3s ease;
+}
+.tg-banner:hover{ transform:translateY(-2px); box-shadow:var(--neu); }
+.tg-icon{
+    width:40px; height:40px; border-radius:50%; flex-shrink:0;
+    background:var(--ink); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+}
+.tg-banner strong{ display:block; font-size:14px; }
+.tg-banner span{ font-size:12.5px; color:var(--muted); }
+.tg-banner .circle-go{ margin-left:auto; }
+
+/* О ПРОЕКТЕ */
+.about-panel{
+    background:var(--glass); border:1px solid var(--glass-border);
+    border-radius:var(--r-lg);
+    box-shadow:var(--sh-glass), inset 0 1px 0 rgba(255,255,255,.9);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    padding:32px;
+    display:grid; grid-template-columns:1fr 1.05fr .85fr; gap:26px;
+}
+.about-panel h2{ font-size:20px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; margin-bottom:10px; }
+.about-panel p{ font-size:14.5px; color:var(--muted); margin-bottom:16px; }
+.plan-mini svg{ width:100%; height:auto; border-radius:var(--r-md); box-shadow:var(--neu-sm); border:1px solid rgba(255,255,255,.9); }
+.contact-list li{ display:flex; align-items:center; gap:11px; padding:7px 0; font-size:14px; }
+.contact-list svg{ color:var(--accent); flex-shrink:0; }
+.contact-list a{ transition:color .2s; }
+.contact-list a:hover{ color:var(--accent); }
+
+/* ============ ФУТЕР ============ */
+.footer{
+    margin:24px 22px 20px;
+    background:var(--glass-strong);
+    border:1px solid var(--glass-border);
+    border-radius:var(--r-lg);
+    box-shadow:var(--sh-glass), inset 0 1px 0 #fff;
+    padding:30px 34px 22px;
+}
+.footer-grid{ display:grid; grid-template-columns:1.3fr 1fr 1fr 1.1fr; gap:26px; }
+.footer h4{ font-size:12.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:11px; }
+.footer-col li{ padding:4px 0; }
+.footer-col a{ font-size:14px; color:var(--muted); transition:color .2s; }
+.footer-col a:hover{ color:var(--accent); }
+.footer-phone{ font-size:14.5px; font-weight:600; padding:3px 0; display:block; transition:color .2s; }
+.footer-phone:hover{ color:var(--accent); }
+.footer-bottom{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    margin-top:24px; padding-top:16px;
+    border-top:1px solid rgba(32,36,31,.1);
+    font-size:12.5px; color:var(--muted);
+}
+.footer-bottom .spacer{ margin-left:auto; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+.link-plain{ color:var(--muted); transition:color .2s; }
+.link-plain:hover{ color:var(--accent); }
+button.link-plain{ background:none; border:none; cursor:pointer; font:inherit; padding:0; }
+
+body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
+
+/* ==========================================================
+   АДАПТИВ
+   ========================================================== */
+
+/* --- 1180: компактная шапка, без бургера --- */
+@media(max-width:1180px){
+    .logo-tag{ display:none; }
+    .nav a{ padding:9px 10px; font-size:13px; }
+    .btn-cab{ padding:10px 14px 10px 12px; font-size:12px; }
+    .hero-grid{ gap:36px; }
+    .inner{ padding:0 32px; }
+}
+
+/* --- 1020: бургер + hero в одну колонку --- */
+@media(max-width:1020px){
+    .inner{ padding:0 22px; }
+    .frame{ margin:12px; border-radius:28px; }
+
+    .topbar{ border-radius:24px; padding:9px 10px 9px 16px; min-height:58px; }
+    .nav{
+        display:none; position:absolute; top:calc(100% + 8px); left:0; right:0;
+        flex-direction:column; gap:2px;
+        background:rgba(255,255,255,.97);
+        -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px);
+        border:1px solid var(--glass-border); border-radius:20px;
+        box-shadow:0 20px 50px rgba(90,102,114,.3);
+        padding:12px;
+    }
+    .nav a{ padding:12px 14px; font-size:15px; border-radius:12px; }
+    .nav a:hover{ background:var(--accent-soft); }
+    .nav a:not(:last-child)::after{ display:none; }
+    .nav-toggle-input:checked ~ .nav{ display:flex; }
+    .nav-burger{
+        display:flex; margin-left:auto;
+        width:42px; height:42px; border-radius:50%;
+        background:var(--glass-strong); border:1px solid var(--glass-border);
+        box-shadow:var(--neu-sm);
+        align-items:center; justify-content:center; cursor:pointer;
+        font-size:19px; color:var(--ink);
+    }
+    .btn-cab span:last-child{ display:none; }
+    .btn-cab{ padding:9px; }
+    .btn-cab .cab-ava{ width:24px; height:24px; }
+
+    /* Hero: одна колонка, порядок = текст → фото → кнопки → чипы */
+    .hero{ padding:34px 0 30px; }
+    .hero-grid{ grid-template-columns:1fr; gap:24px; }
+    .hero-left{ display:contents; }
+    .hero-left h1{ order:1; }
+    .hero-left .hero-sub{ order:2; }
+    .collage{ order:3; }
+    .hero-left .hero-buttons{ order:4; }
+    .hero-left .popular{ order:5; }
+
+    /* Стеклянный CTA: из «поверх фото» в отдельную плашку под коллажом */
+    .glass-cta{
+        position:static; transform:none; width:100%;
+        display:flex; align-items:center; gap:14px; text-align:left;
+        margin-top:14px; padding:15px 18px;
+    }
+    .glass-cta:hover{ transform:translateY(-2px); }
+    .glass-cta .tile-ico{ margin:0; width:44px; height:44px; }
+    .glass-cta .cta-note{ display:none; }
+    .glass-cta strong{ font-size:12.5px; }
+    .glass-cta .circle-go{ margin-left:auto; }
+
+    .blog-grid{ grid-template-columns:1fr; gap:26px; }
+    .sx-grid{ grid-template-columns:1fr; gap:26px; }
+    .about-panel{ grid-template-columns:1fr 1fr; padding:26px; gap:22px; }
+    .about-panel > div:last-child{ grid-column:1 / -1; }
+    .footer{ margin:16px; padding:26px 22px 18px; }
+    .footer-grid{ grid-template-columns:1fr 1fr; }
+}
+
+/* --- 700: планшет узкий --- */
+@media(max-width:700px){
+    .section{ padding:26px 0; }
+    .about-panel{ grid-template-columns:1fr; padding:22px; }
+    .panel-cal{ padding:18px 16px; }
+    .sx-tiles{ gap:10px; }
+    .sx-tile strong{ font-size:10px; }
+    .footer-grid{ gap:20px; }
+}
+
+/* --- 560: мобильный --- */
+@media(max-width:560px){
+    .hero h1{ font-size:24px; }
+    .hero-sub{ font-size:15px; }
+    .posts{ grid-template-columns:1fr; }
+    .calc-tiles{ gap:10px; }
+
+    /* Инструменты: 2 в ряд даже на мобильном — компактные */
+    .tools-grid{ gap:11px; }
+    .tool-card{ padding:18px 12px 14px; }
+    .tool-card .tile-ico{ width:44px; height:44px; border-radius:13px; margin-bottom:9px; }
+    .tool-card h3{ font-size:11.5px; letter-spacing:.05em; }
+    .tool-card p{ font-size:11.5px; line-height:1.45; }
+    .tool-card .circle-go{ display:none; }
+
+    .hero-buttons{ flex-wrap:nowrap; gap:8px; }
+    .hero-buttons .btn{ flex:1; padding:11px 8px; font-size:11px; white-space:nowrap; }
+    .hero-buttons .btn .arr{ display:none; }
+    .btn:not(.hero-buttons .btn){ width:100%; }
+
+    .logo-name{ font-size:14px; }
+    .footer{ margin:12px; padding:22px 18px 16px; }
+    .footer-grid{ grid-template-columns:1fr; }
+    .footer-bottom{ flex-direction:column; align-items:flex-start; }
+    .footer-bottom .spacer{ margin-left:0; }
+    .collage-grid{ gap:10px; }
+    .ad-slot{ height:80px; }
+}
+
+/* Уважение к настройке «меньше анимаций» */
+@media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *, *::before, *::after{ transition:none !important; animation:none !important; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Перейти к содержанию</a>
+
+<div class="ambient" aria-hidden="true"></div>
+
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <symbol id="logo-sad" viewBox="0 0 44.17 51.39">
+        <path fill="currentColor" fill-rule="evenodd" d="M22.09 51.39c0.05,0 0.11,0 0.16,0 3.99,-0.05 8.43,-1.2 11.36,-3.45 1.19,-0.9 2.57,-2.29 3.41,-3.52 0.3,-0.45 0.62,-0.88 0.9,-1.37 1.9,-3.25 2.88,-6.92 2.87,-10.88 -3.89,-0.13 -7.99,1.74 -10.23,3.51 -2.51,1.98 -4.27,4.1 -5.77,7.95l0.01 -11.77c0.78,-0.48 1.7,-1.05 2.65,-1.6 2.27,-1.32 1.74,-1.37 2.97,-0.88 2.48,1.01 4.91,1.28 7.47,0.42 2.12,-0.7 3.63,-2.09 4.8,-3.99 1.2,-1.93 1.58,-4.46 1.47,-7.26 -1.9,-1.06 -3.49,-2.06 -6.23,-2.18 -5.57,-0.24 -9.48,4 -9.83,9.07 -0.06,1 0.03,0.89 -0.72,1.35 -0.54,0.32 -2.27,1.44 -2.68,1.48 -0.05,-1.61 -0.01,-3.28 -0.01,-4.9 0,-0.42 0,-0.84 0,-1.25 -0.01,-1.01 0.04,-0.46 1.78,-1.9 1.77,-1.47 3.16,-3.24 4.04,-5.76 0.92,-2.65 0.52,-5.91 -0.62,-8.18 -1.07,-2.13 -2.83,-3.93 -4.61,-5.1 -1.42,-0.94 -2.87,-1.21 -3.19,-1.18 -0.33,-0.03 -1.78,0.24 -3.2,1.18 -1.77,1.17 -3.53,2.97 -4.61,5.1 -1.14,2.27 -1.54,5.53 -0.61,8.18 0.88,2.52 2.26,4.29 4.04,5.76 1.73,1.44 1.79,0.89 1.78,1.9 -0.01,0.41 -0.01,0.83 -0.01,1.25 0,1.62 0.04,3.29 -0.01,4.9 -0.41,-0.04 -2.14,-1.16 -2.68,-1.48 -0.75,-0.46 -0.65,-0.35 -0.72,-1.35 -0.34,-5.07 -4.26,-9.31 -9.82,-9.07 -2.75,0.12 -4.33,1.12 -6.23,2.18 -0.12,2.8 0.26,5.33 1.46,7.26 1.18,1.9 2.68,3.29 4.8,3.99 2.56,0.86 4.99,0.59 7.48,-0.42 1.22,-0.49 0.69,-0.44 2.97,0.88 0.94,0.55 1.86,1.12 2.65,1.6l0.01 11.77c-1.51,-3.85 -3.27,-5.97 -5.77,-7.95 -2.25,-1.77 -6.35,-3.64 -10.23,-3.51 -0.01,3.96 0.96,7.63 2.86,10.88 0.29,0.49 0.6,0.92 0.91,1.37 0.83,1.23 2.22,2.62 3.4,3.52 2.93,2.25 7.38,3.4 11.36,3.45 0.06,0 0.11,0 0.17,0z"/>
+    </symbol>
+</svg>
+
+<svg class="leaf leaf-1" aria-hidden="true"><use href="#logo-sad"/></svg>
+<svg class="leaf leaf-2" aria-hidden="true"><use href="#logo-sad"/></svg>
+
+<div class="frame">
+
+    <!-- ================= ШАПКА ================= -->
+    <header class="topbar">
+        <a href="/" class="logo" aria-label="Сад знаний — на главную">
+            <span class="logo-mark">
+                <svg width="28" height="33" viewBox="0 0 44.17 51.39" aria-hidden="true"><use href="#logo-sad"/></svg>
+            </span>
+            <span>
+                <span class="logo-name">Сад знаний</span><br>
+                <span class="logo-tag">· полезная база садовода ·</span>
+            </span>
+        </a>
+
+        <input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-label="Открыть меню">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">☰</label>
+
+        <nav class="nav" aria-label="Основное меню">
+            <a href="#main">Главная</a>
+            <a href="#sadvogorod">База знаний</a>
+            <a href="#tools">Инструменты</a>
+            <a href="#calendar">Календарь</a>
+            <a href="#recipes">Рецепты</a>
+            <a href="#about">О нас</a>
+        </nav>
+
+        <div class="topbar-actions">
+            <button class="icon-btn" aria-label="Поиск по сайту">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            </button>
+            <a href="#" class="btn-cab" aria-label="Личный кабинет">
+                <span class="cab-ava" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+                </span>
+                <span>Кабинет</span>
+            </a>
+        </div>
+    </header>
+
+    <main id="main" class="inner">
+
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+        <div class="hero-grid">
+            <div class="hero-left">
+                <h1>Ваш идеальный сад.<br>Знания. Инструменты. Урожай.</h1>
+                <p class="hero-sub">Калькуляторы полива и удобрений, планировщик участка и календарь работ — всё в одном месте, для новичков и опытных дачников.</p>
+                <div class="hero-buttons">
+                    <a href="#tools" class="btn btn-dark">Планировщик <span class="arr">→</span></a>
+                    <a href="#calendar" class="btn btn-light">Календарь работ</a>
+                </div>
+                <div class="popular">
+                    <span class="popular-label">Популярное:</span>
+                    <a href="#" class="popular-chip">Уход за гортензией</a>
+                    <a href="#" class="popular-chip">Рассада томатов</a>
+                    <a href="#" class="popular-chip">Кислотность почвы</a>
+                </div>
+            </div>
+
+            <div class="collage" aria-label="Фотографии сада и огорода">
+                <div class="collage-grid">
+                    <img src="https://loremflickr.com/480/360/garden,beds" alt="Грядки в ухоженном саду" width="480" height="360" fetchpriority="high">
+                    <img src="https://loremflickr.com/480/360/greenhouse,plants" alt="Теплица с растениями" loading="lazy" width="480" height="360">
+                    <img src="https://loremflickr.com/480/360/flowers,garden" alt="Цветник у дома" loading="lazy" width="480" height="360">
+                    <img src="https://loremflickr.com/480/360/vegetables,harvest" alt="Урожай овощей" loading="lazy" width="480" height="360">
+                </div>
+                <a href="#tools" class="glass-cta">
+                    <span class="tile-ico" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>
+                    </span>
+                    <strong>Планировщик участка</strong>
+                    <span class="cta-note">Начертите план посадок онлайн</span>
+                    <span class="circle-go" aria-hidden="true">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= ИНСТРУМЕНТЫ (2×2) ================= -->
+    <section class="section" id="tools" aria-label="Инструменты">
+        <div class="section-head"><h2 class="h-cap">Инструменты садовода</h2></div>
+        <div class="tools-grid">
+
+            <a href="#" class="tool-card">
+                <span class="tile-ico" aria-hidden="true">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01"/></svg>
+                </span>
+                <h3>Калькуляторы</h3>
+                <p>Полив, удобрения, грунт — расчёт под вашу площадь и регион</p>
+                <span class="circle-go" aria-hidden="true">→</span>
+            </a>
+
+            <a href="#tools" class="tool-card">
+                <span class="tile-ico" aria-hidden="true">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>
+                </span>
+                <h3>Планировщик участка</h3>
+                <p>Начертите участок и получите план посадок с учётом совместимости</p>
+                <span class="circle-go" aria-hidden="true">→</span>
+            </a>
+
+            <a href="#calendar" class="tool-card">
+                <span class="tile-ico" aria-hidden="true">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                </span>
+                <h3>Календарь дачника</h3>
+                <p>Что делать на участке по месяцам — с поправкой на ваш регион</p>
+                <span class="circle-go" aria-hidden="true">→</span>
+            </a>
+
+            <a href="#" class="tool-card">
+                <span class="tile-ico" aria-hidden="true">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 3v2M12 15v2M5 10h2M17 10h2M7 5l1.4 1.4M15.6 13.6 17 15M7 15l1.4-1.4M15.6 6.4 17 5"/><path d="M8 21h8M10 18h4"/></svg>
+                </span>
+                <h3>Конструктор букета</h3>
+                <p>Соберите букет под повод и характер человека — из наших справочников</p>
+                <span class="circle-go" aria-hidden="true">→</span>
+            </a>
+
+        </div>
+
+        <div class="ad-slot" aria-hidden="true">Рекламный блок РСЯ — 970×90</div>
+    </section>
+
+    <!-- ================= БЛОГ + КАЛЬКУЛЯТОРЫ ================= -->
+    <section class="section" id="sadvogorod">
+        <div class="blog-grid">
+
+            <div>
+                <div class="section-head">
+                    <h2 class="h-cap">Блог и советы</h2>
+                    <a href="#" class="btn btn-light" style="padding:8px 18px; min-height:38px; font-size:12px;">Все статьи</a>
+                </div>
+                <div class="posts">
+                    <article class="post-card">
+                        <img src="https://loremflickr.com/480/300/hydrangea" alt="Гортензия в саду" loading="lazy" width="480" height="300">
+                        <div class="post-body">
+                            <h3><a href="#">Почему желтеют листья у гортензии: 5 причин</a></h3>
+                            <p>Разбираем хлороз, полив и кислотность почвы — с фото и схемой подкормки.</p>
+                            <span class="post-date">24 мая 2026</span>
+                        </div>
+                    </article>
+                    <article class="post-card">
+                        <img src="https://loremflickr.com/480/300/seedlings" alt="Рассада на подоконнике" loading="lazy" width="480" height="300">
+                        <div class="post-body">
+                            <h3><a href="#">5 ошибок при поливе рассады</a></h3>
+                            <p>Как определить норму воды и почему «чёрная ножка» — следствие перелива.</p>
+                            <span class="post-date">18 мая 2026</span>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-head"><h2 class="h-sub" style="font-size:15px;">Полезные калькуляторы</h2></div>
+                <div class="calc-tiles">
+                    <a href="#" class="tile">
+                        <span class="tile-ico" aria-hidden="true">
+                            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 8.5 7 12 3Z"/></svg>
+                        </span>
+                        <strong>Расчёт полива</strong>
+                        <span class="circle-go" aria-hidden="true">→</span>
+                    </a>
+                    <a href="#" class="tile">
+                        <span class="tile-ico" aria-hidden="true">
+                            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 4H9L8 3Z"/><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M8 12h8M8 16h5"/></svg>
+                        </span>
+                        <strong>Удобрения</strong>
+                        <span class="circle-go" aria-hidden="true">→</span>
+                    </a>
+                    <a href="#" class="tile">
+                        <span class="tile-ico" aria-hidden="true">
+                            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-3 7-7 0-4.5-4-8-7-13-3 5-7 8.5-7 13 0 4 3 7 7 7Z"/></svg>
+                        </span>
+                        <strong>Грунт и pH</strong>
+                        <span class="circle-go" aria-hidden="true">→</span>
+                    </a>
+                    <a href="#" class="tile">
+                        <span class="tile-ico" aria-hidden="true">
+                            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V10"/><path d="M12 10C12 6 9 4 5 4c0 4 3 6 7 6Z"/><path d="M12 13c0-3.5 2.5-5 6-5 0 3.5-2.5 5-6 5Z"/><path d="M6 22h12"/></svg>
+                        </span>
+                        <strong>Посев семян</strong>
+                        <span class="circle-go" aria-hidden="true">→</span>
+                    </a>
+                    <a href="#tools" class="tile tile-wide">
+                        <span class="tile-ico" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>
+                        </span>
+                        <strong>Планировщик участка — чертите план онлайн</strong>
+                        <span class="circle-go" aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ================= РАЗДЕЛЫ + КАЛЕНДАРЬ ================= -->
+    <section class="section" id="recipes">
+        <div class="sx-grid">
+
+            <div>
+                <div class="section-head"><h2 class="h-cap" style="font-size:21px;">Разделы</h2></div>
+                <div class="sx-tiles">
+                    <a href="#" class="sx-tile">
+                        <span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/></svg></span>
+                        <strong>Сад</strong>
+                    </a>
+                    <a href="#" class="sx-tile">
+                        <span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m14 8 4-4M16 6l2 2"/><path d="m3 21 9-9"/><path d="M15 5l4 4-8 8H7v-4l8-8Z"/></svg></span>
+                        <strong>Огород</strong>
+                    </a>
+                    <a href="#" class="sx-tile">
+                        <span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></span>
+                        <strong>Цветы</strong>
+                    </a>
+                    <a href="#" class="sx-tile">
+                        <span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 9C12 5 9.5 3 5.5 3c0 4 2.5 6 6.5 6Z"/><path d="M12 13c0-3.5 2.5-5.5 6.5-5.5 0 4-2.5 5.5-6.5 5.5Z"/></svg></span>
+                        <strong>Уход</strong>
+                    </a>
+                    <a href="#" class="sx-tile">
+                        <span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 4H9L8 3Z"/><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 12l2 2 4-4"/></svg></span>
+                        <strong>Удобрения</strong>
+                    </a>
+                    <a href="#" class="sx-tile">
+                        <span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16l-1.5 9a2 2 0 0 1-2 1.6h-9A2 2 0 0 1 5.5 20L4 11Z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                        <strong>Рецепты</strong>
+                    </a>
+                </div>
+            </div>
+
+            <div class="panel-cal" id="calendar">
+                <div class="section-head">
+                    <h2 class="h-cap" style="font-size:21px;">Календарь работ</h2>
+                    <a href="#" class="btn btn-light" style="padding:8px 18px; min-height:38px; font-size:12px;">Весь календарь</a>
+                </div>
+
+                <div class="event">
+                    <div class="date-block" aria-label="25 мая"><span class="date-num">25</span><span class="date-month">мая</span></div>
+                    <div class="event-body">
+                        <h3>Подкормка гортензий азотом — последний срок</h3>
+                        <div class="event-meta">
+                            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>до 10 июня</span>
+                        </div>
+                        <span class="region-tag">Средняя полоса · Юг</span>
+                    </div>
+                </div>
+
+                <div class="event">
+                    <div class="date-block" aria-label="1 июня"><span class="date-num">01</span><span class="date-month">июня</span></div>
+                    <div class="event-body">
+                        <h3>Высадка рассады томатов в теплицу</h3>
+                        <div class="event-meta">
+                            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>1–10 июня</span>
+                        </div>
+                        <span class="region-tag">Сибирь: +2 недели</span>
+                    </div>
+                </div>
+
+                <div class="event">
+                    <div class="date-block" aria-label="8 июня"><span class="date-num">08</span><span class="date-month">июня</span></div>
+                    <div class="event-body">
+                        <h3>Профилактика фитофторы: первая обработка</h3>
+                        <div class="event-meta">
+                            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>после цветения</span>
+                        </div>
+                        <span class="region-tag">Все регионы</span>
+                    </div>
+                </div>
+
+                <a href="#" class="tg-banner">
+                    <span class="tg-icon" aria-hidden="true">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.9 19c-.2 1-.8 1.3-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-1 .5l.3-4.7 8.5-7.7c.4-.3-.1-.5-.6-.2L7 11.4l-4.5-1.4c-1-.3-1-1 .2-1.4l17.6-6.8c.8-.3 1.6.2 1.3 1.3Z"/></svg>
+                    </span>
+                    <span>
+                        <strong>Telegram-канал «Сад знаний»</strong>
+                        <span>Напомним о садовых работах в срок</span>
+                    </span>
+                    <span class="circle-go" aria-hidden="true">→</span>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ================= О ПРОЕКТЕ ================= -->
+    <section class="section" id="about">
+        <div class="about-panel">
+            <div>
+                <h2>О проекте</h2>
+                <p>«Сад знаний» — полезная база садовода. Мы связываем статьи, калькуляторы и планировщик в единую систему: от выбора растения до сбора урожая.</p>
+                <a href="#" class="btn btn-light" style="padding:10px 22px; min-height:42px; font-size:12.5px;">Подробнее</a>
+            </div>
+            <div class="plan-mini">
+                <svg viewBox="0 0 320 200" role="img" aria-label="Схема участка в планировщике">
+                    <rect width="320" height="200" rx="14" fill="#EFF1F3"/>
+                    <rect x=".5" y=".5" width="319" height="199" rx="14" fill="none" stroke="#fff" stroke-width="2"/>
+                    <rect x="205" y="28" width="88" height="58" rx="6" fill="#2E3A31"/>
+                    <polygon points="200,28 249,6 298,28" fill="#222B25"/>
+                    <rect x="235" y="50" width="20" height="26" rx="2" fill="#E7F0E9"/>
+                    <rect x="25" y="32" width="92" height="16" rx="5" fill="#9FB8A5"/>
+                    <rect x="25" y="58" width="92" height="16" rx="5" fill="#9FB8A5"/>
+                    <rect x="25" y="84" width="92" height="16" rx="5" fill="#9FB8A5"/>
+                    <circle cx="160" cy="56" r="15" fill="#7FA689"/><rect x="157" y="68" width="6" height="13" fill="#6E6252"/>
+                    <circle cx="158" cy="112" r="12" fill="#7FA689" opacity=".85"/><rect x="156" y="121" width="5" height="11" fill="#6E6252"/>
+                    <rect x="30" y="132" width="70" height="32" rx="6" fill="#fff" stroke="#9FB8A5" stroke-width="2"/>
+                    <path d="M30 148h70M65 132v32" stroke="#9FB8A5" stroke-width="1.4"/>
+                    <path d="M122 200 C 132 156, 178 136, 212 98" fill="none" stroke="#D8DDE0" stroke-width="13" stroke-linecap="round"/>
+                    <text x="248" y="108" font-size="11" fill="#5C645D" font-family="sans-serif">Дом</text>
+                    <text x="40" y="78" font-size="10" fill="#fff" font-family="sans-serif">Грядки</text>
+                    <text x="42" y="152" font-size="10" fill="#41544A" font-family="sans-serif">Теплица</text>
+                </svg>
+                <p style="text-align:center; font-size:13px; margin:9px 0 13px;">Схема участка в планировщике</p>
+                <div style="text-align:center;"><a href="#tools" class="btn btn-dark" style="padding:10px 22px; min-height:42px; font-size:12.5px;">Попробовать</a></div>
+            </div>
+            <div>
+                <h2>Контакты</h2>
+                <ul class="contact-list">
+                    <li>
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m2 7 10 7L22 7"/></svg>
+                        <a href="mailto:info@znai-sad.ru">info@znai-sad.ru</a>
+                    </li>
+                    <li>
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.5 2.9.7a2 2 0 0 1 1.6 2Z"/></svg>
+                        <a href="#">Telegram-чат садоводов</a>
+                    </li>
+                    <li>
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span>Работаем по всей России</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    </main>
+
+    <!-- ================= ФУТЕР ================= -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <a href="/" class="logo" style="margin-bottom:8px;">
+                    <span class="logo-mark">
+                        <svg width="24" height="28" viewBox="0 0 44.17 51.39" aria-hidden="true"><use href="#logo-sad"/></svg>
+                    </span>
+                    <span>
+                        <span class="logo-name" style="font-size:14px;">Сад знаний</span>
+                    </span>
+                </a>
+            </div>
+            <div class="footer-col">
+                <h4>Разделы</h4>
+                <ul>
+                    <li><a href="#">Сад</a></li>
+                    <li><a href="#">Огород</a></li>
+                    <li><a href="#">Цветы</a></li>
+                    <li><a href="#">Рецепты</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Инструменты</h4>
+                <ul>
+                    <li><a href="#tools">Калькуляторы</a></li>
+                    <li><a href="#tools">Планировщик</a></li>
+                    <li><a href="#calendar">Календарь</a></li>
+                    <li><a href="#sadvogorod">База знаний</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <a class="footer-phone" href="mailto:info@znai-sad.ru">info@znai-sad.ru</a>
+                <a class="footer-phone" href="#">Telegram-канал</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 «Сад знаний» · znai-sad.ru</span>
+            <span class="spacer">
+                <a href="#" class="link-plain">Карта сайта</a>
+                <button type="button" id="bvi-toggle" class="link-plain" aria-pressed="false">Версия для слабовидящих</button>
+                <a href="#" class="link-plain">Политика конфиденциальности</a>
+            </span>
+        </div>
+    </footer>
+
+</div>
+
+<script>
+const bviBtn = document.getElementById('bvi-toggle');
+bviBtn.addEventListener('click', () => {
+    const on = document.body.classList.toggle('bvi');
+    bviBtn.setAttribute('aria-pressed', String(on));
+    bviBtn.textContent = on ? 'Обычная версия сайта' : 'Версия для слабовидящих';
+});
+</script>
+
+</body>
+</html>

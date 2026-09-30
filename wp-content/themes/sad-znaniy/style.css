@@ -1,0 +1,17 @@
+/*
+Theme Name: Sad Znaniy
+Theme URI: https://znai-sad.ru/
+Author: Сад знаний
+Description: Тема проекта «Сад знаний» — серебристый неоморфизм + матовое стекло. Собрана по макету _design/index.html.
+Version: 1.0.0
+Requires at least: 6.5
+Tested up to: 6.7
+Requires PHP: 8.2
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: sad-znaniy
+Tags: custom-design, accessibility-ready
+*/
+
+/* Шапка темы. Все стили подключаются из assets/css/ (design-tokens.css + main.css),
+   см. functions.php. Здесь CSS намеренно не размещается. */
