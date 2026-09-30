@@ -1,0 +1,40 @@
+# ==========================================================
+#  Репозиторий проекта «Сад знаний» (znai-sad.ru)
+#
+#  В git хранится ТОЛЬКО наш проект:
+#    • тема  wp-content/themes/sad-znaniy/
+#    • документы  PROJECT-PLAN.md, .clinerules
+#
+#  Ядро WordPress, wp-config.php, uploads, бэкапы и служебные
+#  файлы НЕ хранятся (обновления WP не засоряют репозиторий,
+#  секреты не утекают в GitHub).
+# ==========================================================
+
+# --- По умолчанию игнорируем всё в корне ---
+/*
+!/.gitignore
+!/.clinerules
+!/PROJECT-PLAN.md
+
+# --- Разрешаем только нашу тему ---
+!/wp-content/
+/wp-content/*
+!/wp-content/themes/
+/wp-content/themes/*
+!/wp-content/themes/sad-znaniy/
+
+# --- Секреты и служебное: запрет на всякий случай ---
+wp-config.php
+wp-config-sample.php
+*.env
+.env
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/backups/
+wp-content/debug.log
+*.sql
+*.sqlite
+local-xdebuginfo.php
+.htaccess
+.DS_Store
+Thumbs.db
