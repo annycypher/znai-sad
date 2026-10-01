@@ -228,6 +228,36 @@ function sad_znaniy_seo_build_url( $template, $region, $month, $plant_id ) {
 }
 
 /**
+ * Связанная страница для фразы, которой нет программатик-страницы.
+ *
+ * Порядок: месяц → календарь с фильтром месяца (и региона); иначе культура →
+ * карточка растения; иначе регион → календарь с фильтром региона.
+ *
+ * @param string $region   Ключ региона ('' — нет).
+ * @param int    $month    Месяц (0 — нет).
+ * @param int    $plant_id ID растения (0 — нет).
+ * @return string URL или ''.
+ */
+function sad_znaniy_seo_related_url( $region, $month, $plant_id ) {
+	if ( $month ) {
+		return sad_znaniy_calendar_url( (int) current_time( 'Y' ), (int) $month, (string) $region );
+	}
+
+	if ( $plant_id ) {
+		$link = get_permalink( (int) $plant_id );
+		if ( $link ) {
+			return $link;
+		}
+	}
+
+	if ( '' !== (string) $region ) {
+		return sad_znaniy_calendar_url( null, null, (string) $region );
+	}
+
+	return '';
+}
+
+/**
  * Авторазметка одной фразы: ищет регион, месяц, культуру и применяет правила.
  *
  * @param string $phrase Фраза.
@@ -238,6 +268,7 @@ function sad_znaniy_seo_match( $phrase ) {
 	$none     = array(
 		'url'      => '',
 		'template' => '',
+		'related'  => '',
 	);
 
 	if ( '' === $phrase_l ) {
@@ -274,6 +305,7 @@ function sad_znaniy_seo_match( $phrase ) {
 		}
 	}
 
+	$related = '';
 	foreach ( sad_znaniy_seo_rules() as $rule ) {
 		$hit = false;
 		foreach ( $rule['keywords'] as $kw ) {
@@ -291,25 +323,52 @@ function sad_znaniy_seo_match( $phrase ) {
 			return array(
 				'url'      => $url,
 				'template' => $rule['template'],
+				'related'  => '',
 			);
+		}
+
+		// Программатик-страницы нет — ищем связанную страницу.
+		if ( '' === $related ) {
+			$related = sad_znaniy_seo_related_url( $region, $month, $plant_id );
 		}
 	}
 
-	return $none;
+	return array(
+		'url'      => '',
+		'template' => '',
+		'related'  => $related,
+	);
 }
 
 /**
- * Статус ключа: weak (частота < 10) / live / manual.
+ * Порог «слабой» частоты (настраивается на экране «Ключи»).
  *
- * @param int    $freq Частота.
- * @param string $url  Размеченный URL.
+ * @return int
+ */
+function sad_znaniy_seo_weak_threshold() {
+	$value = (int) get_option( 'sz_seo_weak_threshold', 10 );
+	return ( $value > 0 ) ? $value : 10;
+}
+
+/**
+ * Статус ключа: weak (частота ниже порога) / live / related / manual.
+ *
+ * related — программатик-страницы нет, но есть «связанная страница»
+ * (календарь с фильтром месяца/региона или карточка растения).
+ *
+ * @param int    $freq    Частота.
+ * @param string $url     Размеченный программатик-URL.
+ * @param string $related Связанная страница.
  * @return string
  */
-function sad_znaniy_seo_status_for( $freq, $url ) {
-	if ( (int) $freq < 10 ) {
+function sad_znaniy_seo_status_for( $freq, $url, $related = '' ) {
+	if ( (int) $freq < sad_znaniy_seo_weak_threshold() ) {
 		return 'weak';
 	}
-	return '' !== $url ? 'live' : 'manual';
+	if ( '' !== $url ) {
+		return 'live';
+	}
+	return ( '' !== $related ) ? 'related' : 'manual';
 }
 
 /**
@@ -417,16 +476,18 @@ function sad_znaniy_seo_recalc() {
 	$rows  = $wpdb->get_results( "SELECT id, phrase, freq FROM {$table}" );
 
 	foreach ( (array) $rows as $row ) {
-		$match  = sad_znaniy_seo_match( $row->phrase );
-		$status = sad_znaniy_seo_status_for( (int) $row->freq, $match['url'] );
+		$match   = sad_znaniy_seo_match( $row->phrase );
+		$related = isset( $match['related'] ) ? (string) $match['related'] : '';
+		$status  = sad_znaniy_seo_status_for( (int) $row->freq, $match['url'], $related );
 		$wpdb->update(
 			$table,
 			array(
 				'matched_url' => $match['url'],
+				'related_url' => $related,
 				'status'      => $status,
 			),
 			array( 'id' => (int) $row->id ),
-			array( '%s', '%s' ),
+			array( '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 	}
@@ -439,9 +500,10 @@ function sad_znaniy_seo_recalc() {
  */
 function sad_znaniy_seo_key_status_labels() {
 	return array(
-		'live'   => __( 'живая', 'sad-znaniy' ),
-		'weak'   => __( 'слабая', 'sad-znaniy' ),
-		'manual' => __( 'manual', 'sad-znaniy' ),
+		'live'    => __( 'живая', 'sad-znaniy' ),
+		'weak'    => __( 'слабая', 'sad-znaniy' ),
+		'related' => __( 'привязана', 'sad-znaniy' ),
+		'manual'  => __( 'manual', 'sad-znaniy' ),
 	);
 }
 
@@ -523,10 +585,11 @@ function sad_znaniy_seo_keys_counts() {
 	$rows  = $wpdb->get_results( "SELECT status, COUNT(*) AS c FROM {$table} GROUP BY status", ARRAY_A );
 
 	$out = array(
-		'all'    => 0,
-		'live'   => 0,
-		'weak'   => 0,
-		'manual' => 0,
+		'all'     => 0,
+		'live'    => 0,
+		'weak'    => 0,
+		'related' => 0,
+		'manual'  => 0,
 	);
 
 	foreach ( (array) $rows as $row ) {
@@ -718,12 +781,13 @@ function sad_znaniy_seo_map_markdown() {
 		$lines[] = '';
 		$lines[] = '## Фразы (Вордстат)';
 		$lines[] = '';
-		$lines[] = '| Фраза | Частота | URL | Статус |';
-		$lines[] = '|---|---|---|---|';
+		$lines[] = '| Фраза | Частота | URL | Связанная страница | Статус |';
+		$lines[] = '|---|---|---|---|---|';
 		foreach ( $keys as $key ) {
 			$lines[] = '| ' . sad_znaniy_seo_md_cell( $key->phrase )
 				. ' | ' . (int) $key->freq
 				. ' | ' . (string) $key->matched_url
+				. ' | ' . (string) $key->related_url
 				. ' | ' . (string) $key->status . ' |';
 		}
 	}
@@ -744,9 +808,9 @@ function sad_znaniy_seo_export_handler() {
 	$date = gmdate( 'Y-m-d' );
 
 	if ( 'keys' === $type ) {
-		$rows = array( array( 'Фраза', 'Частота', 'URL', 'Статус' ) );
+		$rows = array( array( 'Фраза', 'Частота', 'URL', 'Связанная страница', 'Статус' ) );
 		foreach ( sad_znaniy_seo_keys_query() as $key ) {
-			$rows[] = array( $key->phrase, (string) $key->freq, (string) $key->matched_url, (string) $key->status );
+			$rows[] = array( $key->phrase, (string) $key->freq, (string) $key->matched_url, (string) $key->related_url, (string) $key->status );
 		}
 		sad_znaniy_seo_send_csv( 'seo-keys-' . $date . '.csv', $rows );
 	}
@@ -817,8 +881,12 @@ function sad_znaniy_seo_hub_keys_page() {
 	if ( isset( $_POST['sz_keys_rules'] ) && check_admin_referer( 'sz_keys_rules', 'sz_keys_rules_nonce' ) ) {
 		$new_rules = isset( $_POST['sz_seo_rules'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sz_seo_rules'] ) ) : '';
 		update_option( 'sz_seo_rules', $new_rules, false );
+
+		$new_threshold = isset( $_POST['sz_seo_weak_threshold'] ) ? (int) $_POST['sz_seo_weak_threshold'] : 10;
+		update_option( 'sz_seo_weak_threshold', ( $new_threshold > 0 ) ? $new_threshold : 10, false );
+
 		sad_znaniy_seo_recalc();
-		$notice = '<div class="notice notice-success is-dismissible"><p>Правила сохранены, разметка пересчитана.</p></div>';
+		$notice = '<div class="notice notice-success is-dismissible"><p>Правила и порог сохранены, разметка пересчитана.</p></div>';
 	}
 
 	// Пересчёт разметки вручную.
@@ -904,6 +972,12 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		<form method="post" style="margin-bottom:10px;">
 			<?php wp_nonce_field( 'sz_keys_rules', 'sz_keys_rules_nonce' ); ?>
 			<textarea name="sz_seo_rules" rows="4" style="width:100%;max-width:760px;"><?php echo esc_textarea( $raw ); ?></textarea>
+			<p>
+				<label>Порог «слабой» частоты:
+					<input type="number" name="sz_seo_weak_threshold" min="1" max="10000" step="1" value="<?php echo esc_attr( sad_znaniy_seo_weak_threshold() ); ?>" style="width:90px;">
+				</label>
+				<span class="description">фразы с частотой ниже порога помечаются «слабая» (по умолчанию 10)</span>
+			</p>
 			<p class="description">Формат строки: «слово1, слово2 &gt; шаблон». Шаблоны: kalendar (регион+месяц), kogda-sazhat (культура+регион), uhod (культура+месяц).</p>
 			<p class="submit">
 				<button type="submit" name="sz_keys_rules" class="button">Сохранить правила и пересчитать</button>
@@ -930,6 +1004,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		<p>
 			Всего: <b><?php echo (int) $counts['all']; ?></b>
 			· <span style="color:#2e6b4f;">живых: <?php echo (int) $counts['live']; ?></span>
+			· <span style="color:#2f6fa8;">привязано: <?php echo (int) $counts['related']; ?></span>
 			· <span style="color:#999;">слабых: <?php echo (int) $counts['weak']; ?></span>
 			· manual: <?php echo (int) $counts['manual']; ?>
 		</p>
@@ -937,7 +1012,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		<form method="get" style="margin-bottom:10px;">
 			<input type="hidden" name="page" value="sad-seo-hub">
 			<select name="sz_status">
-				<?php foreach ( array( 'all' => 'все', 'live' => 'живая', 'weak' => 'слабая', 'manual' => 'manual' ) as $value => $label ) : ?>
+				<?php foreach ( array( 'all' => 'все', 'live' => 'живая', 'weak' => 'слабая', 'related' => 'привязана', 'manual' => 'manual' ) as $value => $label ) : ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $status, $value ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
 			</select>
@@ -959,7 +1034,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 					</th>
 					<th style="width:38%;">URL программатик-страницы</th>
 					<th style="width:90px;">Статус</th>
-					<th style="width:110px;">Страница</th>
+					<th style="width:22%;">Связанная страница</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -973,7 +1048,9 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 						<td><?php echo ( '' !== (string) $key->matched_url ) ? esc_html( $key->matched_url ) : '—'; ?></td>
 						<td><span class="sz-status sz-<?php echo esc_attr( $key->status ); ?>"><?php echo esc_html( isset( $labels[ $key->status ] ) ? $labels[ $key->status ] : $key->status ); ?></span></td>
 						<td>
-							<?php if ( '' !== (string) $key->matched_url ) : ?>
+							<?php if ( '' !== (string) $key->related_url && '' === (string) $key->matched_url ) : ?>
+								<a href="<?php echo esc_url( $key->related_url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( str_replace( home_url(), '', $key->related_url ) ); ?></a>
+							<?php elseif ( '' !== (string) $key->matched_url ) : ?>
 								<a href="<?php echo esc_url( $key->matched_url ); ?>" target="_blank" rel="noopener">открыть</a>
 							<?php else : ?>
 								—
@@ -986,7 +1063,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		</table>
 		<style>
 			.sz-status{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
-			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-weak{background:#f1f1f1;color:#999}.sz-manual{background:#fdf3e0;color:#a9714b}
+			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-weak{background:#f1f1f1;color:#999}.sz-manual{background:#fdf3e0;color:#a9714b}.sz-related{background:#eaf2fb;color:#2f6fa8}
 		</style>
 	</div>
 	<?php

@@ -44,10 +44,10 @@ function sad_znaniy_seo_tables() {
 /**
  * Создаёт таблицы хаба (dbDelta) и отмечает версию схемы.
  *
- * Вызывается на init: пока версия совпадает — только чтение опции.
+ * Версия схемы: 2 — добавлена колонка related_url (связанная страница) в ключи.
  */
 function sad_znaniy_seo_maybe_install() {
-	if ( '1' === get_option( 'sz_seo_db_version' ) ) {
+	if ( '2' === get_option( 'sz_seo_db_version' ) ) {
 		return;
 	}
 
@@ -68,6 +68,7 @@ function sad_znaniy_seo_maybe_install() {
 		phrase varchar(191) NOT NULL,
 		freq int(10) unsigned NOT NULL DEFAULT 0,
 		matched_url varchar(255) NOT NULL DEFAULT '',
+		related_url varchar(255) NOT NULL DEFAULT '',
 		status varchar(20) NOT NULL DEFAULT 'manual',
 		created datetime NOT NULL,
 		PRIMARY KEY  (id),
@@ -104,7 +105,7 @@ function sad_znaniy_seo_maybe_install() {
 		dbDelta( $query );
 	}
 
-	update_option( 'sz_seo_db_version', '1', false );
+	update_option( 'sz_seo_db_version', '2', false );
 }
 add_action( 'init', 'sad_znaniy_seo_maybe_install', 5 );
 

@@ -1,6 +1,6 @@
 # programmatic-map — карта программатик-страниц «Сад знаний»
 
-Сгенерировано: 2026-10-01 11:08 (экран «📊 SEO-Хаб → Ключи», экспорт).
+Сгенерировано: 2026-10-01 11:18 (экран «📊 SEO-Хаб → Ключи», экспорт).
 
 Всего страниц: 59 (живых: 0, черновиков: 18, пустых: 41).
 
@@ -135,10 +135,10 @@
 
 ## Фразы (Вордстат)
 
-| Фраза | Частота | URL | Статус |
-|---|---|---|---|
-| когда сажать огурцы в сибири | 1240 | http://sadznaniy.local/kogda-sazhat/ogurets/sibir/ | live |
-| работы в саду в мае | 890 |  | manual |
-| календарь дачника средняя полоса апрель | 320 | http://sadznaniy.local/kalendar/srednyaya-polosa/aprel/ | live |
-| полив томатов в июне | 45 | http://sadznaniy.local/uhod/tomat/iyun/ | live |
-| подкормка роз в мае | 7 |  | weak |
+| Фраза | Частота | URL | Связанная страница | Статус |
+|---|---|---|---|---|
+| когда сажать огурцы в сибири | 1240 | http://sadznaniy.local/kogda-sazhat/ogurets/sibir/ |  | live |
+| работы в саду в мае | 890 |  | http://sadznaniy.local/kalendar/?year=2026&month=5 | related |
+| календарь дачника средняя полоса апрель | 320 | http://sadznaniy.local/kalendar/srednyaya-polosa/aprel/ |  | live |
+| полив томатов в июне | 45 | http://sadznaniy.local/uhod/tomat/iyun/ |  | live |
+| подкормка роз в мае | 7 |  | http://sadznaniy.local/kalendar/?year=2026&month=5 | weak |
