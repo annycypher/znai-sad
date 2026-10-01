@@ -32,7 +32,7 @@ $section_links = array(
 				<p class="hero-sub">Калькуляторы полива и удобрений, планировщик участка и календарь работ — всё в одном месте, для новичков и опытных дачников.</p>
 				<div class="hero-buttons">
 					<a href="#tools" class="btn btn-dark">Планировщик <span class="arr">→</span></a>
-					<a href="#calendar" class="btn btn-light">Календарь работ</a>
+					<a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>" class="btn btn-light"><?php esc_html_e( 'Календарь работ', 'sad-znaniy' ); ?></a>
 				</div>
 				<?php $popular_plants = sad_znaniy_get_popular_plants(); ?>
 				<?php if ( $popular_plants ) : ?>
@@ -87,7 +87,7 @@ $section_links = array(
 				<span class="circle-go" aria-hidden="true">→</span>
 			</a>
 
-			<a href="#calendar" class="tool-card">
+			<a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>" class="tool-card">
 				<span class="tile-ico" aria-hidden="true">
 					<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
 				</span>
