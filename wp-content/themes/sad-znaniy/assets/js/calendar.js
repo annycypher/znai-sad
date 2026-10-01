@@ -34,6 +34,16 @@
 	var cards = Array.prototype.slice.call( document.querySelectorAll( '#listView .task' ) );
 	var monthName = ( ( document.querySelector( '.month-title' ) || {} ).textContent || '' ).replace( /\s*\d{4}$/, '' ).trim();
 
+	var cfg = window.sadZnaniyCal || {};
+	var today = new Date();
+	var doneSet = new Set();
+	try {
+		( JSON.parse( localStorage.getItem( 'sad_znaniy_cal_done' ) || '[]' ) || [] ).forEach( function ( id ) { doneSet.add( id ); } );
+	} catch ( e ) {}
+	if ( cfg.loggedIn && Array.isArray( cfg.done ) ) {
+		cfg.done.forEach( function ( id ) { doneSet.add( id ); } );
+	}
+
 	function matches( card ) {
 		var regions = ( card.dataset.regions || '' ).split( ',' );
 		var exp = card.dataset.exp || 'all';
@@ -69,13 +79,55 @@
 		return window.location.pathname + '?' + p.toString();
 	}
 
+	function saveDone() {
+		try {
+			localStorage.setItem( 'sad_znaniy_cal_done', JSON.stringify( Array.from( doneSet ) ) );
+		} catch ( e ) {}
+		if ( cfg.loggedIn && cfg.restUrl ) {
+			try {
+				fetch( cfg.restUrl, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
+					body: JSON.stringify( { ids: Array.from( doneSet ) } )
+				} );
+			} catch ( e ) {}
+		}
+	}
+
 	function apply() {
 		cards.forEach( function ( card ) {
 			card.classList.toggle( 'hidden', ! matches( card ) );
 		} );
+		var visible = visibleCards();
+		var doneCount = visible.filter( function ( c ) {
+			return doneSet.has( parseInt( c.dataset.id, 10 ) );
+		} ).length;
 		var pNum = document.getElementById( 'pNum' );
-		if ( pNum ) { pNum.textContent = '0 из ' + visibleCards().length; }
+		if ( pNum ) { pNum.textContent = doneCount + ' из ' + visible.length; }
+		var pFill = document.getElementById( 'pFill' );
+		if ( pFill ) { pFill.style.width = visible.length ? ( doneCount / visible.length * 100 ) + '%' : '0'; }
+		renderMissed();
 		renderDayPanel();
+	}
+
+	function renderMissed() {
+		var isCur = ( curMonth === today.getMonth() + 1 && curYear === today.getFullYear() );
+		cards.forEach( function ( card ) {
+			var id = parseInt( card.dataset.id, 10 );
+			var done = doneSet.has( id );
+			card.classList.toggle( 'done', done );
+			var missed = isCur && parseInt( card.dataset.d2, 10 ) < today.getDate() && ! done && ! card.classList.contains( 'hidden' );
+			card.classList.toggle( 'missed', missed );
+			var badge = card.querySelector( '.miss-badge' );
+			if ( missed && ! badge ) {
+				badge = document.createElement( 'span' );
+				badge.className = 'miss-badge';
+				badge.textContent = 'Пропущено — запланируйте на следующий сезон';
+				card.querySelector( '.t-top' ).appendChild( badge );
+			} else if ( ! missed && badge ) {
+				badge.parentNode.removeChild( badge );
+			}
+		} );
 	}
 
 	function syncChips() {
@@ -192,6 +244,115 @@
 			}
 		} );
 	} );
+
+	document.getElementById( 'listView' ).addEventListener( 'click', function ( e ) {
+		var cb = e.target.closest ? e.target.closest( '.cb' ) : null;
+		if ( ! cb ) {
+			return;
+		}
+		var task = cb.closest( '.task' );
+		var id = parseInt( task.dataset.id, 10 );
+		if ( doneSet.has( id ) ) { doneSet.delete( id ); } else { doneSet.add( id ); }
+		saveDone();
+		apply();
+	} );
+
+	var btnPdf = document.getElementById( 'btnPdf' );
+	if ( btnPdf ) { btnPdf.addEventListener( 'click', function () { window.print(); } ); }
+	var btnJpg = document.getElementById( 'btnJpg' );
+	if ( btnJpg ) { btnJpg.addEventListener( 'click', exportJpg ); }
+	var btnShare = document.getElementById( 'btnShare' );
+	if ( btnShare ) { btnShare.addEventListener( 'click', share ); }
+
+	function regionLabel() {
+		var el = document.querySelector( '.chip.region.on' );
+		return el ? el.textContent.trim() : 'Все регионы';
+	}
+
+	function roundRect( ctx, x, y, w, h, r ) {
+		if ( ctx.roundRect ) { ctx.beginPath(); ctx.roundRect( x, y, w, h, r ); return; }
+		ctx.beginPath();
+		ctx.moveTo( x + r, y );
+		ctx.arcTo( x + w, y, x + w, y + h, r );
+		ctx.arcTo( x + w, y + h, x, y + h, r );
+		ctx.arcTo( x, y + h, x, y, r );
+		ctx.arcTo( x, y, x + w, y, r );
+		ctx.closePath();
+	}
+
+	function exportJpg() {
+		var list = visibleCards();
+		var c = document.createElement( 'canvas' );
+		c.width = 900;
+		c.height = 210 + list.length * 54 + 80;
+		var x = c.getContext( '2d' );
+		x.fillStyle = '#F4F5F7';
+		x.fillRect( 0, 0, c.width, c.height );
+		x.fillStyle = '#2E6B4F';
+		x.font = 'bold 22px system-ui';
+		x.fillText( 'Сад знаний', 50, 60 );
+		x.fillStyle = '#20241F';
+		x.font = 'bold 32px system-ui';
+		x.fillText( 'Календарь дачника — ' + monthName + ' ' + curYear, 50, 110 );
+		x.fillStyle = '#5C645D';
+		x.font = '19px system-ui';
+		x.fillText( 'Регион: ' + regionLabel() + ' · znai-sad.ru', 50, 145 );
+		list.forEach( function ( card, i ) {
+			var y = 180 + i * 54;
+			var title = card.querySelector( '.t-title' ).textContent;
+			var done = doneSet.has( parseInt( card.dataset.id, 10 ) );
+			var type = card.dataset.type;
+			x.fillStyle = '#fff';
+			x.strokeStyle = '#E3E6EA';
+			roundRect( x, 50, y, 800, 44, 12 );
+			x.fill();
+			x.stroke();
+			var color = getComputedStyle( document.documentElement ).getPropertyValue( '--c-' + type ).trim() || '#3FA46F';
+			x.fillStyle = color;
+			x.beginPath();
+			x.arc( 78, y + 22, 8, 0, 7 );
+			x.fill();
+			x.fillStyle = '#20241F';
+			x.font = '18px system-ui';
+			x.fillText( ( card.dataset.d1 + '–' + card.dataset.d2 + '. ' + title ).slice( 0, 58 ), 100, y + 29 );
+			x.fillStyle = done ? '#3FA46F' : '#c9ced4';
+			roundRect( x, 790, y + 12, 20, 20, 6 );
+			x.fill();
+			if ( done ) {
+				x.strokeStyle = '#fff';
+				x.lineWidth = 3;
+				x.beginPath();
+				x.moveTo( 794, y + 22 );
+				x.lineTo( 799, y + 27 );
+				x.lineTo( 807, y + 16 );
+				x.stroke();
+			}
+		} );
+		var a = document.createElement( 'a' );
+		a.download = 'calendar-' + curYear + '-' + String( curMonth ).padStart( 2, '0' ) + '.jpg';
+		a.href = c.toDataURL( 'image/jpeg', 0.9 );
+		a.click();
+	}
+
+	function share() {
+		var list = visibleCards();
+		var text = monthName + ' ' + curYear + ', ' + regionLabel() + ': ' + list.length + ' задач на участке';
+		var url = window.location.origin + buildUrl();
+		var data = { title: 'Календарь дачника — Сад знаний', text: text, url: url };
+		if ( navigator.share ) {
+			navigator.share( data ).catch( function () {} );
+			return;
+		}
+		var btnShare = document.getElementById( 'btnShare' );
+		if ( navigator.clipboard && navigator.clipboard.writeText ) {
+			navigator.clipboard.writeText( text + ' → ' + url ).then( function () {
+				btnShare.textContent = '✓ Ссылка скопирована';
+				setTimeout( function () { btnShare.textContent = '🔗 Поделиться'; }, 2000 );
+			} ).catch( function () { window.prompt( 'Скопируйте ссылку:', url ); } );
+		} else {
+			window.prompt( 'Скопируйте ссылку:', url );
+		}
+	}
 
 	syncChips();
 	if ( 'list' === S.view ) {

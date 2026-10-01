@@ -122,3 +122,19 @@
 	.month-title{flex:1}
 }
 
+/* ---------- Печать (только список месяца + регион) ---------- */
+@media print{
+	body{background:#fff}
+	.topbar,.footer,.ambient,.leaf,.skip-link,.nav,.topbar-actions{display:none!important}
+	.inner{padding:0!important}
+	.cal-wrap{max-width:none}
+	.month-nav,.view-toggle,.filters,.progress-row,#gridView,.export-row,.max-link{display:none!important}
+	.cal-head{margin:0 0 16px}
+	.cal-head p{display:none}
+	.cal-head h1{font-size:22px}
+	.tasks{gap:8px}
+	.task{box-shadow:none;border:1px solid #ddd;animation:none;break-inside:avoid}
+	.task.hidden{display:none!important}
+	.cb{display:none}
+}
+

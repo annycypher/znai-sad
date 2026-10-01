@@ -86,5 +86,16 @@ function sad_znaniy_enqueue_calendar_assets() {
 		sad_znaniy_asset_ver( 'assets/js/calendar.js' ),
 		true
 	);
+
+	wp_localize_script(
+		'sad-znaniy-calendar',
+		'sadZnaniyCal',
+		array(
+			'loggedIn' => is_user_logged_in(),
+			'nonce'    => wp_create_nonce( 'wp_rest' ),
+			'restUrl'  => esc_url_raw( rest_url( 'sad-znaniy/v1/calendar/done' ) ),
+			'done'     => is_user_logged_in() ? sad_znaniy_get_user_done() : array(),
+		)
+	);
 }
 add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_calendar_assets' );
