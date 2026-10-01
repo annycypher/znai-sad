@@ -164,6 +164,7 @@ function sad_znaniy_programmatic_resolve( $pg ) {
 		}
 		return array(
 			'template' => 'region-month',
+			'key'      => 'rm:' . $region . ':' . $month,
 			'region'   => $region,
 			'month'    => $month,
 			'plant'    => null,
@@ -179,6 +180,7 @@ function sad_znaniy_programmatic_resolve( $pg ) {
 		}
 		return array(
 			'template' => 'plant-region',
+			'key'      => 'pr:' . $plant->ID . ':' . $region,
 			'region'   => $region,
 			'month'    => 0,
 			'plant'    => $plant,
@@ -194,6 +196,7 @@ function sad_znaniy_programmatic_resolve( $pg ) {
 		}
 		return array(
 			'template' => 'plant-month',
+			'key'      => 'pm:' . $plant->ID . ':' . $month,
 			'region'   => '',
 			'month'    => $month,
 			'plant'    => $plant,
@@ -221,17 +224,24 @@ function sad_znaniy_programmatic_template_include( $template ) {
 		return sad_znaniy_programmatic_404();
 	}
 
-	$GLOBALS['sz_pg'] = $ctx;
+	$page = sad_znaniy_programmatic_get_page( $ctx['key'] );
+	if ( ! $page || empty( $page['enabled'] ) || sad_znaniy_intro_sentences( $page['intro'] ) < 2 ) {
+		return sad_znaniy_programmatic_404();
+	}
+
+	$ctx['page']       = $page;
+	$GLOBALS['sz_pg']  = $ctx;
 	return get_template_directory() . '/templates/programmatic/' . $ctx['template'] . '.php';
 }
 add_filter( 'template_include', 'sad_znaniy_programmatic_template_include', 20 );
 
 /**
- * Пересчитывает индекс «живых» программатик-URL (>=5 событий) в опцию.
+ * Пересчитывает матрицу программатик-страниц (все кандидаты с >=1 событием),
+ * сохраняя админ-поля (интро, включение, SEO). Хранит в опции.
  *
- * @return array
+ * @return array Ключ => страница.
  */
-function sad_znaniy_programmatic_rebuild_index() {
+function sad_znaniy_programmatic_matrix() {
 	$events = get_posts(
 		array(
 			'post_type'      => 'calendar_event',
@@ -308,66 +318,84 @@ function sad_znaniy_programmatic_rebuild_index() {
 		}
 	}
 
-	$index = array();
+	$existing = get_option( 'sad_znaniy_programmatic_pages', array() );
+	$pages    = array();
 	foreach ( $rm as $k => $n ) {
-		if ( $n < 5 ) {
-			continue;
-		}
 		list( $rk, $m ) = explode( '|', $k );
-		$index[] = array(
+		$m              = (int) $m;
+		$key            = 'rm:' . $rk . ':' . $m;
+		$pages[ $key ]  = array(
+			'key'    => $key,
 			'family' => 'region-month',
-			'url'    => home_url( '/kalendar/' . sad_znaniy_region_key_to_slug( $rk ) . '/' . sad_znaniy_month_slugs()[ (int) $m ] . '/' ),
 			'region' => $rk,
-			'month'  => (int) $m,
+			'month'  => $m,
+			'plant'  => 0,
+			'url'    => home_url( '/kalendar/' . sad_znaniy_region_key_to_slug( $rk ) . '/' . sad_znaniy_month_slugs()[ $m ] . '/' ),
+			'phrase' => sad_znaniy_programmatic_phrase( 'region-month', $rk, $m ),
+			'count'  => $n,
 		);
 	}
 	foreach ( $pr as $k => $n ) {
-		if ( $n < 5 ) {
-			continue;
-		}
 		list( $pid, $rk ) = explode( '|', $k );
 		if ( ! isset( $plant_slugs[ $pid ] ) ) {
 			continue;
 		}
-		$index[] = array(
+		$key           = 'pr:' . $pid . ':' . $rk;
+		$pages[ $key ] = array(
+			'key'    => $key,
 			'family' => 'plant-region',
-			'url'    => home_url( '/kogda-sazhat/' . $plant_slugs[ $pid ] . '/' . sad_znaniy_region_key_to_slug( $rk ) . '/' ),
-			'plant'  => (int) $pid,
 			'region' => $rk,
+			'month'  => 0,
+			'plant'  => (int) $pid,
+			'url'    => home_url( '/kogda-sazhat/' . $plant_slugs[ $pid ] . '/' . sad_znaniy_region_key_to_slug( $rk ) . '/' ),
+			'phrase' => sad_znaniy_programmatic_phrase( 'plant-region', $rk, 0, get_post( $pid ) ),
+			'count'  => $n,
 		);
 	}
 	foreach ( $pm as $k => $n ) {
-		if ( $n < 5 ) {
-			continue;
-		}
 		list( $pid, $m ) = explode( '|', $k );
 		if ( ! isset( $plant_slugs[ $pid ] ) ) {
 			continue;
 		}
-		$index[] = array(
+		$m              = (int) $m;
+		$key            = 'pm:' . $pid . ':' . $m;
+		$pages[ $key ]  = array(
+			'key'    => $key,
 			'family' => 'plant-month',
-			'url'    => home_url( '/uhod/' . $plant_slugs[ $pid ] . '/' . sad_znaniy_month_slugs()[ (int) $m ] . '/' ),
+			'region' => '',
+			'month'  => $m,
 			'plant'  => (int) $pid,
-			'month'  => (int) $m,
+			'url'    => home_url( '/uhod/' . $plant_slugs[ $pid ] . '/' . sad_znaniy_month_slugs()[ $m ] . '/' ),
+			'phrase' => sad_znaniy_programmatic_phrase( 'plant-month', '', $m, get_post( $pid ) ),
+			'count'  => $n,
 		);
 	}
 
-	update_option( 'sad_znaniy_programmatic_index', $index, false );
-	return $index;
+	foreach ( $pages as $key => $page ) {
+		$prev                      = isset( $existing[ $key ] ) ? $existing[ $key ] : array();
+		$page['intro']             = isset( $prev['intro'] ) ? $prev['intro'] : '';
+		$page['enabled']           = isset( $prev['enabled'] ) ? (int) $prev['enabled'] : 0;
+		$page['seo_title']         = isset( $prev['seo_title'] ) ? $prev['seo_title'] : '';
+		$page['seo_description']   = isset( $prev['seo_description'] ) ? $prev['seo_description'] : '';
+		$pages[ $key ]             = $page;
+	}
+
+	update_option( 'sad_znaniy_programmatic_pages', $pages, false );
+	return $pages;
 }
 
 /**
- * Пересчитывает индекс при сохранении события.
+ * Пересчитывает матрицу при сохранении события.
  *
  * @param int $post_id ID события.
  */
-function sad_znaniy_programmatic_rebuild_on_save( $post_id ) {
+function sad_znaniy_programmatic_matrix_on_save( $post_id ) {
 	if ( 'calendar_event' !== get_post_type( $post_id ) ) {
 		return;
 	}
-	sad_znaniy_programmatic_rebuild_index();
+	sad_znaniy_programmatic_matrix();
 }
-add_action( 'save_post_calendar_event', 'sad_znaniy_programmatic_rebuild_on_save' );
+add_action( 'save_post_calendar_event', 'sad_znaniy_programmatic_matrix_on_save' );
 
 /**
  * Отдаёт sitemap.xml (статические + «живые» программатик-страницы).
@@ -380,7 +408,7 @@ function sad_znaniy_programmatic_sitemap() {
 	status_header( 200 );
 	header( 'Content-Type: application/xml; charset=utf-8' );
 
-	$index  = get_option( 'sad_znaniy_programmatic_index', array() );
+	$pages  = get_option( 'sad_znaniy_programmatic_pages', array() );
 	$static = array( home_url( '/' ), home_url( '/kalendar/' ), home_url( '/rasteniya/' ) );
 
 	echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -388,8 +416,10 @@ function sad_znaniy_programmatic_sitemap() {
 	foreach ( $static as $u ) {
 		echo "\t<url><loc>" . esc_url( $u ) . "</loc></url>\n";
 	}
-	foreach ( $index as $item ) {
-		echo "\t<url><loc>" . esc_url( $item['url'] ) . "</loc></url>\n";
+	foreach ( $pages as $page ) {
+		if ( 'live' === sad_znaniy_programmatic_status( $page ) ) {
+			echo "\t<url><loc>" . esc_url( $page['url'] ) . "</loc></url>\n";
+		}
 	}
 	echo '</urlset>';
 	exit;
@@ -407,5 +437,191 @@ function sad_znaniy_programmatic_robots( $output ) {
 	return $output;
 }
 add_filter( 'robots_txt', 'sad_znaniy_programmatic_robots' );
+
+/**
+ * Строит фразу (H1) программатик-страницы.
+ *
+ * @param string     $family Семейство.
+ * @param string     $region Ключ региона.
+ * @param int        $month  Месяц (0 — нет).
+ * @param WP_Post|null $plant Растение (или null).
+ * @return string
+ */
+function sad_znaniy_programmatic_phrase( $family, $region, $month, $plant = null ) {
+	global $wp_locale;
+	if ( 'region-month' === $family ) {
+		return 'Работы дачника: ' . sad_znaniy_option_label( sad_znaniy_region_keys(), $region ) . ', ' . mb_strtolower( $wp_locale->month[ zeroise( $month, 2 ) ], 'UTF-8' );
+	}
+	if ( $plant ) {
+		$pn = mb_strtolower( $plant->post_title, 'UTF-8' );
+		if ( 'plant-region' === $family ) {
+			return 'Когда сажать ' . $pn . ' (' . sad_znaniy_option_label( sad_znaniy_region_keys(), $region ) . ')';
+		}
+		return 'Уход за ' . $pn . ': ' . mb_strtolower( $wp_locale->month[ zeroise( $month, 2 ) ], 'UTF-8' );
+	}
+	return '';
+}
+
+/**
+ * Считает предложения в интро (для порога >=2).
+ *
+ * @param string $intro Текст интро.
+ * @return int
+ */
+function sad_znaniy_intro_sentences( $intro ) {
+	$intro = trim( (string) $intro );
+	if ( '' === $intro ) {
+		return 0;
+	}
+	$parts = preg_split( '/[.!?]+/u', $intro, -1, PREG_SPLIT_NO_EMPTY );
+	return count( $parts );
+}
+
+/**
+ * Возвращает запись программатик-страницы по ключу.
+ *
+ * @param string $key Ключ страницы.
+ * @return array|null
+ */
+function sad_znaniy_programmatic_get_page( $key ) {
+	$pages = get_option( 'sad_znaniy_programmatic_pages', array() );
+	return isset( $pages[ $key ] ) ? $pages[ $key ] : null;
+}
+
+/**
+ * Статус программатик-страницы: live / draft / empty.
+ *
+ * @param array $page Запись страницы.
+ * @return string
+ */
+function sad_znaniy_programmatic_status( $page ) {
+	if ( (int) $page['count'] < 5 ) {
+		return 'empty';
+	}
+	if ( ! empty( $page['enabled'] ) && sad_znaniy_intro_sentences( $page['intro'] ) >= 2 ) {
+		return 'live';
+	}
+	return 'draft';
+}
+
+/**
+ * Подменяет <title> на программатик-страницах.
+ *
+ * @param array $parts Части заголовка.
+ * @return array
+ */
+function sad_znaniy_programmatic_title( $parts ) {
+	if ( ! isset( $GLOBALS['sz_pg'] ) ) {
+		return $parts;
+	}
+	$page  = $GLOBALS['sz_pg']['page'];
+	$title = $page['seo_title'] ? $page['seo_title'] : ( $page['phrase'] . ' — календарь и сроки' );
+	$parts['title'] = $title;
+	return $parts;
+}
+add_filter( 'document_title_parts', 'sad_znaniy_programmatic_title', 20 );
+
+/**
+ * Выводит meta description и Schema.org (BreadcrumbList + ItemList).
+ */
+function sad_znaniy_programmatic_head() {
+	if ( ! isset( $GLOBALS['sz_pg'] ) ) {
+		return;
+	}
+	$ctx  = $GLOBALS['sz_pg'];
+	$page = $ctx['page'];
+	$desc = $page['seo_description'] ? $page['seo_description'] : ( $page['phrase'] . ' — календарь работ и сроки по данным «Сада знаний».' );
+	echo '<meta name="description" content="' . esc_attr( $desc ) . '" />' . "\n";
+
+	$items = array();
+	foreach ( array_slice( $ctx['events'], 0, 20 ) as $i => $event ) {
+		$items[] = array(
+			'@type'    => 'ListItem',
+			'position' => $i + 1,
+			'name'     => get_the_title( $event ),
+		);
+	}
+	$schema = array(
+		'@context' => 'https://schema.org',
+		'@graph'   => array(
+			array(
+				'@type'           => 'BreadcrumbList',
+				'itemListElement' => array(
+					array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Главная', 'item' => home_url( '/' ) ),
+					array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Календарь дачника', 'item' => home_url( '/kalendar/' ) ),
+					array( '@type' => 'ListItem', 'position' => 3, 'name' => $page['phrase'] ),
+				),
+			),
+			array(
+				'@type'           => 'ItemList',
+				'name'            => $page['phrase'],
+				'itemListElement' => $items,
+			),
+		),
+	);
+	echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'sad_znaniy_programmatic_head', 1 );
+
+/**
+ * Родственные страницы («Сроки по регионам» / соседние месяцы).
+ *
+ * @param array $ctx Контекст.
+ * @return array[]
+ */
+function sad_znaniy_programmatic_related( $ctx ) {
+	$pages   = get_option( 'sad_znaniy_programmatic_pages', array() );
+	$related = array();
+	foreach ( $pages as $key => $page ) {
+		if ( $key === $ctx['key'] ) {
+			continue;
+		}
+		if ( 'empty' === sad_znaniy_programmatic_status( $page ) ) {
+			continue;
+		}
+		if ( 'region-month' === $ctx['template'] && 'region-month' === $page['family'] && $page['month'] === $ctx['month'] ) {
+			$related[] = $page;
+		}
+		if ( 'plant-region' === $ctx['template'] && 'plant-region' === $page['family'] && $page['plant'] === $ctx['plant']->ID ) {
+			$related[] = $page;
+		}
+		if ( 'plant-month' === $ctx['template'] && 'plant-month' === $page['family'] && $page['plant'] === $ctx['plant']->ID ) {
+			$related[] = $page;
+		}
+	}
+	return $related;
+}
+
+/**
+ * Ссылки «Подробнее» страницы (календарь с фильтрами + растение + статьи).
+ *
+ * @param array $ctx Контекст.
+ * @return array[] Пары [подпись, URL].
+ */
+function sad_znaniy_programmatic_page_links( $ctx ) {
+	$links = array();
+
+	if ( 'region-month' === $ctx['template'] ) {
+		$links[] = array( 'Календарь: ' . sad_znaniy_option_label( sad_znaniy_region_keys(), $ctx['region'] ) . ', ' . sad_znaniy_month_slugs()[ $ctx['month'] ], sad_znaniy_calendar_url( gmdate( 'Y' ), $ctx['month'], $ctx['region'] ) );
+	}
+
+	if ( $ctx['plant'] ) {
+		$links[] = array( 'Растение «' . $ctx['plant']->post_title . '»', get_permalink( $ctx['plant'] ) );
+		$articles = get_posts(
+			array(
+				'post_type'      => 'post',
+				'post_status'    => 'publish',
+				's'              => $ctx['plant']->post_title,
+				'posts_per_page' => 2,
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $articles as $article ) {
+			$links[] = array( get_the_title( $article ), get_permalink( $article ) );
+		}
+	}
+
+	return array_slice( $links, 0, 4 );
+}
 
 

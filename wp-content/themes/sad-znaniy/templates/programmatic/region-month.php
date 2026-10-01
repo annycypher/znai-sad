@@ -21,7 +21,7 @@ $month_name   = mb_strtolower( $wp_locale->month[ zeroise( $sz_ctx['month'], 2 )
 		<div class="section-head">
 			<h1 class="h-cap"><?php printf( esc_html__( 'Работы дачника: %s, %s', 'sad-znaniy' ), esc_html( $region_label ), esc_html( $month_name ) ); ?></h1>
 		</div>
-		<div class="tasks"><?php get_template_part( 'templates/programmatic/parts/cards' ); ?></div>
+		<?php get_template_part( 'templates/programmatic/parts/body' ); ?>
 	</section>
 
 <?php

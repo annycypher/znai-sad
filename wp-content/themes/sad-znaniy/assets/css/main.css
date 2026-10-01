@@ -315,6 +315,13 @@ a:hover > .circle-go, .tile:hover .circle-go, .tool-card:hover .circle-go{ trans
 .event.is-extra{ display:none; }
 .footer-max-link{ text-align:center; margin:4px 0 14px; font-size:13px; color:var(--muted); }
 .footer-max-link a{ color:var(--accent); font-weight:600; }
+.breadcrumbs{ font-size:13px; color:var(--muted); margin:12px 0; }
+.breadcrumbs a{ color:var(--accent); }
+.pg-related{ margin:22px 0; padding:16px 18px; background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--r-md); }
+.pg-related h2{ font-size:16px; margin-bottom:10px; }
+.pg-related ul{ list-style:none; padding:0; margin:0; }
+.pg-related li{ margin:6px 0; }
+.pg-related a{ color:var(--accent); font-weight:600; }
 .date-block{
     min-width:56px; text-align:center; padding:7px 6px;
     border-radius:14px;

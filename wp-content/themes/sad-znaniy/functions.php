@@ -26,4 +26,5 @@ require_once SAD_ZNANIY_DIR . '/includes/patterns.php';
 require_once SAD_ZNANIY_DIR . '/includes/dashboard.php';
 require_once SAD_ZNANIY_DIR . '/includes/calendar.php';
 require_once SAD_ZNANIY_DIR . '/includes/programmatic.php';
+require_once SAD_ZNANIY_DIR . '/includes/programmatic-admin.php';
 require_once SAD_ZNANIY_DIR . '/includes/seo.php';
