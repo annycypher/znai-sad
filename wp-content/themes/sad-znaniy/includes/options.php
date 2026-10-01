@@ -49,6 +49,10 @@ function sad_znaniy_sanitize_options( $input ) {
 		$output['sz_calc_water'] = sad_znaniy_water_sanitize( $input['sz_calc_water'] );
 	}
 
+	if ( isset( $input['sz_calc_fert'] ) && function_exists( 'sad_znaniy_fert_sanitize' ) ) {
+		$output['sz_calc_fert'] = sad_znaniy_fert_sanitize( $input['sz_calc_fert'] );
+	}
+
 	return $output;
 }
 
@@ -112,6 +116,10 @@ function sad_znaniy_render_options_page() {
 			<h2><?php esc_html_e( 'Калькулятор полива', 'sad-znaniy' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Нормативы расчёта. Все числа помечены как «ФАКТ-ПРОВЕРКА»: сверьте их с инструкциями и справочниками — потом правьте свободно.', 'sad-znaniy' ); ?></p>
 			<?php sad_znaniy_water_admin_fields( sad_znaniy_water_calc_options() ); ?>
+
+			<h2><?php esc_html_e( 'Калькулятор удобрений', 'sad-znaniy' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Нормы действующего вещества, поправки по культурам, проценты в удобрениях и бытовые мерки. Все числа с пометкой «ФАКТ-ПРОВЕРКА».', 'sad-znaniy' ); ?></p>
+			<?php sad_znaniy_fert_admin_fields( sad_znaniy_fert_options() ); ?>
 
 			<?php submit_button(); ?>
 		</form>

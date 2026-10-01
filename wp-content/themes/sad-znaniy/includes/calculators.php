@@ -209,34 +209,6 @@ function sad_znaniy_water_sanitize( $input ) {
 }
 
 /**
- * Подключает скрипт калькулятора (регион из календаря + мгновенный пересчёт).
- */
-function sad_znaniy_water_enqueue() {
-	static $loaded = false;
-	if ( $loaded ) {
-		return;
-	}
-	$loaded = true;
-
-	$rel = 'assets/js/water-calc.js';
-	wp_enqueue_script(
-		'sad-znaniy-water-calc',
-		get_template_directory_uri() . '/' . $rel,
-		array(),
-		sad_znaniy_asset_ver( $rel ),
-		true
-	);
-	wp_localize_script(
-		'sad-znaniy-water-calc',
-		'sadZnaniyWater',
-		array(
-			'lsKey'     => 'sad_znaniy_cal',
-			'hasRegion' => isset( $_GET['sz_region'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- параметр только для расчёта.
-		)
-	);
-}
-
-/**
  * Шорткод «[sz_calc_water]» — калькулятор полива.
  *
  * Параметры расчёта приходят в адресе страницы (GET), поэтому ссылкой
@@ -264,7 +236,7 @@ function sad_znaniy_water_shortcode( $atts ) {
 	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	$calc = sad_znaniy_water_calc( $args );
-	sad_znaniy_water_enqueue();
+	sad_znaniy_calc_enqueue();
 
 	$types   = sad_znaniy_water_types();
 	$soils   = sad_znaniy_water_soils();
@@ -318,7 +290,7 @@ function sad_znaniy_water_shortcode( $atts ) {
 			<div class="calc-row">
 				<label class="calc-field">
 					<span><?php esc_html_e( 'Регион', 'sad-znaniy' ); ?></span>
-					<select name="sz_region">
+					<select name="sz_region" data-region="1" data-has-region="<?php echo isset( $_GET['sz_region'] ) ? '1' : '0'; ?>">
 						<?php foreach ( $regions as $key => $label ) : ?>
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $calc['region'], $key ); ?>><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
@@ -568,4 +540,514 @@ function sad_znaniy_water_calc( $args ) {
 	);
 }
 
+/* ==========================================================
+   КАЛЬКУЛЯТОР УДОБРЕНИЙ (Этап 4, инструмент №2)
+   ========================================================== */
+
+/**
+ * Цели подкормки: сколько действующего вещества нужно на 1 м² за одну подкормку.
+ *
+ * n — азот (N), p — фосфор (P₂O₅), k — калий (K₂O), г/м².
+ * Ведущий элемент (по нему считается доза) — первый в списке.
+ *
+ * @return array
+ */
+function sad_znaniy_fert_defaults() {
+	return array(
+		'npk'     => array(
+			'grow'   => array(
+				'n' => 10,
+				'p' => 5,
+				'k' => 5,
+			),
+			'bloom'  => array(
+				'n' => 5,
+				'p' => 10,
+				'k' => 12,
+			),
+			'autumn' => array(
+				'n' => 0,
+				'p' => 12,
+				'k' => 15,
+			),
+		),
+		'crop'    => array(
+			'veg'    => 1.0,
+			'root'   => 0.8,
+			'berry'  => 1.0,
+			'flower' => 0.7,
+			'lawn'   => 1.3,
+			'tree'   => 1.2,
+		),
+		'fert'    => array(
+			'npk'   => array(
+				'n' => 16,
+				'p' => 16,
+				'k' => 16,
+			),
+			'urea'  => array(
+				'n' => 46,
+				'p' => 0,
+				'k' => 0,
+			),
+			'nitro' => array(
+				'n' => 34,
+				'p' => 0,
+				'k' => 0,
+			),
+			'super' => array(
+				'n' => 0,
+				'p' => 20,
+				'k' => 0,
+			),
+			'kaliy' => array(
+				'n' => 0,
+				'p' => 0,
+				'k' => 50,
+			),
+			'ash'   => array(
+				'n' => 0,
+				'p' => 3,
+				'k' => 10,
+			),
+		),
+		'measure' => array(
+			'tbsp'     => 17,
+			'matchbox' => 20,
+			'glass'    => 200,
+		),
+	);
+}
+
+/**
+ * Подписи целей подкормки.
+ *
+ * @return array
+ */
+function sad_znaniy_fert_goals() {
+	return array(
+		'grow'   => __( 'Рост (нужен азот)', 'sad-znaniy' ),
+		'bloom'  => __( 'Цветение и плодоношение', 'sad-znaniy' ),
+		'autumn' => __( 'Осенняя подкормка (без азота)', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Подписи групп культур.
+ *
+ * @return array
+ */
+function sad_znaniy_fert_crops() {
+	return array(
+		'veg'    => __( 'Овощи (томат, огурец, перец, капуста)', 'sad-znaniy' ),
+		'root'   => __( 'Корнеплоды (морковь, свёкла, картофель)', 'sad-znaniy' ),
+		'berry'  => __( 'Ягодники (клубника, малина, смородина)', 'sad-znaniy' ),
+		'flower' => __( 'Цветы и декоративные', 'sad-znaniy' ),
+		'lawn'   => __( 'Газон', 'sad-znaniy' ),
+		'tree'   => __( 'Плодовые деревья', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Список удобрений с подписями (проценты действующего вещества — в настройках).
+ *
+ * @return array
+ */
+function sad_znaniy_fert_list() {
+	return array(
+		'npk'   => __( 'Нитроаммофоска (16-16-16)', 'sad-znaniy' ),
+		'urea'  => __( 'Мочевина (карбамид)', 'sad-znaniy' ),
+		'nitro' => __( 'Аммиачная селитра', 'sad-znaniy' ),
+		'super' => __( 'Суперфосфат', 'sad-znaniy' ),
+		'kaliy' => __( 'Сульфат калия', 'sad-znaniy' ),
+		'ash'   => __( 'Зола древесная', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Удобрения, которые растворяют в воде для подкормки.
+ *
+ * @return array
+ */
+function sad_znaniy_fert_soluble() {
+	return array( 'npk', 'urea', 'nitro', 'kaliy' );
+}
+
+/**
+ * Нормативы калькулятора удобрений из опций темы.
+ *
+ * @return array
+ */
+function sad_znaniy_fert_options() {
+	$saved = get_option( 'sz_calc_fert', array() );
+	if ( ! is_array( $saved ) ) {
+		$saved = array();
+	}
+
+	return sad_znaniy_array_merge_deep( sad_znaniy_fert_defaults(), $saved );
+}
+
+/**
+ * Очищает нормативы удобрений из админки.
+ *
+ * @param mixed $input Сырые значения.
+ * @return array
+ */
+function sad_znaniy_fert_sanitize( $input ) {
+	$input   = is_array( $input ) ? $input : array();
+	$default = sad_znaniy_fert_defaults();
+	$out     = array();
+
+	foreach ( $default['npk'] as $goal => $row ) {
+		foreach ( array( 'n', 'p', 'k' ) as $nutrient ) {
+			$value = isset( $input['npk'][ $goal ][ $nutrient ] ) ? (float) $input['npk'][ $goal ][ $nutrient ] : $row[ $nutrient ];
+			$out['npk'][ $goal ][ $nutrient ] = min( 100, max( 0, $value ) );
+		}
+	}
+
+	foreach ( $default['crop'] as $crop => $factor ) {
+		$value = isset( $input['crop'][ $crop ] ) ? (float) $input['crop'][ $crop ] : $factor;
+		$out['crop'][ $crop ] = min( 3, max( 0.2, $value ) );
+	}
+
+	foreach ( $default['fert'] as $fert => $row ) {
+		foreach ( array( 'n', 'p', 'k' ) as $nutrient ) {
+			$value = isset( $input['fert'][ $fert ][ $nutrient ] ) ? (float) $input['fert'][ $fert ][ $nutrient ] : $row[ $nutrient ];
+			$out['fert'][ $fert ][ $nutrient ] = min( 80, max( 0, $value ) );
+		}
+	}
+
+	foreach ( $default['measure'] as $key => $grams ) {
+		$value = isset( $input['measure'][ $key ] ) ? (float) $input['measure'][ $key ] : $grams;
+		$out['measure'][ $key ] = min( 1000, max( 1, $value ) );
+	}
+
+	return $out;
+}
+
 add_shortcode( 'sz_calc_water', 'sad_znaniy_water_shortcode' );
+
+/**
+ * Считает дозу удобрения под цель, культуру и площадь.
+ *
+ * @param array $args goal, crop, fert, qty.
+ * @return array Результат расчёта.
+ */
+function sad_znaniy_fert_calc( $args ) {
+	$o = sad_znaniy_fert_options();
+
+	$goals = sad_znaniy_fert_goals();
+	$crops = sad_znaniy_fert_crops();
+	$ferts = sad_znaniy_fert_list();
+
+	$args = wp_parse_args(
+		$args,
+		array(
+			'goal' => 'grow',
+			'crop' => 'veg',
+			'fert' => 'npk',
+			'qty'  => 10,
+		)
+	);
+
+	$goal = isset( $goals[ $args['goal'] ] ) ? $args['goal'] : 'grow';
+	$crop = isset( $crops[ $args['crop'] ] ) ? $args['crop'] : 'veg';
+	$fert = isset( $ferts[ $args['fert'] ] ) ? $args['fert'] : 'npk';
+	$qty  = min( 1000, max( 1, (float) $args['qty'] ) );
+
+	$need  = $o['npk'][ $goal ];
+	$coef  = (float) $o['crop'][ $crop ];
+	$share = $o['fert'][ $fert ];
+
+	$target = array(
+		'n' => $need['n'] * $coef,
+		'p' => $need['p'] * $coef,
+		'k' => $need['k'] * $coef,
+	);
+
+	// Ведущий элемент: по нему считаем дозу удобрения.
+	$lead = 'n';
+	if ( 'bloom' === $goal ) {
+		$lead = 'k';
+	} elseif ( 'autumn' === $goal ) {
+		$lead = 'p';
+	}
+
+	$lead_percent = (float) $share[ $lead ] / 100;
+	$dose         = ( $lead_percent > 0 ) ? ( $target[ $lead ] / $lead_percent ) : 0;
+
+	$delivered = array(
+		'n' => $dose * ( (float) $share['n'] / 100 ),
+		'p' => $dose * ( (float) $share['p'] / 100 ),
+		'k' => $dose * ( (float) $share['k'] / 100 ),
+	);
+
+	$total    = $dose * $qty;
+	$tbsp     = $total / max( 1, (float) $o['measure']['tbsp'] );
+	$matchbox = $total / max( 1, (float) $o['measure']['matchbox'] );
+	$glass    = $total / max( 1, (float) $o['measure']['glass'] );
+
+	$nutrients = array(
+		'n' => __( 'азот (N)', 'sad-znaniy' ),
+		'p' => __( 'фосфор (P₂O₅)', 'sad-znaniy' ),
+		'k' => __( 'калий (K₂O)', 'sad-znaniy' ),
+	);
+
+	$lines = array();
+	$lines[] = sprintf(
+		/* translators: 1: цель, 2: ведущий элемент, 3: норма, 4: поправка культуры */
+		__( 'Цель «%1$s»: нужно %2$s — %3$s г/м², с поправкой на культуру (%4$s) — %5$s г/м².', 'sad-znaniy' ),
+		$goals[ $goal ],
+		$nutrients[ $lead ],
+		rtrim( rtrim( number_format( $need[ $lead ], 2, ',', '' ), '0' ), ',' ),
+		number_format( $coef, 2, ',', '' ),
+		number_format( $target[ $lead ], 2, ',', '' )
+	);
+	$lines[] = sprintf(
+		/* translators: 1: удобрение, 2: процент ведущего элемента, 3: доза */
+		__( 'В %1$s этого элемента %2$s %%, значит на 1 м² нужно %3$s г удобрения.', 'sad-znaniy' ),
+		$ferts[ $fert ],
+		number_format( (float) $share[ $lead ], 1, ',', '' ),
+		number_format( $dose, 1, ',', '' )
+	);
+
+	$warnings = array();
+	if ( 0 === (int) $target['n'] && 'autumn' === $goal ) {
+		$warnings[] = __( 'Осенью азот не вносим: он гонит рост, а побеги не успевают вызреть к зиме.', 'sad-znaniy' );
+	}
+	$warnings[] = __( 'Вносите только по влажной почве и сразу полейте: сухое удобрение обжигает корни.', 'sad-znaniy' );
+	$warnings[] = __( 'Не смешивайте азотные удобрения с известью и золой в один приём — теряется азот.', 'sad-znaniy' );
+	$warnings[] = __( 'Не превышайте дозу: избыток азота даёт жирный лист вместо плодов и накапливает нитраты.', 'sad-znaniy' );
+
+	if ( 'ash' === $fert ) {
+		$warnings[] = __( 'Зола раскисляет почву: на щелочных грунтах её лучше не применять.', 'sad-znaniy' );
+	}
+	if ( 'lawn' === $crop ) {
+		$warnings[] = __( 'Газон подкармливают по сухой траве и поливают, иначе останутся пятна ожогов.', 'sad-znaniy' );
+	}
+
+	$soluble = in_array( $fert, sad_znaniy_fert_soluble(), true );
+	$per_can = $dose; // на ведро 10 л, которого хватает примерно на 1 м².
+
+	return array(
+		'goal'       => $goal,
+		'crop'       => $crop,
+		'fert'       => $fert,
+		'qty'        => $qty,
+		'lead'       => $lead,
+		'target'     => $target,
+		'delivered'  => $delivered,
+		'dose'       => $dose,
+		'total'      => $total,
+		'tbsp'       => $tbsp,
+		'matchbox'   => $matchbox,
+		'glass'      => $glass,
+		'soluble'    => $soluble,
+		'per_can'    => $per_can,
+		'nutrients'  => $nutrients,
+		'lines'      => $lines,
+		'warnings'   => $warnings,
+	);
+}
+
+/**
+ * Подключает общий скрипт калькуляторов (регион из календаря + пересчёт).
+ */
+function sad_znaniy_calc_enqueue() {
+	static $loaded = false;
+	if ( $loaded ) {
+		return;
+	}
+	$loaded = true;
+
+	$rel = 'assets/js/calc.js';
+	wp_enqueue_script(
+		'sad-znaniy-calc',
+		get_template_directory_uri() . '/' . $rel,
+		array(),
+		sad_znaniy_asset_ver( $rel ),
+		true
+	);
+}
+
+/**
+ * Шорткод «[sz_calc_fert]» — калькулятор удобрений.
+ *
+ * @param array $atts Атрибуты шорткода.
+ * @return string
+ */
+function sad_znaniy_fert_shortcode( $atts ) {
+	$atts = shortcode_atts(
+		array( 'title' => '' ),
+		$atts,
+		'sz_calc_fert'
+	);
+
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- публичный расчёт.
+	$args = array(
+		'goal' => isset( $_GET['szf_goal'] ) ? sanitize_key( wp_unslash( $_GET['szf_goal'] ) ) : 'grow',
+		'crop' => isset( $_GET['szf_crop'] ) ? sanitize_key( wp_unslash( $_GET['szf_crop'] ) ) : 'veg',
+		'fert' => isset( $_GET['szf_fert'] ) ? sanitize_key( wp_unslash( $_GET['szf_fert'] ) ) : 'npk',
+		'qty'  => isset( $_GET['szf_qty'] ) ? (float) wp_unslash( $_GET['szf_qty'] ) : 10,
+	);
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+	$calc = sad_znaniy_fert_calc( $args );
+	sad_znaniy_calc_enqueue();
+
+	$goals = sad_znaniy_fert_goals();
+	$crops = sad_znaniy_fert_crops();
+	$ferts = sad_znaniy_fert_list();
+
+	ob_start();
+	?>
+	<div class="calc">
+		<?php if ( '' !== $atts['title'] ) : ?>
+			<h2 class="calc-title"><?php echo esc_html( $atts['title'] ); ?></h2>
+		<?php endif; ?>
+
+		<form class="calc-form" method="get" action="">
+			<div class="calc-row">
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Цель подкормки', 'sad-znaniy' ); ?></span>
+					<select name="szf_goal">
+						<?php foreach ( $goals as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $calc['goal'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Что подкармливаем', 'sad-znaniy' ); ?></span>
+					<select name="szf_crop">
+						<?php foreach ( $crops as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $calc['crop'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+			</div>
+
+			<div class="calc-row">
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Чем подкармливаем', 'sad-znaniy' ); ?></span>
+					<select name="szf_fert">
+						<?php foreach ( $ferts as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $calc['fert'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Площадь, м²', 'sad-znaniy' ); ?></span>
+					<input type="number" name="szf_qty" min="1" max="1000" step="1" value="<?php echo esc_attr( (int) $calc['qty'] ); ?>">
+				</label>
+			</div>
+
+			<p class="calc-actions">
+				<button type="submit" class="btn btn-dark"><?php esc_html_e( 'Рассчитать', 'sad-znaniy' ); ?><span class="arr">→</span></button>
+				<span class="calc-hint"><?php esc_html_e( 'Расчёт по действующему веществу: считаем граммы удобрения, а не «ложки на глаз».', 'sad-znaniy' ); ?></span>
+			</p>
+		</form>
+		<?php
+		$tpl = get_template_directory() . '/template-parts/calc-fert-result.php';
+		if ( file_exists( $tpl ) ) {
+			include $tpl;
+		}
+		?>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'sz_calc_fert', 'sad_znaniy_fert_shortcode' );
+
+/**
+ * Поля нормативов калькулятора удобрений для страницы настроек темы.
+ *
+ * @param array $o Текущие нормативы.
+ */
+function sad_znaniy_fert_admin_fields( $o ) {
+	$goals   = sad_znaniy_fert_goals();
+	$crops   = sad_znaniy_fert_crops();
+	$ferts   = sad_znaniy_fert_list();
+	$name    = 'sad_znaniy_options[sz_calc_fert]';
+	$nutr    = array(
+		'n' => __( 'N', 'sad-znaniy' ),
+		'p' => __( 'P', 'sad-znaniy' ),
+		'k' => __( 'K', 'sad-znaniy' ),
+	);
+
+	$field = function ( $path, $value, $step = '0.5' ) use ( $name ) {
+		printf(
+			'<input type="number" step="%1$s" name="%2$s" value="%3$s" style="width:76px;">',
+			esc_attr( $step ),
+			esc_attr( $name . $path ),
+			esc_attr( $value )
+		);
+	};
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Нужно действующего вещества, г/м²', 'sad-znaniy' ); ?></th>
+			<td>
+				<?php foreach ( $goals as $goal => $label ) : ?>
+					<div style="margin-bottom:8px;font-size:12px;">
+						<strong><?php echo esc_html( $label ); ?></strong> —
+						<?php foreach ( $nutr as $key => $short ) : ?>
+							<?php echo esc_html( $short ); ?> <?php $field( '[npk][' . $goal . '][' . $key . ']', $o['npk'][ $goal ][ $key ], '1' ); ?>
+						<?php endforeach; ?>
+					</div>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Доза считается по ведущему элементу цели: рост — азот, цветение — калий, осень — фосфор. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Поправка на группу культур', 'sad-znaniy' ); ?></th>
+			<td>
+				<?php foreach ( $crops as $crop => $label ) : ?>
+					<label style="display:inline-block;margin:0 16px 10px 0;font-size:12px;">
+						<?php echo esc_html( $label ); ?><br>
+						<?php $field( '[crop][' . $crop . ']', $o['crop'][ $crop ], '0.05' ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Во сколько раз норму умножаем для этой группы. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Проценты действующего вещества в удобрениях', 'sad-znaniy' ); ?></th>
+			<td>
+				<?php foreach ( $ferts as $fert => $label ) : ?>
+					<div style="margin-bottom:8px;font-size:12px;">
+						<strong><?php echo esc_html( $label ); ?></strong> —
+						<?php foreach ( $nutr as $key => $short ) : ?>
+							<?php echo esc_html( $short ); ?> <?php $field( '[fert][' . $fert . '][' . $key . ']', $o['fert'][ $fert ][ $key ], '1' ); ?>
+						<?php endforeach; ?>
+					</div>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Берите с упаковки вашего удобрения — цифры у производителей различаются. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Бытовые мерки, г', 'sad-znaniy' ); ?></th>
+			<td>
+				<label style="font-size:12px;">
+					<?php esc_html_e( 'Ст. ложка', 'sad-znaniy' ); ?><br>
+					<?php $field( '[measure][tbsp]', $o['measure']['tbsp'], '0.5' ); ?>
+				</label>
+				<label style="font-size:12px;margin-left:18px;">
+					<?php esc_html_e( 'Спичечный коробок', 'sad-znaniy' ); ?><br>
+					<?php $field( '[measure][matchbox]', $o['measure']['matchbox'], '0.5' ); ?>
+				</label>
+				<label style="font-size:12px;margin-left:18px;">
+					<?php esc_html_e( 'Стакан', 'sad-znaniy' ); ?><br>
+					<?php $field( '[measure][glass]', $o['measure']['glass'], '5' ); ?>
+				</label>
+				<p class="description"><?php esc_html_e( 'Нужны, чтобы переводить граммы в понятные ложки и коробки. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
+
+
+

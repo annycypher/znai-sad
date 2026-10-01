@@ -165,7 +165,7 @@ $section_links = array(
 						<strong>Расчёт полива</strong>
 						<span class="circle-go" aria-hidden="true">→</span>
 					</a>
-					<a href="http://sadznaniy.local/kalkulyatory/" class="tile">
+					<a href="http://sadznaniy.local/kalkulyator-udobreniy/" class="tile">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 4H9L8 3Z"/><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M8 12h8M8 16h5"/></svg>
 						</span>
