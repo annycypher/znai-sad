@@ -1,0 +1,124 @@
+/* ==========================================================
+   УМНЫЙ КАЛЕНДАРЬ (Этап 5.5)
+   Стили 1:1 по _design/kalendar-demo.html, адаптированы
+   под токены design-tokens.css (--glass-border вместо --gb,
+   --sh-glass вместо --sh).
+   ========================================================== */
+
+:root{
+	--c-sow:#E8B34B; --c-plant:#3FA46F; --c-water:#4A90D9; --c-feed:#9B6FD0;
+	--c-prune:#A9714B; --c-protect:#D14D57; --c-harvest:#E07B39; --c-prep:#7C8B93;
+}
+
+.cal-wrap{max-width:1120px;margin:0 auto}
+
+/* ---------- Шапка календаря ---------- */
+.cal-head{margin:34px 0 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.cal-head h1{font-size:clamp(24px,3vw,34px);font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.cal-head p{color:var(--muted);font-size:14.5px;margin-top:4px}
+.month-nav{display:flex;align-items:center;gap:10px}
+.mnav-btn{width:44px;height:44px;border-radius:50%;background:var(--glass-strong);border:1px solid var(--glass-border);box-shadow:var(--neu-sm);font-size:18px;transition:transform .2s,color .2s;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.mnav-btn:hover{color:var(--accent);transform:translateY(-2px)}
+.month-title{min-width:170px;text-align:center;font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase}
+
+.view-toggle{display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(228,231,235,.7);box-shadow:var(--neu-sm)}
+.view-toggle button{padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);transition:all .25s}
+.view-toggle button.on{background:var(--glass-strong);color:var(--ink);box-shadow:var(--neu-sm)}
+
+/* ---------- Фильтры ---------- */
+.filters{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r-md);box-shadow:var(--sh-glass);padding:18px 20px;display:flex;flex-direction:column;gap:14px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.f-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.f-label{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:88px}
+.chip{padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:600;background:var(--glass-strong);border:1px solid var(--glass-border);box-shadow:var(--neu-sm);transition:all .22s;text-decoration:none;color:var(--ink)}
+.chip:hover{color:var(--accent)}
+.chip.on{background:linear-gradient(160deg,#3A423B,#22271F);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(35,42,34,.3);transform:translateY(-1px)}
+.chip.on.t-sow{background:linear-gradient(160deg,#E8B34B,#c98f2e)}
+.chip.on.t-plant{background:linear-gradient(160deg,#3FA46F,#2E6B4F)}
+.chip.on.t-water{background:linear-gradient(160deg,#4A90D9,#33699f)}
+.chip.on.t-feed{background:linear-gradient(160deg,#9B6FD0,#7a51ab)}
+.chip.on.t-prune{background:linear-gradient(160deg,#A9714B,#865434)}
+.chip.on.t-protect{background:linear-gradient(160deg,#D14D57,#b13a44)}
+.chip.on.t-harvest{background:linear-gradient(160deg,#E07B39,#bd5f22)}
+.chip.on.t-prep{background:linear-gradient(160deg,#7C8B93,#5f6d74)}
+
+/* ---------- Прогресс ---------- */
+.progress-row{display:flex;align-items:center;gap:14px;margin:18px 0 8px}
+.progress-track{flex:1;height:12px;border-radius:999px;background:rgba(228,231,235,.8);box-shadow:var(--neu-sm);overflow:hidden}
+.progress-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#3FA46F,#2E6B4F);transition:width .6s ease}
+.progress-num{font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+
+/* ---------- Сетка месяца ---------- */
+.cal-grid-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r-md);box-shadow:var(--sh-glass);padding:18px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;padding:6px 0}
+.day{min-height:74px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 0 #fff;padding:7px 8px;cursor:pointer;position:relative;transition:transform .2s,box-shadow .25s}
+.day:hover{transform:translateY(-3px);box-shadow:var(--neu-sm)}
+.day.empty{background:transparent;border:none;box-shadow:none;cursor:default}
+.day.out{opacity:.45}
+.day .num{font-weight:700;font-size:14px}
+.day.today .num{display:inline-flex;width:26px;height:26px;align-items:center;justify-content:center;background:var(--accent);color:#fff;border-radius:50%}
+.day.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.day.weekend{background:rgba(232,235,239,.6)}
+.markers{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.mk{width:9px;height:9px;border-radius:50%;transition:transform .2s;display:inline-block}
+.day:hover .mk{transform:scale(1.35)}
+.mk.sow{background:var(--c-sow)}.mk.plant{background:var(--c-plant)}.mk.water{background:var(--c-water)}.mk.feed{background:var(--c-feed)}.mk.prune{background:var(--c-prune)}.mk.protect{background:var(--c-protect)}.mk.harvest{background:var(--c-harvest)}.mk.prep{background:var(--c-prep)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+/* Панель выбранного дня */
+.day-panel{margin-top:14px;padding:16px;border-radius:14px;background:var(--accent-soft);border:1px solid rgba(46,107,79,.2)}
+.day-panel h3{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.day-panel .dp-task{font-size:14.5px;padding:5px 0;display:flex;gap:8px;align-items:baseline}
+.dp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;position:relative;top:-1px;display:inline-block}
+
+/* ---------- Список задач ---------- */
+.tasks{display:flex;flex-direction:column;gap:14px}
+.task{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r-md);box-shadow:var(--sh-glass);padding:16px 18px;display:flex;gap:14px;align-items:flex-start;transition:transform .22s,box-shadow .3s;animation:appear .35s ease both}
+.task:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(100,112,124,.28)}
+@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.task.hidden{display:none}
+.task.done{opacity:.55}
+.task.done .t-title{text-decoration:line-through}
+.cb{width:26px;height:26px;border-radius:8px;flex-shrink:0;background:var(--glass-strong);border:1.5px solid rgba(32,36,31,.25);box-shadow:var(--neu-sm);display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:2px}
+.cb svg{opacity:0;transform:scale(.4);transition:all .2s;color:#fff}
+.task.done .cb{background:var(--accent);border-color:var(--accent)}
+.task.done .cb svg{opacity:1;transform:scale(1)}
+.t-body{flex:1;min-width:0}
+.t-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.t-title{font-weight:700;font-size:16px}
+.t-type{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px;color:#fff}
+.t-type.sow{background:var(--c-sow)}.t-type.plant{background:var(--c-plant)}.t-type.water{background:var(--c-water)}.t-type.feed{background:var(--c-feed)}.t-type.prune{background:var(--c-prune)}.t-type.protect{background:var(--c-protect)}.t-type.harvest{background:var(--c-harvest)}.t-type.prep{background:var(--c-prep)}
+.t-pr{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid rgba(32,36,31,.2);color:var(--muted)}
+.t-pr.must{background:var(--accent-soft);color:var(--accent);border-color:rgba(46,107,79,.3)}
+.t-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:5px}
+.t-hint{font-size:13px;background:rgba(232,179,75,.14);border:1px dashed rgba(196,143,46,.4);border-radius:10px;padding:6px 10px;margin-top:8px;display:inline-flex;gap:6px;align-items:baseline}
+.t-links{margin-top:8px;font-size:13.5px}
+.t-links a{color:var(--accent);font-weight:600;border-bottom:1px dashed rgba(46,107,79,.4)}
+.t-links a:hover{border-bottom-style:solid}
+.task.missed{opacity:.5;filter:grayscale(.4)}
+.task.missed .miss-badge{font-size:11px;font-weight:700;color:#a33;background:rgba(209,77,87,.1);border:1px solid rgba(209,77,87,.3);border-radius:999px;padding:2px 10px}
+.empty-state{padding:30px;text-align:center;color:var(--muted);background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r-md)}
+
+/* ---------- Экспорт + MAX ---------- */
+.export-row{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 6px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--glass-border);background:var(--glass-strong);box-shadow:var(--neu-sm);transition:all .22s;color:var(--ink)}
+.btn:hover{transform:translateY(-2px);color:var(--accent);box-shadow:var(--neu)}
+.btn-dark{background:linear-gradient(160deg,#3A423B,#22271F);color:#fff;border-color:transparent;box-shadow:0 10px 24px rgba(35,42,34,.32)}
+.btn-dark:hover{color:#fff}
+.max-link{margin:14px 0 40px;font-size:13.5px;color:var(--muted)}
+.max-link a{color:var(--accent);font-weight:600}
+
+/* ---------- Адаптив ---------- */
+@media (max-width:760px){
+	.grid7{gap:5px}
+	.day{min-height:56px;padding:5px 6px}
+	.day .num{font-size:12px}
+	.markers{gap:2px;margin-top:4px}
+	.mk{width:7px;height:7px}
+	.cal-head{align-items:flex-start}
+	.month-nav{width:100%;justify-content:space-between}
+	.month-title{flex:1}
+}
+

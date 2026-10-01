@@ -331,3 +331,133 @@ function sad_znaniy_priority_options() {
 		'weather' => __( 'По погоде', 'sad-znaniy' ),
 	);
 }
+
+/**
+ * Возвращает опубликованные события, пересекающиеся с заданным месяцем.
+ *
+ * @param int $year  Год.
+ * @param int $month Месяц (1–12).
+ * @return WP_Post[]
+ */
+function sad_znaniy_get_month_events( $year, $month ) {
+	$events = get_posts(
+		array(
+			'post_type'      => 'calendar_event',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'meta_key'       => '_sz_event_date_from',
+			'orderby'        => 'meta_value',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
+		)
+	);
+
+	$last_day = (int) gmdate( 't', gmmktime( 0, 0, 0, $month, 1, $year ) );
+	$first    = sprintf( '%04d-%02d-01', $year, $month );
+	$last     = sprintf( '%04d-%02d-%02d', $year, $month, $last_day );
+
+	$result = array();
+	foreach ( $events as $event ) {
+		$from = (string) get_post_meta( $event->ID, '_sz_event_date_from', true );
+		$to   = (string) get_post_meta( $event->ID, '_sz_event_date_to', true );
+		if ( '' === $from ) {
+			continue;
+		}
+		$to_eff = '' !== $to ? $to : $from;
+		if ( $from <= $last && $to_eff >= $first ) {
+			$result[] = $event;
+		}
+	}
+
+	return $result;
+}
+
+/**
+ * Нормализует данные события для рендера карточки календаря.
+ *
+ * @param int $post_id ID события.
+ * @param int $year    Год отображаемого месяца.
+ * @param int $month   Месяц (1–12).
+ * @return array
+ */
+function sad_znaniy_event_data( $post_id, $year, $month ) {
+	$from = (string) get_post_meta( $post_id, '_sz_event_date_from', true );
+	$to   = (string) get_post_meta( $post_id, '_sz_event_date_to', true );
+
+	$all_regions = '1' === (string) get_post_meta( $post_id, '_sz_event_all_regions', true );
+	$regions_raw = (string) get_post_meta( $post_id, '_sz_event_regions', true );
+	$regions     = $all_regions
+		? array( 'all' )
+		: array_values( array_filter( array_map( 'sanitize_key', explode( ',', $regions_raw ) ) ) );
+
+	$crop_id = (int) get_post_meta( $post_id, '_sz_event_crop', true );
+	$crop    = $crop_id ? get_the_title( $crop_id ) : '';
+
+	$terms = get_the_terms( $post_id, 'work_type' );
+	$type  = ( $terms && ! is_wp_error( $terms ) ) ? $terms[0]->slug : 'prep';
+
+	// Дни месяца для отображения (событие может выходить за границы месяца).
+	$last_day = (int) gmdate( 't', gmmktime( 0, 0, 0, $month, 1, $year ) );
+	$d1       = 1;
+	$d2       = $last_day;
+
+	if ( '' !== $from ) {
+		$y1 = (int) substr( $from, 0, 4 );
+		$m1 = (int) substr( $from, 5, 2 );
+		$d1 = (int) substr( $from, 8, 2 );
+		if ( $y1 < $year || ( $y1 === $year && $m1 < $month ) ) {
+			$d1 = 1;
+		}
+	}
+	if ( '' !== $to ) {
+		$y2 = (int) substr( $to, 0, 4 );
+		$m2 = (int) substr( $to, 5, 2 );
+		if ( $y2 > $year || ( $y2 === $year && $m2 > $month ) ) {
+			$d2 = $last_day;
+		} else {
+			$d2 = (int) substr( $to, 8, 2 );
+		}
+	} else {
+		$d2 = $d1;
+	}
+
+	return array(
+		'id'       => (int) $post_id,
+		'title'    => get_the_title( $post_id ),
+		'type'     => $type,
+		'd1'       => $d1,
+		'd2'       => $d2,
+		'crop'     => $crop,
+		'exp'      => (string) get_post_meta( $post_id, '_sz_event_difficulty', true ),
+		'pr'       => (string) get_post_meta( $post_id, '_sz_event_priority', true ),
+		'hint'     => (string) get_post_meta( $post_id, '_sz_event_weather_hint', true ),
+		'regions'  => $regions,
+		'permalink'=> get_permalink( $post_id ),
+	);
+}
+
+/**
+ * Строит URL страницы календаря с параметрами.
+ *
+ * @param int|null    $year   Год.
+ * @param int|null    $month  Месяц.
+ * @param string      $region Ключ региона.
+ * @param string      $exp    Ключ опыта (new/exp/all).
+ * @return string
+ */
+function sad_znaniy_calendar_url( $year = null, $month = null, $region = '', $exp = '' ) {
+	$url  = home_url( '/kalendar/' );
+	$args = array();
+	if ( $year && $month ) {
+		$args['year']  = $year;
+		$args['month'] = $month;
+	}
+	if ( '' !== $region ) {
+		$args['region'] = $region;
+	}
+	if ( '' !== $exp ) {
+		$args['exp'] = $exp;
+	}
+
+	return $args ? add_query_arg( $args, $url ) : $url;
+}

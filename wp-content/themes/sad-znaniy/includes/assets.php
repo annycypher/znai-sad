@@ -61,3 +61,30 @@ function sad_znaniy_enqueue_assets() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_assets' );
+
+/**
+ * Подключает стили и скрипт умного календаря только на странице календаря.
+ */
+function sad_znaniy_enqueue_calendar_assets() {
+	if ( ! is_page_template( 'template-calendar.php' ) ) {
+		return;
+	}
+
+	$uri = get_template_directory_uri();
+
+	wp_enqueue_style(
+		'sad-znaniy-calendar',
+		$uri . '/assets/css/calendar.css',
+		array( 'sad-znaniy-main' ),
+		sad_znaniy_asset_ver( 'assets/css/calendar.css' )
+	);
+
+	wp_enqueue_script(
+		'sad-znaniy-calendar',
+		$uri . '/assets/js/calendar.js',
+		array(),
+		sad_znaniy_asset_ver( 'assets/js/calendar.js' ),
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_calendar_assets' );
