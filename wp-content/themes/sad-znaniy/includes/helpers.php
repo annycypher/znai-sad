@@ -505,3 +505,72 @@ function sad_znaniy_event_links( $crop_id ) {
 
 	return array_slice( $links, 0, 3 );
 }
+
+/**
+ * SEO-слаги регионов для программатик-URL (Этап 7.1).
+ *
+ * @return array Внутренний ключ => URL-слаг.
+ */
+function sad_znaniy_region_slugs() {
+	return array(
+		'south' => 'yug',
+		'mid'   => 'srednyaya-polosa',
+		'ural'  => 'ural',
+		'sib'   => 'sibir',
+		'dv'    => 'dalniy-vostok',
+	);
+}
+
+/**
+ * URL-слаг региона → внутренний ключ (принимает и слаг, и сам ключ).
+ *
+ * @param string $slug Слаг из URL.
+ * @return string Внутренний ключ или ''.
+ */
+function sad_znaniy_region_slug_to_key( $slug ) {
+	$slug = sanitize_key( $slug );
+	$slugs = sad_znaniy_region_slugs();
+	$key = array_search( $slug, $slugs, true );
+	if ( false !== $key ) {
+		return $key;
+	}
+	if ( array_key_exists( $slug, sad_znaniy_region_keys() ) ) {
+		return $slug;
+	}
+	return '';
+}
+
+/**
+ * Внутренний ключ региона → URL-слаг.
+ *
+ * @param string $key Внутренний ключ.
+ * @return string URL-слаг.
+ */
+function sad_znaniy_region_key_to_slug( $key ) {
+	$slugs = sad_znaniy_region_slugs();
+	return isset( $slugs[ $key ] ) ? $slugs[ $key ] : $key;
+}
+
+/**
+ * SEO-слаги месяцев (транслитерация) для программатик-URL.
+ *
+ * @return array Номер месяца (1–12) => URL-слаг.
+ */
+function sad_znaniy_month_slugs() {
+	return array(
+		1 => 'yanvar', 2 => 'fevral', 3 => 'mart', 4 => 'aprel',
+		5 => 'maj', 6 => 'iyun', 7 => 'iyul', 8 => 'avgust',
+		9 => 'sentyabr', 10 => 'oktyabr', 11 => 'noyabr', 12 => 'dekabr',
+	);
+}
+
+/**
+ * URL-слаг месяца → номер (1–12), 0 если не найден.
+ *
+ * @param string $slug Слаг из URL.
+ * @return int
+ */
+function sad_znaniy_month_slug_to_num( $slug ) {
+	$map = array_flip( sad_znaniy_month_slugs() );
+	return isset( $map[ $slug ] ) ? (int) $map[ $slug ] : 0;
+}
