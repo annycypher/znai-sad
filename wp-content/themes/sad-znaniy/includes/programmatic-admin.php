@@ -87,6 +87,17 @@ function sad_znaniy_programmatic_admin_page() {
 	<div class="wrap">
 		<h1>Программатик-SEO</h1>
 		<p>Страницы строятся из данных календаря. <b>Живая</b> = включена + ≥5 событий + интро ≥2 предложений. Только «живые» попадают в sitemap.xml.</p>
+		<details style="margin-bottom:14px;">
+			<summary style="cursor:pointer;font-weight:600;">Как этим пользоваться (инструкция)</summary>
+			<ol style="margin-top:8px;padding-left:20px;">
+				<li><b>Включить страницу:</b> впишите интро (≥2 предложения, факт/цифра/риск) → галочка «Вкл.» → «Сохранить». Живая страница появится в sitemap.xml.</li>
+				<li><b>Выключить:</b> снимите «Вкл.» → «Сохранить» — страница исчезает из sitemap (по прямому URL — 404).</li>
+				<li><b>Добавить регион:</b> добавьте ≥5 событий календаря для этого региона + месяца — строка появится сама.</li>
+				<li><b>SEO:</b> пустые title/description = автогенерация; заполненные = ручное переопределение.</li>
+				<li><b>Темп:</b> не больше 10 включённых страниц в неделю. Пустышки (&lt;5 событий) не откроются.</li>
+			</ol>
+			<p style="margin-top:6px;">Подробнее — в <b>ADMINGUIDE.md → «12. Программатик-SEO»</b>.</p>
+		</details>
 		<style>
 			.sz-status{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
 			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-draft{background:#fdf3e0;color:#a9714b}.sz-empty{background:#f1f1f1;color:#999}
