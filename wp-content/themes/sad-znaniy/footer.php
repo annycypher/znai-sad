@@ -81,7 +81,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 		</div>
 		<div class="footer-bottom">
-			<span>© 2026 «<?php bloginfo( 'name' ); ?>» · znai-sad.ru</span>
+			<span><?php esc_html_e( 'Полезная база садовода', 'sad-znaniy' ); ?> · znai-sad.ru</span>
 			<span class="spacer">
 				<a href="#" class="link-plain"><?php esc_html_e( 'Карта сайта', 'sad-znaniy' ); ?></a>
 				<button type="button" id="bvi-toggle" class="link-plain" aria-pressed="false"><?php esc_html_e( 'Версия для слабовидящих', 'sad-znaniy' ); ?></button>
