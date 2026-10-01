@@ -200,6 +200,19 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 						<?php if ( $t['hint'] ) : ?>
 							<div class="t-hint">💡 <?php echo esc_html( $t['hint'] ); ?></div>
 						<?php endif; ?>
+						<?php
+						$t_links = sad_znaniy_event_links( $t['crop_id'] );
+						if ( $t_links ) :
+							?>
+							<div class="t-links"><?php esc_html_e( 'Подробнее:', 'sad-znaniy' ); ?>
+								<?php
+								foreach ( $t_links as $t_i => $t_link ) :
+									echo ( $t_i > 0 ? ', ' : ' ' );
+									?>
+									<a href="<?php echo esc_url( $t_link[1] ); ?>"><?php echo esc_html( $t_link[0] ); ?></a>
+								<?php endforeach; ?>
+							</div>
+						<?php endif; ?>
 					</div>
 				</article>
 			<?php endforeach; ?>

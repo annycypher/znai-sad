@@ -428,6 +428,7 @@ function sad_znaniy_event_data( $post_id, $year, $month ) {
 		'd1'       => $d1,
 		'd2'       => $d2,
 		'crop'     => $crop,
+		'crop_id'  => $crop_id,
 		'exp'      => (string) get_post_meta( $post_id, '_sz_event_difficulty', true ),
 		'pr'       => (string) get_post_meta( $post_id, '_sz_event_priority', true ),
 		'hint'     => (string) get_post_meta( $post_id, '_sz_event_weather_hint', true ),
@@ -460,4 +461,47 @@ function sad_znaniy_calendar_url( $year = null, $month = null, $region = '', $ex
 	}
 
 	return $args ? add_query_arg( $args, $url ) : $url;
+}
+
+/**
+ * Ссылки блока «Подробнее» у события: растение + раздел + статьи по культуре.
+ *
+ * @param int $crop_id ID растения-культуры (0 — если не задана).
+ * @return array[] Список пар [подпись, URL] (до 3).
+ */
+function sad_znaniy_event_links( $crop_id ) {
+	$links = array();
+	$crop_id = (int) $crop_id;
+
+	if ( $crop_id ) {
+		$title = get_the_title( $crop_id );
+		if ( $title && 'publish' === get_post_status( $crop_id ) ) {
+			$links[] = array( 'Растение «' . $title . '»', get_permalink( $crop_id ) );
+		}
+
+		$sections = get_the_terms( $crop_id, 'plant_section' );
+		if ( $sections && ! is_wp_error( $sections ) ) {
+			$links[] = array( 'Раздел «' . $sections[0]->name . '»', get_term_link( $sections[0] ) );
+		}
+
+		if ( $title ) {
+			$articles = get_posts(
+				array(
+					'post_type'      => 'post',
+					'post_status'    => 'publish',
+					's'              => $title,
+					'posts_per_page' => 2,
+					'no_found_rows'  => true,
+				)
+			);
+			foreach ( $articles as $article ) {
+				if ( (int) $article->ID === $crop_id ) {
+					continue;
+				}
+				$links[] = array( get_the_title( $article ), get_permalink( $article ) );
+			}
+		}
+	}
+
+	return array_slice( $links, 0, 3 );
 }

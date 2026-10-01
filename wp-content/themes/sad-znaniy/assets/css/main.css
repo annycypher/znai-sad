@@ -312,6 +312,9 @@ a:hover > .circle-go, .tile:hover .circle-go, .tool-card:hover .circle-go{ trans
 }
 .event{ display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid rgba(32,36,31,.08); }
 .event:last-of-type{ border-bottom:none; }
+.event.is-extra{ display:none; }
+.footer-max-link{ text-align:center; margin:4px 0 14px; font-size:13px; color:var(--muted); }
+.footer-max-link a{ color:var(--accent); font-weight:600; }
 .date-block{
     min-width:56px; text-align:center; padding:7px 6px;
     border-radius:14px;

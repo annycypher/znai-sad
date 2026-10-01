@@ -88,6 +88,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<a href="#" class="link-plain"><?php esc_html_e( 'Политика конфиденциальности', 'sad-znaniy' ); ?></a>
 			</span>
 		</div>
+		<p class="footer-max-link"><a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'Ведём блог и короткие напоминания в MAX — мы есть в MAX →', 'sad-znaniy' ); ?></a></p>
 	</footer>
 
 </div><!-- .frame -->

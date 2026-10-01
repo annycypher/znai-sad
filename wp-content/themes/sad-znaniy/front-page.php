@@ -236,15 +236,14 @@ $section_links = array(
 			<div class="panel-cal" id="calendar">
 				<div class="section-head">
 					<h2 class="h-cap" style="font-size:21px;">Календарь работ</h2>
-					<?php $calendar_url = get_post_type_archive_link( 'calendar_event' ); ?>
-					<a href="<?php echo esc_url( $calendar_url ? $calendar_url : '#' ); ?>" class="btn btn-light" style="padding:8px 18px; min-height:38px; font-size:12px;"><?php esc_html_e( 'Весь календарь', 'sad-znaniy' ); ?></a>
+					<a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>" class="btn btn-light" style="padding:8px 18px; min-height:38px; font-size:12px;"><?php esc_html_e( 'Весь календарь', 'sad-znaniy' ); ?></a>
 				</div>
 
 				<?php
 				$events = new WP_Query(
 					array(
 						'post_type'      => 'calendar_event',
-						'posts_per_page' => 3,
+						'posts_per_page' => 30,
 						'meta_key'       => '_sz_event_date_from',
 						'orderby'        => 'meta_value',
 						'order'          => 'ASC',
@@ -262,6 +261,7 @@ $section_links = array(
 				?>
 				<?php if ( $events->have_posts() ) : ?>
 					<?php
+					$event_idx = 0;
 					while ( $events->have_posts() ) :
 						$events->the_post();
 						$event_from   = (string) get_post_meta( get_the_ID(), '_sz_event_date_from', true );
@@ -270,8 +270,9 @@ $section_links = array(
 						$event_regions = array_filter( array_map( 'sanitize_key', explode( ',', (string) get_post_meta( get_the_ID(), '_sz_event_regions', true ) ) ) );
 						$event_date   = sad_znaniy_format_event_date( $event_from );
 						$event_term   = sad_znaniy_event_term_text( $event_from, $event_to );
+						$event_regions_attr = $event_all ? 'all' : implode( ',', $event_regions );
 						?>
-						<div class="event">
+						<div class="event<?php echo $event_idx >= 3 ? ' is-extra' : ''; ?>" data-regions="<?php echo esc_attr( $event_regions_attr ); ?>" data-date="<?php echo esc_attr( $event_from ); ?>">
 							<div class="date-block" aria-label="<?php echo esc_attr( $event_date['label'] ); ?>"><span class="date-num"><?php echo esc_html( $event_date['num'] ); ?></span><span class="date-month"><?php echo esc_html( $event_date['month'] ); ?></span></div>
 							<div class="event-body">
 								<h3><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_the_title() ); ?></a></h3>
@@ -288,6 +289,7 @@ $section_links = array(
 							</div>
 						</div>
 						<?php
+						$event_idx++;
 					endwhile;
 					wp_reset_postdata();
 					?>
