@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<ul>
 						<li><a href="<?php echo esc_url( home_url( '/kalkulyatory/' ) ); ?>"><?php esc_html_e( 'Калькуляторы', 'sad-znaniy' ); ?></a></li>
 						<li><a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>"><?php esc_html_e( 'Планировщик', 'sad-znaniy' ); ?></a></li>
-						<li><a href="<?php echo esc_url( home_url( '/sobytiya/' ) ); ?>"><?php esc_html_e( 'Календарь', 'sad-znaniy' ); ?></a></li>
+						<li><a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>"><?php esc_html_e( 'Календарь', 'sad-znaniy' ); ?></a></li>
 						<li><a href="<?php echo esc_url( home_url( '/rasteniya/' ) ); ?>"><?php esc_html_e( 'База знаний', 'sad-znaniy' ); ?></a></li>
 					</ul>
 					<?php
@@ -85,7 +85,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<span class="spacer">
 				<a href="#" class="link-plain"><?php esc_html_e( 'Карта сайта', 'sad-znaniy' ); ?></a>
 				<button type="button" id="bvi-toggle" class="link-plain" aria-pressed="false"><?php esc_html_e( 'Версия для слабовидящих', 'sad-znaniy' ); ?></button>
-				<a href="#" class="link-plain"><?php esc_html_e( 'Политика конфиденциальности', 'sad-znaniy' ); ?></a>
+				<a href="<?php echo esc_url( sad_znaniy_privacy_url() ); ?>" class="link-plain"><?php esc_html_e( 'Политика конфиденциальности', 'sad-znaniy' ); ?></a>
 			</span>
 		</div>
 		<p class="footer-max-link"><a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'Ведём блог и короткие напоминания в MAX — мы есть в MAX →', 'sad-znaniy' ); ?></a></p>

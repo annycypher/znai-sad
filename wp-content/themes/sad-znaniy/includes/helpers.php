@@ -211,6 +211,23 @@ function sad_znaniy_blog_url() {
 }
 
 /**
+ * Ссылка на страницу «Политика конфиденциальности».
+ *
+ * @return string
+ */
+function sad_znaniy_privacy_url() {
+	$page = get_page_by_path( 'privacy-policy' );
+	if ( $page ) {
+		$link = get_permalink( $page );
+		if ( $link ) {
+			return $link;
+		}
+	}
+
+	return home_url( '/privacy-policy/' );
+}
+
+/**
  * Убирает префикс «Архивы:» у заголовков архивов типов записей.
  *
  * @param string $title Заголовок архива.
