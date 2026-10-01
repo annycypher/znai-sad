@@ -568,3 +568,4 @@ function sad_znaniy_water_calc( $args ) {
 	);
 }
 
+add_shortcode( 'sz_calc_water', 'sad_znaniy_water_shortcode' );
