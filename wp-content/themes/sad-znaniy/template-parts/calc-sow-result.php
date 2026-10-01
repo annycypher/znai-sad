@@ -101,8 +101,8 @@ if ( $days_to_sow < 0 && '' !== $calc['next_sow_label'] ) {
 			<?php
 			printf(
 				/* translators: %s: дата */
-				esc_html__( 'Высадка в грунт: <b>%s</b>', 'sad-znaniy' ),
-				esc_html( $calc['plant_label'] )
+				esc_html__( 'Высадка в грунт: %s', 'sad-znaniy' ),
+				'<b>' . esc_html( $calc['plant_label'] ) . '</b>'
 			);
 			?>
 		</li>
@@ -124,8 +124,8 @@ if ( $days_to_sow < 0 && '' !== $calc['next_sow_label'] ) {
 			<?php
 			printf(
 				/* translators: %s: дата */
-				esc_html__( 'Заморозки в регионе — до <b>%s</b>', 'sad-znaniy' ),
-				esc_html( $calc['frost_label'] )
+				esc_html__( 'Заморозки в регионе — до %s', 'sad-znaniy' ),
+				'<b>' . esc_html( $calc['frost_label'] ) . '</b>'
 			);
 			?>
 		</li>
