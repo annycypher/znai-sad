@@ -45,6 +45,10 @@ function sad_znaniy_sanitize_options( $input ) {
 		$output['popular_plants'] = array();
 	}
 
+	if ( isset( $input['sz_calc_water'] ) && function_exists( 'sad_znaniy_water_sanitize' ) ) {
+		$output['sz_calc_water'] = sad_znaniy_water_sanitize( $input['sz_calc_water'] );
+	}
+
 	return $output;
 }
 
@@ -104,6 +108,10 @@ function sad_znaniy_render_options_page() {
 			<?php else : ?>
 				<p><?php esc_html_e( 'Растений пока нет. Сначала добавьте их в разделе «Растения».', 'sad-znaniy' ); ?></p>
 			<?php endif; ?>
+
+			<h2><?php esc_html_e( 'Калькулятор полива', 'sad-znaniy' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Нормативы расчёта. Все числа помечены как «ФАКТ-ПРОВЕРКА»: сверьте их с инструкциями и справочниками — потом правьте свободно.', 'sad-znaniy' ); ?></p>
+			<?php sad_znaniy_water_admin_fields( sad_znaniy_water_calc_options() ); ?>
 
 			<?php submit_button(); ?>
 		</form>

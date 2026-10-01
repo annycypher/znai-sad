@@ -591,3 +591,31 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
 .pg-regions-table a{color:#2e6b4f;text-decoration:none}
 .pg-regions-table a:hover{text-decoration:underline}
 @media (max-width:640px){.pg-regions-table{font-size:13px}.pg-regions-table th:nth-child(5),.pg-regions-table td:nth-child(5){display:none}}
+
+/* ============ КАЛЬКУЛЯТОРЫ ============ */
+.calc{margin:26px 0 34px}
+.calc-title{font-size:20px;margin-bottom:14px}
+.calc-form{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r-md);box-shadow:var(--sh-glass),inset 0 1px 0 rgba(255,255,255,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:20px 20px 16px}
+.calc-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+.calc-field{display:flex;flex-direction:column;gap:6px}
+.calc-field span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.calc-field select,.calc-field input{font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1px solid #dfe3e6;border-radius:12px;padding:10px 12px;width:100%;box-shadow:inset 0 1px 2px rgba(160,168,176,.18)}
+.calc-field select:focus,.calc-field input:focus{outline:2px solid var(--emerald);outline-offset:1px;border-color:var(--emerald)}
+.calc-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:8px 0 0}
+.calc-hint{font-size:12.5px;color:var(--muted)}
+.calc-out{margin-top:22px}
+.calc-main{display:flex;align-items:baseline;gap:10px}
+.calc-num{font-size:46px;font-weight:700;line-height:1;color:var(--emerald);letter-spacing:-.02em}
+.calc-unit{font-size:15px;color:var(--muted)}
+.calc-sum{font-size:12.5px;color:var(--muted);margin:8px 0 14px}
+.calc-facts{margin:0 0 14px;padding-left:20px}
+.calc-facts li{margin-bottom:6px}
+.calc-how{font-size:14px;margin-bottom:14px}
+.calc-how summary{cursor:pointer;font-weight:600}
+.calc-how ul{margin:10px 0 6px}
+.calc-note{font-size:12.5px;color:var(--muted)}
+.calc-warn{background:var(--accent-soft);border:1px solid #cfe3d6;border-radius:var(--r-tile);padding:14px 16px 10px}
+.calc-warn h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;color:var(--accent)}
+.calc-warn ul{margin:0;padding-left:18px;font-size:14px}
+.calc-warn li{margin-bottom:6px}
+@media (max-width:700px){.calc-row{grid-template-columns:1fr}.calc-num{font-size:38px}}
