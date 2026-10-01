@@ -89,7 +89,7 @@ ksort( $sz_months );
 
 			<?php foreach ( $sz_months as $sz_num => $sz_list ) : ?>
 				<h3 style="font-size:15px;margin:18px 0 8px;">
-					<a class="calc-link" href="<?php echo esc_url( sad_znaniy_calendar_url( null, $sz_num ) ); ?>"><?php echo esc_html( date_i18n( 'F', mktime( 12, 0, 0, (int) $sz_num, 15 ) ) ); ?></a>
+					<a class="calc-link" href="<?php echo esc_url( sad_znaniy_calendar_url( (int) current_time( 'Y' ), (int) $sz_num ) ); ?>"><?php echo esc_html( date_i18n( 'F', mktime( 12, 0, 0, (int) $sz_num, 15 ) ) ); ?></a>
 				</h3>
 				<ul class="calc-facts">
 					<?php foreach ( $sz_list as $sz_event ) : ?>
