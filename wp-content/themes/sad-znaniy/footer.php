@@ -77,7 +77,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="footer-col">
 				<h4><?php esc_html_e( 'Контакты', 'sad-znaniy' ); ?></h4>
 				<a class="footer-phone" href="mailto:info@znai-sad.ru">info@znai-sad.ru</a>
-				<a class="footer-phone" href="#"><?php esc_html_e( 'Telegram-канал', 'sad-znaniy' ); ?></a>
+				<a class="footer-phone" href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'Группа в MAX', 'sad-znaniy' ); ?></a>
 			</div>
 		</div>
 		<div class="footer-bottom">

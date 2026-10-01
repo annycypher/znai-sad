@@ -297,12 +297,12 @@ $section_links = array(
 					<p class="hero-sub"><?php esc_html_e( 'Событий пока нет — добавьте их в разделе «События».', 'sad-znaniy' ); ?></p>
 				<?php endif; ?>
 
-				<a href="#" class="tg-banner">
+				<a href="https://web.max.ru/-76163835891728" class="tg-banner" target="_blank" rel="noopener">
 					<span class="tg-icon" aria-hidden="true">
-						<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.9 19c-.2 1-.8 1.3-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-1 .5l.3-4.7 8.5-7.7c.4-.3-.1-.5-.6-.2L7 11.4l-4.5-1.4c-1-.3-1-1 .2-1.4l17.6-6.8c.8-.3 1.6.2 1.3 1.3Z"/></svg>
+						<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.2 9.2 0 0 1-3.6-.7L3 21l1.3-4A8.3 8.3 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/><path d="M8.5 11h7M8.5 14h4"/></svg>
 					</span>
 					<span>
-						<strong>Telegram-канал «Сад знаний»</strong>
+						<strong><?php esc_html_e( 'Группа в MAX «Сад знаний»', 'sad-znaniy' ); ?></strong>
 						<span>Напомним о садовых работах в срок</span>
 					</span>
 					<span class="circle-go" aria-hidden="true">→</span>
@@ -351,7 +351,7 @@ $section_links = array(
 					</li>
 					<li>
 						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.5 2.9.7a2 2 0 0 1 1.6 2Z"/></svg>
-						<a href="#">Telegram-чат садоводов</a>
+						<a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'Группа садоводов в MAX', 'sad-znaniy' ); ?></a>
 					</li>
 					<li>
 						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
