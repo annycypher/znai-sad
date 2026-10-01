@@ -83,6 +83,19 @@ function sad_znaniy_seo_plant_forms() {
 			$list[] = mb_substr( $title, 0, max( 4, $len - 2 ), 'UTF-8' );
 		}
 
+		// Словоформы по словам: первое слово — «роза» → «роз», остальные — «садовая» → «садова».
+		$words = explode( ' ', $title );
+		foreach ( $words as $index => $word ) {
+			$wlen = mb_strlen( $word, 'UTF-8' );
+			if ( 0 === $index ) {
+				if ( $wlen >= 4 ) {
+					$list[] = mb_substr( $word, 0, $wlen - 1, 'UTF-8' );
+				}
+			} elseif ( $wlen >= 6 ) {
+				$list[] = mb_substr( $word, 0, $wlen - 2, 'UTF-8' );
+			}
+		}
+
 		// Слаги растения (латиница) — как слова.
 		foreach ( explode( ' ', str_replace( '-', ' ', (string) $plant->post_name ) ) as $word ) {
 			if ( mb_strlen( $word, 'UTF-8' ) > 3 ) {
@@ -90,7 +103,7 @@ function sad_znaniy_seo_plant_forms() {
 			}
 		}
 
-		$forms[ (int) $plant->ID ] = array_values( array_unique( $list ) );
+		$forms[ (int) $plant->ID ] = array_values( array_unique( array_filter( $list ) ) );
 	}
 
 	return $forms;
