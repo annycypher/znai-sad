@@ -66,6 +66,42 @@ function sad_znaniy_maybe_install_terms() {
 add_action( 'wp_loaded', 'sad_znaniy_maybe_install_terms' );
 
 /**
+ * Переводит типы работ на человеческие URL (/uhod/poliv/ и т. д.), один раз.
+ *
+ * Переименовывает слаги существующих терминов — ID терминов и привязки
+ * событий календаря сохраняются — и пересобирает правила ЧПУ.
+ */
+function sad_znaniy_maybe_rename_work_types() {
+	if ( get_option( 'sad_znaniy_work_urls_ready' ) ) {
+		return;
+	}
+	if ( ! taxonomy_exists( 'work_type' ) ) {
+		return;
+	}
+
+	$labels = sad_znaniy_work_types();
+	foreach ( sad_znaniy_work_type_slug_map() as $old => $new ) {
+		$term = get_term_by( 'slug', $old, 'work_type' );
+		if ( ! $term || is_wp_error( $term ) ) {
+			continue;
+		}
+
+		wp_update_term(
+			$term->term_id,
+			'work_type',
+			array(
+				'slug' => $new,
+				'name' => isset( $labels[ $new ] ) ? $labels[ $new ] : $term->name,
+			)
+		);
+	}
+
+	flush_rewrite_rules();
+	update_option( 'sad_znaniy_work_urls_ready', 1, false );
+}
+add_action( 'wp_loaded', 'sad_znaniy_maybe_rename_work_types', 9 );
+
+/**
  * Создаёт термины таксономии «Тип работы» с цветами (Этап 5.5), один раз.
  */
 function sad_znaniy_maybe_install_work_types() {

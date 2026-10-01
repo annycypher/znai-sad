@@ -65,16 +65,32 @@ function sad_znaniy_register_work_type() {
 				'add_new_item'  => __( 'Новый тип работы', 'sad-znaniy' ),
 				'edit_item'     => __( 'Редактировать тип', 'sad-znaniy' ),
 			),
-			'hierarchical'      => false,
-			'public'            => false,
-			'show_ui'           => true,
-			'show_in_rest'      => true,
-			'show_admin_column' => false,
-			'rewrite'           => false,
+			'hierarchical'       => false,
+			'public'             => true,
+			'publicly_queryable' => true,
+			'show_ui'            => true,
+			'show_in_rest'       => true,
+			'show_admin_column'  => false,
+			'show_in_nav_menus'  => false,
+			'rewrite'            => array(
+				'slug'       => 'uhod',
+				'with_front' => false,
+			),
 		)
 	);
 }
 add_action( 'init', 'sad_znaniy_register_work_type' );
+
+/**
+ * Человеческие URL посадочных страниц типов работ: /uhod/poliv/ и т. д.
+ *
+ * Правило добавляется с приоритетом «top»: оно должно срабатывать раньше
+ * общего правила страниц, иначе родительская страница перехватит адрес.
+ */
+function sad_znaniy_work_type_rewrite() {
+	add_rewrite_rule( '^uhod/([^/]+)/?$', 'index.php?work_type=$matches[1]', 'top' );
+}
+add_action( 'init', 'sad_znaniy_work_type_rewrite', 11 );
 
 /**
  * Добавляет метабокс «Дата и регион».

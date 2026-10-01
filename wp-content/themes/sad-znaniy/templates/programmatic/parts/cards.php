@@ -16,7 +16,7 @@ foreach ( $sz_events as $sz_ev ) :
 	$sz_to    = (string) get_post_meta( $sz_ev->ID, '_sz_event_date_to', true );
 	$sz_crop  = (int) get_post_meta( $sz_ev->ID, '_sz_event_crop', true );
 	$sz_terms = get_the_terms( $sz_ev->ID, 'work_type' );
-	$sz_type  = ( $sz_terms && ! is_wp_error( $sz_terms ) ) ? $sz_terms[0]->slug : 'prep';
+	$sz_type  = ( $sz_terms && ! is_wp_error( $sz_terms ) ) ? $sz_terms[0]->slug : 'podgotovka';
 	?>
 	<article class="task">
 		<div class="t-body">

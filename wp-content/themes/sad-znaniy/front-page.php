@@ -218,11 +218,11 @@ $section_links = array(
 						<span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></span>
 						<strong>Цветы</strong>
 					</a>
-					<a href="#" class="sx-tile">
+					<a href="<?php echo esc_url( home_url( '/uhod/' ) ); ?>" class="sx-tile">
 						<span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 9C12 5 9.5 3 5.5 3c0 4 2.5 6 6.5 6Z"/><path d="M12 13c0-3.5 2.5-5.5 6.5-5.5 0 4-2.5 5.5-6.5 5.5Z"/></svg></span>
 						<strong>Уход</strong>
 					</a>
-					<a href="#" class="sx-tile">
+					<a href="<?php echo esc_url( home_url( '/kalkulyator-udobreniy/' ) ); ?>" class="sx-tile">
 						<span class="tile-ico" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 4H9L8 3Z"/><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 12l2 2 4-4"/></svg></span>
 						<strong>Удобрения</strong>
 					</a>
