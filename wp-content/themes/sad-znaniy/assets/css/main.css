@@ -1,4 +1,4 @@
-﻿
+
 /* ==========================================================
    СТИЛЬ: серебристый неоморфизм + матовое стекло
    Брейкпоинты: 1180 / 1020 / 700 / 560
@@ -572,3 +572,11 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
     .plant-grid{ grid-template-columns:1fr; }
 }
 
+/* Сравнительная таблица «Сроки по регионам» (программатик, Этап 7.1) */
+.pg-regions-table{width:100%;border-collapse:collapse;margin:14px 0 26px;font-size:15px}
+.pg-regions-table th,.pg-regions-table td{padding:8px 10px;border-bottom:1px solid #e6e1d8;text-align:left;vertical-align:top}
+.pg-regions-table th{font-weight:600;color:#6b7a6f}
+.pg-regions-table tr.is-current{background:rgba(63,164,111,.08)}
+.pg-regions-table a{color:#2e6b4f;text-decoration:none}
+.pg-regions-table a:hover{text-decoration:underline}
+@media (max-width:640px){.pg-regions-table{font-size:13px}.pg-regions-table th:nth-child(5),.pg-regions-table td:nth-child(5){display:none}}

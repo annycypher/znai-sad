@@ -27,11 +27,42 @@ $sz_page = $sz_ctx['page'];
 <div class="tasks"><?php get_template_part( 'templates/programmatic/parts/cards' ); ?></div>
 
 <?php
+$sz_regions = sad_znaniy_programmatic_region_table( $sz_ctx );
+if ( $sz_regions ) :
+	?>
+	<div class="pg-regions">
+		<h2><?php esc_html_e( 'Сроки по регионам', 'sad-znaniy' ); ?></h2>
+		<table class="pg-regions-table">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Регион', 'sad-znaniy' ); ?></th>
+					<th><?php esc_html_e( 'Задач', 'sad-znaniy' ); ?></th>
+					<th><?php esc_html_e( 'Первая', 'sad-znaniy' ); ?></th>
+					<th><?php esc_html_e( 'Последняя', 'sad-znaniy' ); ?></th>
+					<th><?php esc_html_e( 'Ключевые работы', 'sad-znaniy' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $sz_regions as $sz_row ) : ?>
+					<tr<?php echo ( isset( $sz_ctx['region'] ) && $sz_ctx['region'] === $sz_row['key'] ) ? ' class="is-current"' : ''; ?>>
+						<td><a href="<?php echo esc_url( $sz_row['url'] ); ?>"><?php echo esc_html( $sz_row['region'] ); ?></a></td>
+						<td><?php echo (int) $sz_row['count']; ?></td>
+						<td><?php echo esc_html( $sz_row['first'] ); ?></td>
+						<td><?php echo esc_html( $sz_row['last'] ); ?></td>
+						<td><?php echo esc_html( $sz_row['types'] ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+<?php endif; ?>
+
+<?php
 $sz_related = sad_znaniy_programmatic_related( $sz_ctx );
 if ( $sz_related ) :
 	?>
 	<div class="pg-related">
-		<h2><?php esc_html_e( 'Сроки по регионам', 'sad-znaniy' ); ?></h2>
+		<h2><?php esc_html_e( 'Другие регионы', 'sad-znaniy' ); ?></h2>
 		<ul>
 			<?php foreach ( $sz_related as $sz_r ) : ?>
 				<li><a href="<?php echo esc_url( $sz_r['url'] ); ?>"><?php echo esc_html( $sz_r['phrase'] ); ?></a></li>

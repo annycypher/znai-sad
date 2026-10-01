@@ -31,6 +31,11 @@ function sad_znaniy_programmatic_admin_save() {
 		}
 		$pages[ $key ]['intro']           = isset( $data['intro'] ) ? wp_kses_post( $data['intro'] ) : '';
 		$pages[ $key ]['enabled']         = empty( $data['enabled'] ) ? 0 : 1;
+
+		// Пометка «НУЖНО РЕШЕНИЕ ВЛАДЕЛЬЦА» запрещает включение страницы.
+		if ( false !== mb_stripos( $pages[ $key ]['intro'], 'НУЖНО РЕШЕНИЕ ВЛАДЕЛЬЦА' ) ) {
+			$pages[ $key ]['enabled'] = 0;
+		}
 		$pages[ $key ]['seo_title']       = isset( $data['seo_title'] ) ? sanitize_text_field( $data['seo_title'] ) : '';
 		$pages[ $key ]['seo_description'] = isset( $data['seo_description'] ) ? sanitize_text_field( $data['seo_description'] ) : '';
 	}
@@ -83,7 +88,7 @@ function sad_znaniy_programmatic_admin_page() {
 		</details>
 		<style>
 			.sz-status{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
-			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-draft{background:#fdf3e0;color:#a9714b}.sz-empty{background:#f1f1f1;color:#999}
+			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-draft{background:#fdf3e0;color:#a9714b}.sz-empty{background:#f1f1f1;color:#999}.sz-need{background:#fdeaea;color:#a94442}
 		</style>
 		<form method="post">
 			<?php wp_nonce_field( 'sz_pg_save', 'sz_pg_nonce' ); ?>
@@ -96,6 +101,7 @@ function sad_znaniy_programmatic_admin_page() {
 				<tbody>
 				<?php foreach ( $pages as $key => $page ) :
 					$status = sad_znaniy_programmatic_status( $page );
+					$needs_decision = ( false !== mb_stripos( (string) $page['intro'], 'НУЖНО РЕШЕНИЕ ВЛАДЕЛЬЦА' ) );
 					$pfx    = 'pg[' . esc_attr( $key ) . ']';
 					?>
 					<tr>
@@ -106,10 +112,11 @@ function sad_znaniy_programmatic_admin_page() {
 						</td>
 						<td><?php echo esc_html( $family_labels[ $page['family'] ] ); ?></td>
 						<td><?php echo esc_html( $page['phrase'] ); ?></td>
-						<td><span class="sz-status sz-<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $status_labels[ $status ] ); ?></span></td>
+						<td><span class="sz-status sz-<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $status_labels[ $status ] ); ?></span>
+						<?php if ( $needs_decision ) : ?><br><span class="sz-status sz-need">нужно решение владельца</span><?php endif; ?></td>
 						<td><?php echo (int) $page['count']; ?></td>
 						<td><textarea name="<?php echo esc_attr( $pfx ); ?>[intro]" rows="3" style="width:100%;"><?php echo esc_textarea( $page['intro'] ); ?></textarea></td>
-						<td><input type="checkbox" name="<?php echo esc_attr( $pfx ); ?>[enabled]" value="1" <?php checked( $page['enabled'], 1 ); ?>></td>
+						<td><input type="checkbox" name="<?php echo esc_attr( $pfx ); ?>[enabled]" value="1" <?php checked( $page['enabled'], 1 ); ?> <?php disabled( $needs_decision ); ?>></td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>

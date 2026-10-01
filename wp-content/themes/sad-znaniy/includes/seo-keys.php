@@ -999,7 +999,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 
 		<form method="post" style="display:inline;">
 			<?php wp_nonce_field( 'sz_keys_recalc', 'sz_keys_recalc_nonce' ); ?>
-			<button type="submit" name="sz_keys_recalc" class="button">Пересчитать разметку</button>
+			<button type="submit" name="sz_keys_recalc" class="button">Пересчитать привязки</button>
 		</form>
 		<form method="post" style="display:inline;" onsubmit="return confirm('Очистить весь список ключей? Действие необратимо.');">
 			<?php wp_nonce_field( 'sz_keys_clear', 'sz_keys_clear_nonce' ); ?>

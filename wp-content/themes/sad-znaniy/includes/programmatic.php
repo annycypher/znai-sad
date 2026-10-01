@@ -564,6 +564,65 @@ function sad_znaniy_programmatic_head() {
 add_action( 'wp_head', 'sad_znaniy_programmatic_head', 1 );
 
 /**
+ * Сравнительная таблица «Сроки по регионам» из данных календаря.
+ *
+ * Уникализирует страницу: показывает, чем её месяц отличается от других
+ * регионов (число задач, первая и последняя дата, ключевые работы).
+ * Строится только для семейств с месяцем (region-month, plant-month).
+ *
+ * @param array $ctx Контекст страницы.
+ * @return array[] Строки таблицы.
+ */
+function sad_znaniy_programmatic_region_table( $ctx ) {
+	$month = isset( $ctx['month'] ) ? (int) $ctx['month'] : 0;
+	if ( ! $month ) {
+		return array();
+	}
+
+	$plant_id = ( isset( $ctx['plant'] ) && $ctx['plant'] ) ? (int) $ctx['plant']->ID : 0;
+	$months   = sad_znaniy_month_slugs();
+	$types    = sad_znaniy_work_types();
+	$rows     = array();
+
+	foreach ( sad_znaniy_region_keys() as $region_key => $label ) {
+		$events = sad_znaniy_programmatic_events( $region_key, $month, $plant_id );
+		if ( ! $events ) {
+			continue;
+		}
+
+		$dates  = array();
+		$tfound = array();
+
+		foreach ( $events as $event ) {
+			$from = (string) get_post_meta( $event->ID, '_sz_event_date_from', true );
+			if ( '' !== $from ) {
+				$dates[] = $from;
+			}
+			$terms = get_the_terms( $event->ID, 'work_type' );
+			if ( $terms && ! is_wp_error( $terms ) ) {
+				$tfound[ $terms[0]->slug ] = isset( $types[ $terms[0]->slug ] ) ? $types[ $terms[0]->slug ] : $terms[0]->name;
+			}
+		}
+
+		sort( $dates );
+		$first = $dates ? sad_znaniy_format_event_date( $dates[0] ) : array( 'label' => '' );
+		$last  = $dates ? sad_znaniy_format_event_date( $dates[ count( $dates ) - 1 ] ) : array( 'label' => '' );
+
+		$rows[] = array(
+			'key'    => $region_key,
+			'region' => $label,
+			'url'    => home_url( '/kalendar/' . sad_znaniy_region_key_to_slug( $region_key ) . '/' . $months[ $month ] . '/' ),
+			'count'  => count( $events ),
+			'first'  => $first['label'],
+			'last'   => $last['label'],
+			'types'  => implode( ', ', array_slice( array_values( $tfound ), 0, 4 ) ),
+		);
+	}
+
+	return $rows;
+}
+
+/**
  * Родственные страницы («Сроки по регионам» / соседние месяцы).
  *
  * @param array $ctx Контекст.
