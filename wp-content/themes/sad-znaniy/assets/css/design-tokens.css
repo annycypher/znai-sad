@@ -11,6 +11,12 @@
     --accent:        #2E6B4F;
     --accent-soft:   #E7F0E9;
 
+    /* Изумрудный — фон плиток-иконок «Инструменты» и «Полезные калькуляторы» */
+    --emerald:        #0E9F6E;
+    --emerald-dark:   #0B8459;
+    --on-emerald:     #FFFFFF;
+    --emerald-shadow: 0 8px 18px rgba(14,159,110,.34);
+
     --glass:         linear-gradient(150deg, rgba(255,255,255,.78), rgba(248,250,250,.52));
     --glass-strong:  rgba(255,255,255,.88);
     --glass-border:  rgba(255,255,255,.95);

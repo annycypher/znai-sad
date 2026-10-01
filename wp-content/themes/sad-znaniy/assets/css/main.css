@@ -216,6 +216,17 @@ a:hover > .circle-go, .tile:hover .circle-go, .tool-card:hover .circle-go{ trans
     transition:transform .22s ease;
 }
 
+/* Изумрудные плитки-иконки: «Инструменты садовода» и «Полезные калькуляторы» */
+.tool-card .tile-ico,
+.calc-tiles .tile-ico{
+    background:var(--emerald);
+    border-color:var(--emerald);
+    box-shadow:var(--emerald-shadow), inset 0 1px 0 rgba(255,255,255,.25);
+    color:var(--on-emerald);
+}
+.tool-card:hover .tile-ico,
+.calc-tiles .tile:hover .tile-ico{ background:var(--emerald-dark); border-color:var(--emerald-dark); }
+
 /* ИНСТРУМЕНТЫ: всегда 2 в ряд */
 .tools-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
 .tool-card{
