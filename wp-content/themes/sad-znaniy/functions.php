@@ -28,3 +28,8 @@ require_once SAD_ZNANIY_DIR . '/includes/calendar.php';
 require_once SAD_ZNANIY_DIR . '/includes/programmatic.php';
 require_once SAD_ZNANIY_DIR . '/includes/programmatic-admin.php';
 require_once SAD_ZNANIY_DIR . '/includes/seo.php';
+require_once SAD_ZNANIY_DIR . '/includes/seo-hub.php';
+require_once SAD_ZNANIY_DIR . '/includes/seo-keys.php';
+require_once SAD_ZNANIY_DIR . '/includes/seo-index.php';
+require_once SAD_ZNANIY_DIR . '/includes/seo-views.php';
+require_once SAD_ZNANIY_DIR . '/includes/seo.php';

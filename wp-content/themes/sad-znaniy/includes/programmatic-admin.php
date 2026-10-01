@@ -11,28 +11,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Регистрирует меню SEO-Хаба и вкладку «Программатик».
+ * Вкладку «Программатик» регистрирует каркас SEO-Хаба
+ * (includes/seo-hub.php): меню «📊 SEO-Хаб» → Ключи / Программатик /
+ * Индексация / Эффективность.
  */
-function sad_znaniy_programmatic_admin_menu() {
-	add_menu_page(
-		__( 'SEO-Хаб', 'sad-znaniy' ),
-		__( '📊 SEO-Хаб', 'sad-znaniy' ),
-		'manage_options',
-		'sad-seo-hub',
-		'sad_znaniy_programmatic_admin_page',
-		'dashicons-chart-area',
-		81
-	);
-	add_submenu_page(
-		'sad-seo-hub',
-		__( 'Программатик', 'sad-znaniy' ),
-		__( 'Программатик', 'sad-znaniy' ),
-		'manage_options',
-		'sad-seo-hub',
-		'sad_znaniy_programmatic_admin_page'
-	);
-}
-add_action( 'admin_menu', 'sad_znaniy_programmatic_admin_menu' );
 
 /**
  * Сохраняет интро/включение/SEO страниц.
