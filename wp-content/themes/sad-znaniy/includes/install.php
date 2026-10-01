@@ -64,3 +64,28 @@ function sad_znaniy_maybe_install_terms() {
 	update_option( 'sad_znaniy_terms_ready', 1, false );
 }
 add_action( 'wp_loaded', 'sad_znaniy_maybe_install_terms' );
+
+/**
+ * Создаёт термины таксономии «Тип работы» с цветами (Этап 5.5), один раз.
+ */
+function sad_znaniy_maybe_install_work_types() {
+	if ( get_option( 'sad_znaniy_work_types_ready' ) ) {
+		return;
+	}
+	if ( ! taxonomy_exists( 'work_type' ) ) {
+		return;
+	}
+
+	$colors = sad_znaniy_work_type_colors();
+	foreach ( sad_znaniy_work_types() as $slug => $name ) {
+		if ( ! term_exists( $slug, 'work_type' ) ) {
+			$result = wp_insert_term( $name, 'work_type', array( 'slug' => $slug ) );
+			if ( ! is_wp_error( $result ) && isset( $colors[ $slug ] ) ) {
+				update_term_meta( $result['term_id'], '_sz_color', $colors[ $slug ] );
+			}
+		}
+	}
+
+	update_option( 'sad_znaniy_work_types_ready', 1, false );
+}
+add_action( 'wp_loaded', 'sad_znaniy_maybe_install_work_types' );

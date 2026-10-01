@@ -104,14 +104,16 @@ function sad_znaniy_render_dashboard_widget() {
 			<ul style="margin:0;">
 				<?php
 				foreach ( $events as $event ) :
-					$from   = (string) get_post_meta( $event->ID, '_sz_event_date_from', true );
-					$region = (string) get_post_meta( $event->ID, '_sz_event_region', true );
+					$from    = (string) get_post_meta( $event->ID, '_sz_event_date_from', true );
+					$all     = '1' === (string) get_post_meta( $event->ID, '_sz_event_all_regions', true );
+					$regions = array_filter( array_map( 'sanitize_key', explode( ',', (string) get_post_meta( $event->ID, '_sz_event_regions', true ) ) ) );
+					$region  = $all ? __( 'Все регионы', 'sad-znaniy' ) : ( $regions ? sad_znaniy_option_label( sad_znaniy_region_keys(), $regions[0] ) : '' );
 					?>
 					<li>
 						<a href="<?php echo esc_url( get_edit_post_link( $event->ID ) ); ?>"><?php echo esc_html( get_the_title( $event ) ); ?></a>
 						<span style="color:#646970;">
 							—
-							<?php echo esc_html( sad_znaniy_event_term_text( $from, '' ) ); ?><?php echo $region ? ', ' . esc_html( sad_znaniy_region_label( $region ) ) : ''; ?>
+							<?php echo esc_html( sad_znaniy_event_term_text( $from, '' ) ); ?><?php echo $region ? ', ' . esc_html( $region ) : ''; ?>
 						</span>
 					</li>
 				<?php endforeach; ?>

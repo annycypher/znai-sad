@@ -254,3 +254,80 @@ function sad_znaniy_get_popular_plants( $limit = 6 ) {
 
 	return $plants;
 }
+
+/**
+ * Регионы для календаря (Этап 5.5). Ключи — как в демо kalendar-demo.html.
+ *
+ * @return array Ключ => подпись.
+ */
+function sad_znaniy_region_keys() {
+	return array(
+		'south' => __( 'Юг', 'sad-znaniy' ),
+		'mid'   => __( 'Средняя полоса', 'sad-znaniy' ),
+		'ural'  => __( 'Урал', 'sad-znaniy' ),
+		'sib'   => __( 'Сибирь', 'sad-znaniy' ),
+		'dv'    => __( 'Дальний Восток', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Типы работ календаря (таксономия work_type).
+ *
+ * @return array Ключ => подпись.
+ */
+function sad_znaniy_work_types() {
+	return array(
+		'sow'     => __( 'Посев', 'sad-znaniy' ),
+		'plant'   => __( 'Посадка', 'sad-znaniy' ),
+		'water'   => __( 'Полив', 'sad-znaniy' ),
+		'feed'    => __( 'Подкормка', 'sad-znaniy' ),
+		'prune'   => __( 'Обрезка', 'sad-znaniy' ),
+		'protect' => __( 'Защита', 'sad-znaniy' ),
+		'harvest' => __( 'Сбор', 'sad-znaniy' ),
+		'prep'    => __( 'Подготовка', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Цвета типов работ (из демо kalendar-demo.html, переменные --c-*).
+ *
+ * @return array Ключ => HEX.
+ */
+function sad_znaniy_work_type_colors() {
+	return array(
+		'sow'     => '#E8B34B',
+		'plant'   => '#3FA46F',
+		'water'   => '#4A90D9',
+		'feed'    => '#9B6FD0',
+		'prune'   => '#A9714B',
+		'protect' => '#D14D57',
+		'harvest' => '#E07B39',
+		'prep'    => '#7C8B93',
+	);
+}
+
+/**
+ * Уровни сложности события.
+ *
+ * @return array Ключ => подпись.
+ */
+function sad_znaniy_difficulty_options() {
+	return array(
+		'new' => __( 'Новичок', 'sad-znaniy' ),
+		'exp' => __( 'Опытный', 'sad-znaniy' ),
+		'all' => __( 'Всем', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Приоритеты события.
+ *
+ * @return array Ключ => подпись.
+ */
+function sad_znaniy_priority_options() {
+	return array(
+		'must'    => __( 'Обязательно', 'sad-znaniy' ),
+		'opt'     => __( 'Желательно', 'sad-znaniy' ),
+		'weather' => __( 'По погоде', 'sad-znaniy' ),
+	);
+}

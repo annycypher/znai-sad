@@ -266,7 +266,8 @@ $section_links = array(
 						$events->the_post();
 						$event_from   = (string) get_post_meta( get_the_ID(), '_sz_event_date_from', true );
 						$event_to     = (string) get_post_meta( get_the_ID(), '_sz_event_date_to', true );
-						$event_region = (string) get_post_meta( get_the_ID(), '_sz_event_region', true );
+						$event_all     = '1' === (string) get_post_meta( get_the_ID(), '_sz_event_all_regions', true );
+						$event_regions = array_filter( array_map( 'sanitize_key', explode( ',', (string) get_post_meta( get_the_ID(), '_sz_event_regions', true ) ) ) );
 						$event_date   = sad_znaniy_format_event_date( $event_from );
 						$event_term   = sad_znaniy_event_term_text( $event_from, $event_to );
 						?>
@@ -279,8 +280,10 @@ $section_links = array(
 										<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><?php echo esc_html( $event_term ); ?></span>
 									</div>
 								<?php endif; ?>
-								<?php if ( $event_region ) : ?>
-									<span class="region-tag"><?php echo esc_html( sad_znaniy_region_label( $event_region ) ); ?></span>
+								<?php if ( $event_all ) : ?>
+									<span class="region-tag"><?php esc_html_e( 'Все регионы', 'sad-znaniy' ); ?></span>
+								<?php elseif ( $event_regions ) : ?>
+									<span class="region-tag"><?php echo esc_html( sad_znaniy_option_label( sad_znaniy_region_keys(), $event_regions[0] ) ); ?></span>
 								<?php endif; ?>
 							</div>
 						</div>
