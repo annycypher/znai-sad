@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Календарь дачника — Сад знаний</title>
+<meta name="description" content="Персональный календарь работ дачника по вашему региону: что делать на участке по месяцам, чек-листы, напоминания.">
+<style>
+/* ============ ТОКЕНЫ (как в теме) ============ */
+:root{
+    --bg:#E3E6EA; --ink:#20241F; --muted:#5C645D; --accent:#2E6B4F;
+    --accent-soft:#E7F0E9;
+    --glass:linear-gradient(150deg, rgba(255,255,255,.8), rgba(248,250,250,.55));
+    --glass-strong:rgba(255,255,255,.9);
+    --gb:rgba(255,255,255,.95);
+    --neu-sm:4px 4px 10px rgba(160,168,176,.4), -4px -4px 10px rgba(255,255,255,.9);
+    --neu:8px 8px 20px rgba(160,168,176,.45), -8px -8px 20px rgba(255,255,255,.95);
+    --sh:0 16px 40px rgba(100,112,124,.2);
+    --r-md:20px; --r-tile:16px;
+    /* Цвета категорий работ */
+    --c-sow:#E8B34B; --c-plant:#3FA46F; --c-water:#4A90D9; --c-feed:#9B6FD0;
+    --c-prune:#A9714B; --c-protect:#D14D57; --c-harvest:#E07B39; --c-prep:#7C8B93;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Golos Text',system-ui,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* ============ ШАПКА (упрощённая) ============ */
+.topbar{display:flex;align-items:center;gap:14px;margin:16px auto 0;max-width:1120px;padding:10px 18px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:var(--neu-sm)}
+.logo{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:15px}
+.logo span{color:var(--accent)}
+.topbar .back{margin-left:auto;font-size:13.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:9px 18px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:var(--neu-sm)}
+.topbar .back:hover{color:var(--accent)}
+
+/* ============ ШАПКА КАЛЕНДАРЯ ============ */
+.cal-head{margin:34px 0 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.cal-head h1{font-size:clamp(24px,3vw,34px);font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.cal-head p{color:var(--muted);font-size:14.5px;margin-top:4px}
+.month-nav{display:flex;align-items:center;gap:10px}
+.mnav-btn{width:44px;height:44px;border-radius:50%;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:var(--neu-sm);font-size:18px;transition:transform .2s,color .2s}
+.mnav-btn:hover{color:var(--accent);transform:translateY(-2px)}
+.month-title{min-width:170px;text-align:center;font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase}
+
+.view-toggle{display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(228,231,235,.7);box-shadow:var(--neu-sm)}
+.view-toggle button{padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);transition:all .25s}
+.view-toggle button.on{background:var(--glass-strong);color:var(--ink);box-shadow:var(--neu-sm)}
+
+/* ============ ФИЛЬТРЫ ============ */
+.filters{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r-md);box-shadow:var(--sh);padding:18px 20px;display:flex;flex-direction:column;gap:14px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.f-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.f-label{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:88px}
+.chip{padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:600;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:var(--neu-sm);transition:all .22s}
+.chip:hover{color:var(--accent)}
+.chip.on{background:linear-gradient(160deg,#3A423B,#22271F);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(35,42,34,.3);transform:translateY(-1px)}
+.chip.on.t-sow{background:linear-gradient(160deg,#E8B34B,#c98f2e)}
+.chip.on.t-plant{background:linear-gradient(160deg,#3FA46F,#2E6B4F)}
+.chip.on.t-water{background:linear-gradient(160deg,#4A90D9,#33699f)}
+.chip.on.t-feed{background:linear-gradient(160deg,#9B6FD0,#7a51ab)}
+.chip.on.t-prune{background:linear-gradient(160deg,#A9714B,#865434)}
+.chip.on.t-protect{background:linear-gradient(160deg,#D14D57,#b13a44)}
+.chip.on.t-harvest{background:linear-gradient(160deg,#E07B39,#bd5f22)}
+.chip.on.t-prep{background:linear-gradient(160deg,#7C8B93,#5f6d74)}
+
+/* ============ ПРОГРЕСС ============ */
+.progress-row{display:flex;align-items:center;gap:14px;margin:18px 0 8px}
+.progress-track{flex:1;height:12px;border-radius:999px;background:rgba(228,231,235,.8);box-shadow:var(--neu-sm);overflow:hidden}
+.progress-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#3FA46F,#2E6B4F);transition:width .6s ease}
+.progress-num{font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+
+/* ============ СЕТКА МЕСЯЦА ============ */
+.cal-grid-card{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r-md);box-shadow:var(--sh);padding:18px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;padding:6px 0}
+.day{min-height:74px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 0 #fff;padding:7px 8px;cursor:pointer;position:relative;transition:transform .2s,box-shadow .25s}
+.day:hover{transform:translateY(-3px);box-shadow:var(--neu-sm)}
+.day.empty{background:transparent;border:none;box-shadow:none;cursor:default}
+.day.out{opacity:.45}
+.day .num{font-weight:700;font-size:14px}
+.day.today .num{display:inline-flex;width:26px;height:26px;align-items:center;justify-content:center;background:var(--accent);color:#fff;border-radius:50%}
+.day.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.day.weekend{background:rgba(232,235,239,.6)}
+.markers{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.mk{width:9px;height:9px;border-radius:50%;transition:transform .2s}
+.day:hover .mk{transform:scale(1.35)}
+.mk.sow{background:var(--c-sow)}.mk.plant{background:var(--c-plant)}.mk.water{background:var(--c-water)}.mk.feed{background:var(--c-feed)}.mk.prune{background:var(--c-prune)}.mk.protect{background:var(--c-protect)}.mk.harvest{background:var(--c-harvest)}.mk.prep{background:var(--c-prep)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+/* Панель выбранного дня */
+.day-panel{margin-top:14px;padding:16px;border-radius:14px;background:var(--accent-soft);border:1px solid rgba(46,107,79,.2)}
+.day-panel h3{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.day-panel .dp-task{font-size:14.5px;padding:5px 0;display:flex;gap:8px;align-items:baseline}
+.dp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;position:relative;top:-1px}
+
+/* ============ СПИСОК ЗАДАЧ ============ */
+.tasks{display:flex;flex-direction:column;gap:14px}
+.task{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r-md);box-shadow:var(--sh);padding:16px 18px;display:flex;gap:14px;align-items:flex-start;transition:transform .22s,box-shadow .3s;animation:appear .35s ease both}
+.task:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(100,112,124,.28)}
+@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.task.done{opacity:.55}
+.task.done .t-title{text-decoration:line-through}
+.cb{width:26px;height:26px;border-radius:8px;flex-shrink:0;background:var(--glass-strong);border:1.5px solid rgba(32,36,31,.25);box-shadow:var(--neu-sm);display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:2px}
+.cb svg{opacity:0;transform:scale(.4);transition:all .2s;color:#fff}
+.task.done .cb{background:var(--accent);border-color:var(--accent)}
+.task.done .cb svg{opacity:1;transform:scale(1)}
+.t-body{flex:1;min-width:0}
+.t-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.t-title{font-weight:700;font-size:16px}
+.t-type{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px;color:#fff}
+.t-type.sow{background:var(--c-sow)}.t-type.plant{background:var(--c-plant)}.t-type.water{background:var(--c-water)}.t-type.feed{background:var(--c-feed)}.t-type.prune{background:var(--c-prune)}.t-type.protect{background:var(--c-protect)}.t-type.harvest{background:var(--c-harvest)}.t-type.prep{background:var(--c-prep)}
+.t-pr{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid rgba(32,36,31,.2);color:var(--muted)}
+.t-pr.must{background:var(--accent-soft);color:var(--accent);border-color:rgba(46,107,79,.3)}
+.t-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:5px}
+.t-hint{font-size:13px;background:rgba(232,179,75,.14);border:1px dashed rgba(196,143,46,.4);border-radius:10px;padding:6px 10px;margin-top:8px;display:inline-flex;gap:6px;align-items:baseline}
+.t-links{margin-top:8px;font-size:13.5px}
+.t-links a{color:var(--accent);font-weight:600;border-bottom:1px dashed rgba(46,107,79,.4)}
+.t-links a:hover{border-bottom-style:solid}
+.task.missed{opacity:.5;filter:grayscale(.4)}
+.task.missed .miss-badge{font-size:11px;font-weight:700;color:#a33;background:rgba(209,77,87,.1);border:1px solid rgba(209,77,87,.3);border-radius:999px;padding:2px 10px}
+
+/* ============ ЭКСПОРТ + MAX ============ */
+.export-row{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 6px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--gb);background:var(--glass-strong);box-shadow:var(--neu-sm);transition:all .22s}
+.btn:hover{transform:translateY(-2px);color:var(--accent);box-shadow:var(--neu)}
+.btn-dark{background:linear-gradient(160deg,#3A423B,#22271F);color:#fff;border-color:transparent;box-shadow:0 10px 24px rgba(35,42,34,.32)}
+.btn-dark:hover{color:#fff}
+.max-link{margin:14px 0 40px;font-size:13.5px;color:var(--muted)}
+.max-link a{color:var(--accent);font-weight:600;border-bottom:1px dashed rgba(46,107,79,.4)}
+.max-link a:hover{border-bottom-style:solid}
+.empty-state{padding:44px 20px;text-align:center;color:var(--muted);font-size:15px}
+
+/* ============ ПЕЧАТЬ ============ */
+@media print{
+    body{background:#fff;font-size:13px}
+    .topbar,.filters,.view-toggle,.month-nav,.export-row,.max-link,.cal-head p,.legend,.day-panel,.cb{display:none !important}
+    .cal-head h1{font-size:20px}
+    .cal-grid-card,.task{box-shadow:none;border:1px solid #ddd;break-inside:avoid;background:#fff}
+    .frame{margin:0;padding:0}
+}
+@media(max-width:760px){
+    .grid7{gap:4px}
+    .day{min-height:52px;padding:5px}
+    .day .num{font-size:12px}
+    .f-label{min-width:100%}
+    .cal-head{flex-direction:column;align-items:stretch}
+    .view-toggle{align-self:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="/" class="logo">Сад <span>знаний</span></a>
+    <a href="/" class="back">← На главную</a>
+</header>
+
+<main class="wrap">
+
+    <div class="cal-head">
+        <div>
+            <h1>Календарь дачника</h1>
+            <p>Выберите регион — увидите только свои работы. Отмечайте выполненное, экспортируйте, возвращайтесь за следующим месяцем.</p>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            <div class="month-nav">
+                <button class="mnav-btn" id="prevM" aria-label="Предыдущий месяц">‹</button>
+                <span class="month-title" id="monthTitle">Май 2026</span>
+                <button class="mnav-btn" id="nextM" aria-label="Следующий месяц">›</button>
+            </div>
+            <div class="view-toggle" role="tablist">
+                <button id="vGrid" class="on">Сетка</button>
+                <button id="vList">Список</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <section class="filters" aria-label="Фильтры календаря">
+        <div class="f-row">
+            <span class="f-label">Регион</span>
+            <button class="chip region" data-region="south">Юг</button>
+            <button class="chip region on" data-region="mid">Средняя полоса</button>
+            <button class="chip region" data-region="ural">Урал</button>
+            <button class="chip region" data-region="sib">Сибирь</button>
+            <button class="chip region" data-region="dv">Дальний Восток</button>
+        </div>
+        <div class="f-row">
+            <span class="f-label">Опыт</span>
+            <button class="chip exp on" data-exp="new">Новичок</button>
+            <button class="chip exp" data-exp="all">Опытный (показать всё)</button>
+        </div>
+        <div class="f-row">
+            <span class="f-label">Работы</span>
+            <button class="chip wtype t-sow" data-type="sow">Посев</button>
+            <button class="chip wtype t-plant" data-type="plant">Посадка</button>
+            <button class="chip wtype t-water" data-type="water">Полив</button>
+            <button class="chip wtype t-feed" data-type="feed">Подкормка</button>
+            <button class="chip wtype t-prune" data-type="prune">Обрезка</button>
+            <button class="chip wtype t-protect" data-type="protect">Защита</button>
+            <button class="chip wtype t-harvest" data-type="harvest">Сбор</button>
+            <button class="chip wtype t-prep" data-type="prep">Подготовка</button>
+        </div>
+    </section>
+
+    <!-- Прогресс -->
+    <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="pFill"></div></div>
+        <span class="progress-num" id="pNum">0 из 0</span>
+    </div>
+
+    <!-- СЕТКА -->
+    <section id="gridView" class="cal-grid-card">
+        <div class="grid7" id="grid"></div>
+        <div class="legend" id="legend">
+            <span><i class="mk sow"></i>Посев</span><span><i class="mk plant"></i>Посадка</span>
+            <span><i class="mk water"></i>Полив</span><span><i class="mk feed"></i>Подкормка</span>
+            <span><i class="mk prune"></i>Обрезка</span><span><i class="mk protect"></i>Защита</span>
+            <span><i class="mk harvest"></i>Сбор</span><span><i class="mk prep"></i>Подготовка</span>
+        </div>
+        <div class="day-panel" id="dayPanel" hidden>
+            <h3 id="dpTitle"></h3>
+            <div id="dpTasks"></div>
+        </div>
+    </section>
+
+    <!-- СПИСОК -->
+    <section id="listView" class="tasks" hidden></section>
+
+    <!-- Экспорт -->
+    <div class="export-row">
+        <button class="btn" onclick="window.print()">🖨 Печать</button>
+        <button class="btn" id="btnPdf">📄 Сохранить в PDF</button>
+        <button class="btn" id="btnJpg">🖼 Сохранить в JPG</button>
+        <button class="btn btn-dark" id="btnShare">🔗 Поделиться</button>
+    </div>
+    <p class="max-link">Ведём блог и короткие напоминания в MAX — <a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener">мы есть в MAX →</a></p>
+
+</main>
+
+<script>
+/* ============ ДАННЫЕ (в проде — серверный рендер, см. примечание) ============ */
+const TYPE_LABEL={sow:'Посев',plant:'Посадка',water:'Полив',feed:'Подкормка',prune:'Обрезка',protect:'Защита',harvest:'Сбор',prep:'Подготовка'};
+const REGION_LABEL={south:'Юг',mid:'Средняя полоса',ural:'Урал',sib:'Сибирь',dv:'Дальний Восток'};
+const TASKS=[
+ {id:1,title:'Посев огурцов на рассаду',type:'sow',regions:['mid','ural','sib'],exp:'new',d1:10,d2:20,pr:'must',hint:'Ориентир: почва прогрелась до +15°C',crop:'Огурец',links:[['Карточка растения «Огурец»','#']]},
+ {id:2,title:'Высадка рассады томатов в теплицу',type:'plant',regions:['mid'],exp:'all',d1:1,d2:10,pr:'must',hint:'Если ночи холоднее +8°C — отложите на неделю',crop:'Томат',links:[['Растение «Томат»','#'],['Гайд «Рассада томатов»','#']]},
+ {id:3,title:'Высадка рассады томатов в открытый грунт',type:'plant',regions:['south'],exp:'all',d1:1,d2:12,pr:'must',hint:'',crop:'Томат',links:[['Растение «Томат»','#']]},
+ {id:4,title:'Санитарная обрезка яблонь и груш',type:'prune',regions:['all'],exp:'exp',d1:1,d2:15,pr:'must',hint:'Только до распускания почек',crop:'Яблоня',links:[['Гайд «Обрезка яблони»','#']]},
+ {id:5,title:'Профилактическая обработка сада от вредителей',type:'protect',regions:['all'],exp:'exp',d1:5,d2:15,pr:'must',hint:'По зелёному конусу',crop:'Сад',links:[['Раздел «Защита»','#']]},
+ {id:6,title:'Посев моркови и свёклы в грунт',type:'sow',regions:['mid','ural','sib'],exp:'new',d1:15,d2:25,pr:'must',hint:'',crop:'Морковь',links:[['Гайд «Морковь без прореживания»','#']]},
+ {id:7,title:'Подкормка клубники азотом',type:'feed',regions:['all'],exp:'new',d1:15,d2:25,pr:'opt',hint:'',crop:'Клубника',links:[['Растение «Клубника»','#']]},
+ {id:8,title:'Посадка картофеля',type:'plant',regions:['mid','ural','sib'],exp:'new',d1:15,d2:28,pr:'must',hint:'Берёза зацвела — пора',crop:'Картофель',links:[['Раздел «Огород»','#']]},
+ {id:9,title:'Посев однолетников в грунт ( calendula, бархатцы )',type:'sow',regions:['all'],exp:'new',d1:20,d2:31,pr:'opt',hint:'',crop:'Цветы',links:[['Подборка однолетников','#']]},
+ {id:10,title:'Первый обильный полив + мульчирование грядок',type:'water',regions:['all'],exp:'new',d1:20,d2:31,pr:'opt',hint:'',crop:'Грядки',links:[['Справочник «Мульчирование»','#']]},
+ {id:11,title:'Профилактика фитофторы на томатах',type:'protect',regions:['south','mid'],exp:'all',d1:20,d2:31,pr:'opt',hint:'',crop:'Томат',links:[['Разбор «Фитофтора»','#']]},
+ {id:12,title:'Сбор первого редиса',type:'harvest',regions:['south'],exp:'all',d1:20,d2:31,pr:'opt',hint:'',crop:'Редис',links:[]},
+ {id:13,title:'Посев укропа и салата (повторный)',type:'sow',regions:['mid','ural','sib','dv'],exp:'new',d1:20,d2:31,pr:'opt',hint:'',crop:'Зелень',links:[]}
+];
+const JUNE=[ // июнь — чтобы стрелка месяцев работала
+ {id:101,title:'Высадка рассады томатов в грунт',type:'plant',regions:['mid','ural','sib'],exp:'new',d1:1,d2:10,pr:'must',hint:'Сибирь: +2 недели',crop:'Томат',links:[['Растение «Томат»','#']]},
+ {id:102,title:'Прищипка огурцов',type:'prep',regions:['all'],exp:'exp',d1:5,d2:20,pr:'opt',hint:'',crop:'Огурец',links:[['Растение «Огурец»','#']]},
+ {id:103,title:'Полив сада раз в неделю по норме',type:'water',regions:['all'],exp:'new',d1:1,d2:30,pr:'must',hint:'',crop:'Сад',links:[]}
+];
+const DATA={5:TASKS,6:JUNE};
+
+/* ============ СОСТОЯНИЕ ============ */
+const S={month:5,year:2026,region:'mid',exp:'new',types:new Set(),view:'grid',day:null};
+try{Object.assign(S,JSON.parse(localStorage.getItem('sad_cal')||'{}'));}catch(e){}
+const saveS=()=>localStorage.setItem('sad_cal',JSON.stringify({region:S.region,exp:S.exp,month:S.month,year:S.year,view:S.view}));
+const doneSet=new Set(JSON.parse(localStorage.getItem('sad_done')||'[]'));
+const saveDone=()=>localStorage.setItem('sad_done',JSON.stringify([...doneSet]));
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const today=new Date();
+
+/* ============ ФИЛЬТРАЦИЯ ============ */
+const visible=()=>{
+    const arr=DATA[S.month]||[];
+    return arr.filter(t=>{
+        if(!(t.regions.includes('all')||t.regions.includes(S.region)))return false;
+        if(S.exp==='new'&&t.exp==='exp')return false;
+        if(S.types.size&&!S.types.has(t.type))return false;
+        return true;
+    });
+};
+const taskOnDay=(t,d)=>d>=t.d1&&d<=t.d2;
+
+/* ============ РЕНДЕР ============ */
+const $=id=>document.getElementById(id);
+function render(){
+    $('monthTitle').textContent=MONTHS[S.month-1]+' '+S.year;
+    const list=visible();
+    // сетка
+    const first=new Date(S.year,S.month-1,1).getDay(),off=(first+6)%7;
+    const days=new Date(S.year,S.month,0).getDate();
+    let g='<div class="dow">Пн</div><div class="dow">Вт</div><div class="dow">Ср</div><div class="dow">Чт</div><div class="dow">Пт</div><div class="dow">Сб</div><div class="dow">Вс</div>';
+    for(let i=0;i<off;i++)g+='<div class="day empty"></div>';
+    for(let d=1;d<=days;d++){
+        const dt=new Date(S.year,S.month-1,d);
+        const wd=dt.getDay();
+        const tasks=list.filter(t=>taskOnDay(t,d));
+        const cls=['day',wd===0||wd===6?'weekend':''];
+        if(dt.toDateString()===today.toDateString()&&S.month===today.getMonth()+1&&S.year===today.getFullYear())cls.push('today');
+        if(S.day===d)cls.push('sel');
+        g+=`<div class="${cls.join(' ')}" data-day="${d}" role="button" tabindex="0" aria-label="${d} ${MONTHS[S.month-1]}">
+            <span class="num">${d}</span>
+            <div class="markers">${tasks.slice(0,4).map(t=>`<i class="mk ${t.type}" title="${t.title}"></i>`).join('')}</div>
+        </div>`;
+    }
+    $('grid').innerHTML=g;
+    $('grid').querySelectorAll('.day[data-day]').forEach(el=>{
+        const d=+el.dataset.day;
+        el.onclick=()=>{S.day=S.day===d?null:d;render();};
+        el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();S.day=S.day===d?null:d;render();}};
+    });
+    // панель дня
+    if(S.day){
+        const tasks=list.filter(t=>taskOnDay(t,S.day));
+        $('dayPanel').hidden=false;
+        $('dpTitle').textContent=`${S.day} ${MONTHS[S.month-1]} — ${tasks.length?tasks.length+' задач':'задач нет'}`;
+        $('dpTasks').innerHTML=tasks.map(t=>`<div class="dp-task"><i class="dp-dot mk ${t.type}"></i>${t.title}</div>`).join('')||'<div class="dp-task">Отдыхайте 🌿 Задач на этот день нет.</div>';
+    }else $('dayPanel').hidden=true;
+    // список
+    const sorted=[...list].sort((a,b)=>a.d1-b.d1);
+    $('listView').innerHTML=sorted.length?sorted.map(t=>{
+        const done=doneSet.has(t.id);
+        const isCur=S.month===today.getMonth()+1&&S.year===today.getFullYear();
+        const missed=isCur&&t.d2<today.getDate()&&!done;
+        const links=t.links&&t.links.length?`<div class="t-links">Подробнее: ${t.links.map(l=>`<a href="${l[1]}">${l[0]}</a>`).join(', ')}</div>`:'';
+        return `<article class="task ${done?'done':''} ${missed?'missed':''}" data-id="${t.id}">
+            <button class="cb" aria-label="Отметить выполненной"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m5 13 4 4L19 7"/></svg></button>
+            <div class="t-body">
+                <div class="t-top"><span class="t-title">${t.title}</span><span class="t-type ${t.type}">${TYPE_LABEL[t.type]}</span><span class="t-pr ${t.pr==='must'?'must':''}">${t.pr==='must'?'Обязательно':t.pr==='opt'?'Желательно':'По погоде'}</span>${missed?'<span class="miss-badge">Пропущено — запланируйте на следующий сезон</span>':''}</div>
+                <div class="t-meta"><span>📅 ${t.d1}–${t.d2} ${MONTHS[S.month-1].toLowerCase()}</span><span>🌱 ${t.crop}</span><span>👤 ${t.exp==='new'?'Новичку':t.exp==='exp'?'Опытным':'Всем'}</span></div>
+                ${t.hint?`<div class="t-hint">💡 ${t.hint}</div>`:''}
+                ${links}
+            </div>
+        </article>`;
+    }).join(''):'<div class="empty-state">События этого месяца ещё наполняются. Загляните в соседние месяцы или подпишитесь на напоминания.</div>';
+    $('listView').querySelectorAll('.task').forEach(el=>{
+        el.querySelector('.cb').onclick=()=>{
+            const id=+el.dataset.id;
+            doneSet.has(id)?doneSet.delete(id):doneSet.add(id);
+            saveDone();render();
+        };
+    });
+    // прогресс
+    const done=list.filter(t=>doneSet.has(t.id)).length;
+    $('pFill').style.width=list.length?(done/list.length*100)+'%':'0';
+    $('pNum').textContent=`${done} из ${list.length}`;
+    saveS();
+}
+
+/* ============ СОБЫТИЯ UI ============ */
+document.querySelectorAll('.region').forEach(b=>b.onclick=()=>{
+    S.region=b.dataset.region;
+    document.querySelectorAll('.region').forEach(x=>x.classList.toggle('on',x===b));render();
+});
+document.querySelectorAll('.exp').forEach(b=>b.onclick=()=>{
+    S.exp=b.dataset.exp;
+    document.querySelectorAll('.exp').forEach(x=>x.classList.toggle('on',x===b));render();
+});
+document.querySelectorAll('.wtype').forEach(b=>b.onclick=()=>{
+    const t=b.dataset.type;
+    S.types.has(t)?S.types.delete(t):S.types.add(t);
+    b.classList.toggle('on');render();
+});
+ $('vGrid').onclick=()=>{S.view='grid';$('vGrid').classList.add('on');$('vList').classList.remove('on');$('gridView').hidden=false;$('listView').hidden=true;};
+ $('vList').onclick=()=>{S.view='list';$('vList').classList.add('on');$('vGrid').classList.remove('on');$('gridView').hidden=true;$('listView').hidden=false;};
+ $('prevM').onclick=()=>{S.month--;if(S.month<1){S.month=12;S.year--;}S.day=null;render();};
+ $('nextM').onclick=()=>{S.month++;if(S.month>12){S.month=1;S.year++;}S.day=null;render();};
+ $('btnPdf').onclick=()=>window.print();
+
+/* JPG: рисуем карточку месяца на canvas */
+ $('btnJpg').onclick=()=>{
+    const list=visible();
+    const c=document.createElement('canvas');c.width=900;c.height=200+list.length*54+120;
+    const x=c.getContext('2d');
+    x.fillStyle='#F4F5F7';x.fillRect(0,0,c.width,c.height);
+    x.fillStyle='#20241F';x.font='bold 34px system-ui';x.fillText('Календарь дачника — '+MONTHS[S.month-1]+' '+S.year,50,80);
+    x.fillStyle='#5C645D';x.font='20px system-ui';x.fillText('Регион: '+REGION_LABEL[S.region]+' · znai-sad.ru',50,115);
+    list.forEach((t,i)=>{
+        const y=170+i*54;
+        x.fillStyle='#fff';x.strokeStyle='#E3E6EA';
+        x.beginPath();x.roundRect(50,y,800,44,12);x.fill();x.stroke();
+        x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--c-'+t.type)||'#3FA46F';
+        x.beginPath();x.arc(78,y+22,8,0,7);x.fill();
+        x.fillStyle='#20241F';x.font='18px system-ui';
+        x.fillText(`${t.d1}–${t.d2}. ${t.title}`.slice(0,58),100,y+29);
+        x.fillStyle=doneSet.has(t.id)?'#3FA46F':'#c9ced4';
+        x.beginPath();x.roundRect(790,y+12,20,20,6);x.fill();
+        if(doneSet.has(t.id)){x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(794,y+22);x.lineTo(799,y+27);x.lineTo(807,y+16);x.stroke();}
+    });
+    const a=document.createElement('a');
+    a.download='calendar-'+S.year+'-'+String(S.month).padStart(2,'0')+'.jpg';
+    a.href=c.toDataURL('image/jpeg',0.9);a.click();
+};
+
+/* Поделиться */
+ $('btnShare').onclick=async()=>{
+    const list=visible();
+    const data={title:'Календарь дачника — Сад знаний',
+        text:`${MONTHS[S.month-1]} ${S.year}, ${REGION_LABEL[S.region]}: ${list.length} задач на участке`,
+        url:location.origin+'/kalendar/?region='+S.region+'&month='+S.month};
+    if(navigator.share){try{await navigator.share(data);return;}catch(e){}}
+    try{await navigator.clipboard.writeText(data.text+' → '+data.url);
+        $('btnShare').textContent='✓ Ссылка скопирована';
+        setTimeout(()=>$('btnShare').textContent='🔗 Поделиться',2000);
+    }catch(e){prompt('Скопируйте ссылку:',data.url);}
+};
+
+/* Восстановить сохранённые фильтры в UI */
+document.querySelectorAll('.region').forEach(b=>b.classList.toggle('on',b.dataset.region===S.region));
+document.querySelectorAll('.exp').forEach(b=>b.classList.toggle('on',b.dataset.exp===S.exp));
+(S.view==='list')&&$('vList').click();
+render();
+</script>
+</body>
+</html>
