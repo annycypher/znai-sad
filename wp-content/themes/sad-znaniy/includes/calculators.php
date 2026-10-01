@@ -1133,6 +1133,294 @@ function sad_znaniy_ph_sanitize( $input ) {
 	return $out;
 }
 
+/* ==========================================================
+   КАЛЬКУЛЯТОР ПОСЕВА СЕМЯН (Этап 4, инструмент №4)
+   ========================================================== */
+
+/**
+ * Нормативы посева: сроки по регионам (MM-DD) и возраст рассады по культурам.
+ *
+ * region: frost — возвратные заморозки, warm — высадка теплолюбивых в грунт,
+ *         cold — посев холодостойких в грунт (начинают сезон).
+ * crop: transplant — возраст рассады в днях (0 = сеют сразу в грунт),
+ *       warm — нужна ли высадка по «тёплой» дате, shift — сдвиг от базовой даты.
+ *
+ * @return array
+ */
+function sad_znaniy_sow_defaults() {
+	return array(
+		'region' => array(
+			'south' => array(
+				'frost' => '04-10',
+				'warm'  => '04-20',
+				'cold'  => '03-25',
+			),
+			'mid'   => array(
+				'frost' => '06-05',
+				'warm'  => '05-25',
+				'cold'  => '04-20',
+			),
+			'ural'  => array(
+				'frost' => '06-12',
+				'warm'  => '06-05',
+				'cold'  => '05-05',
+			),
+			'sib'   => array(
+				'frost' => '06-12',
+				'warm'  => '06-05',
+				'cold'  => '05-15',
+			),
+			'dv'    => array(
+				'frost' => '06-12',
+				'warm'  => '06-05',
+				'cold'  => '05-05',
+			),
+		),
+		'crop'   => array(
+			'tomat'   => 55,
+			'ogurets' => 28,
+			'kapusta' => 40,
+			'kornepl' => 0,
+			'zelen'   => 0,
+			'kartoff' => 0,
+		),
+		'shift'  => array(
+			'kartoff' => 7,
+			'kapusta' => -10,
+			'kornepl' => 0,
+			'zelen'   => 0,
+			'tomat'   => 0,
+			'ogurets' => 0,
+		),
+	);
+}
+
+/**
+ * Подписи культур для калькулятора посева.
+ *
+ * @return array
+ */
+function sad_znaniy_sow_crops() {
+	return array(
+		'tomat'   => __( 'Томат, перец, баклажан', 'sad-znaniy' ),
+		'ogurets' => __( 'Огурцы, кабачки, тыква', 'sad-znaniy' ),
+		'kapusta' => __( 'Капуста', 'sad-znaniy' ),
+		'kornepl' => __( 'Морковь, свёкла, редис', 'sad-znaniy' ),
+		'zelen'   => __( 'Зелень и салат', 'sad-znaniy' ),
+		'kartoff' => __( 'Картофель', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Теплолюбивые культуры (высадка по «тёплой» дате региона).
+ *
+ * @return array
+ */
+function sad_znaniy_sow_warm_crops() {
+	return array( 'tomat', 'ogurets' );
+}
+
+/**
+ * Связь группы культур с растением базы знаний (для ссылки).
+ *
+ * @return array
+ */
+function sad_znaniy_sow_crop_plants() {
+	return array(
+		'tomat'   => array( 'tomat', 'perets-sladkiy' ),
+		'ogurets' => array( 'ogurets', 'kabachok' ),
+		'kapusta' => array( 'kapusta-belokochannaya' ),
+		'kornepl' => array( 'morkov', 'svekla', 'kartofel' ),
+		'zelen'   => array(),
+		'kartoff' => array( 'kartofel' ),
+	);
+}
+
+/**
+ * Нормативы посева из опций темы.
+ *
+ * @return array
+ */
+function sad_znaniy_sow_options() {
+	$saved = get_option( 'sz_calc_sow', array() );
+	if ( ! is_array( $saved ) ) {
+		$saved = array();
+	}
+
+	return sad_znaniy_array_merge_deep( sad_znaniy_sow_defaults(), $saved );
+}
+
+/**
+ * Проверяет дату вида MM-DD.
+ *
+ * @param string $date Дата.
+ * @param string $fallback Значение по умолчанию.
+ * @return string
+ */
+function sad_znaniy_sow_clean_date( $date, $fallback ) {
+	$date = trim( (string) $date );
+	if ( preg_match( '/^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/', $date ) ) {
+		return $date;
+	}
+
+	return $fallback;
+}
+
+/**
+ * Очищает нормативы посева из админки.
+ *
+ * @param mixed $input Сырые значения.
+ * @return array
+ */
+function sad_znaniy_sow_sanitize( $input ) {
+	$input   = is_array( $input ) ? $input : array();
+	$default = sad_znaniy_sow_defaults();
+	$out     = array();
+
+	foreach ( $default['region'] as $region => $row ) {
+		foreach ( array( 'frost', 'warm', 'cold' ) as $field ) {
+			$out['region'][ $region ][ $field ] = sad_znaniy_sow_clean_date(
+				isset( $input['region'][ $region ][ $field ] ) ? $input['region'][ $region ][ $field ] : '',
+				$row[ $field ]
+			);
+		}
+	}
+
+	foreach ( $default['crop'] as $crop => $days ) {
+		$value = isset( $input['crop'][ $crop ] ) ? (int) $input['crop'][ $crop ] : $days;
+		$out['crop'][ $crop ] = min( 120, max( 0, $value ) );
+	}
+
+	foreach ( $default['shift'] as $crop => $days ) {
+		$value = isset( $input['shift'][ $crop ] ) ? (int) $input['shift'][ $crop ] : $days;
+		$out['shift'][ $crop ] = min( 60, max( -60, $value ) );
+	}
+
+	return $out;
+}
+
+/**
+ * Считает сроки посева и высадки для региона и культуры.
+ *
+ * @param array $args region, crop, year.
+ * @return array Результат расчёта.
+ */
+function sad_znaniy_sow_calc( $args ) {
+	$o       = sad_znaniy_sow_options();
+	$crops   = sad_znaniy_sow_crops();
+	$warm    = sad_znaniy_sow_warm_crops();
+	$regions = sad_znaniy_region_keys();
+
+	$args = wp_parse_args(
+		$args,
+		array(
+			'region' => 'mid',
+			'crop'   => 'tomat',
+			'year'   => 0,
+		)
+	);
+
+	$region = isset( $regions[ $args['region'] ] ) ? $args['region'] : 'mid';
+	$crop   = isset( $crops[ $args['crop'] ] ) ? $args['crop'] : 'tomat';
+	$year   = (int) $args['year'];
+	if ( $year < 2000 ) {
+		$year = (int) current_time( 'Y' );
+	}
+
+	$rules      = $o['region'][ $region ];
+	$transplant = (int) $o['crop'][ $crop ];
+	$shift      = (int) $o['shift'][ $crop ];
+	$is_warm    = in_array( $crop, $warm, true );
+
+	// Дата высадки в грунт: для теплолюбивых — «тёплая» дата, для остальных — старт сезона.
+	$plant_ts = strtotime( $year . '-' . $rules[ $is_warm ? 'warm' : 'cold' ] . ' 12:00:00' );
+	$plant_ts += $shift * DAY_IN_SECONDS;
+
+	$sow_ts = $plant_ts - $transplant * DAY_IN_SECONDS;
+	$frost_ts = strtotime( $year . '-' . $rules['frost'] . ' 12:00:00' );
+
+	$today = strtotime( current_time( 'Y-m-d' ) . ' 12:00:00' );
+	$days_to_sow   = (int) round( ( $sow_ts - $today ) / DAY_IN_SECONDS );
+	$days_to_plant = (int) round( ( $plant_ts - $today ) / DAY_IN_SECONDS );
+
+	// Если срок уже прошёл — показываем следующий сезон.
+	$next_sow_label = '';
+	if ( $days_to_sow < 0 ) {
+		$next_ts        = strtotime( ( $year + 1 ) . '-' . gmdate( 'm-d', $sow_ts ) . ' 12:00:00' );
+		$next_sow_label = date_i18n( 'j F Y', $next_ts );
+	}
+
+	$sow_month = (int) date_i18n( 'n', $sow_ts );
+
+	// Ссылка на карточку растения базы знаний для этой группы культур.
+	$plant_url = '';
+	foreach ( sad_znaniy_sow_crop_plants()[ $crop ] as $slug ) {
+		$page = get_page_by_path( $slug, OBJECT, 'plant' );
+		if ( $page ) {
+			$plant_url = get_permalink( $page );
+			break;
+		}
+	}
+
+	$lines = array();
+	$lines[] = sprintf(
+		/* translators: 1: регион, 2: дата высадки */
+		__( '%1$s: высадка в грунт — %2$s.', 'sad-znaniy' ),
+		$regions[ $region ],
+		date_i18n( 'j F', $plant_ts )
+	);
+	$lines[] = ( $transplant > 0 )
+		? sprintf(
+			/* translators: 1: культура, 2: дней, 3: дата посева */
+			__( '%1$s: рассада занимает %2$s дней, значит сеять — %3$s.', 'sad-znaniy' ),
+			$crops[ $crop ],
+			number_format_i18n( $transplant ),
+			date_i18n( 'j F', $sow_ts )
+		)
+		: sprintf(
+			/* translators: 1: культура, 2: дата посева */
+			__( '%1$s: сеют сразу в грунт — %2$s.', 'sad-znaniy' ),
+			$crops[ $crop ],
+			date_i18n( 'j F', $sow_ts )
+		);
+	$lines[] = sprintf(
+		/* translators: %s: дата заморозков */
+		__( 'Возвратные заморозки в регионе — до %s: высаживать раньше нельзя.', 'sad-znaniy' ),
+		date_i18n( 'j F', $frost_ts )
+	);
+
+	$warnings = array();
+	if ( $transplant > 0 ) {
+		$warnings[] = __( 'Рассаду закаляют 7–10 дней: выносят на воздух сначала на час, потом на весь день.', 'sad-znaniy' );
+		$warnings[] = __( 'Сев семян — не высадка: если посеете на рассаду позже, высаживать придётся переросшую и она будет болеть.', 'sad-znaniy' );
+	}
+	if ( in_array( $region, array( 'mid', 'ural', 'sib', 'dv' ), true ) ) {
+		$warnings[] = __( 'В этом регионе рассаду высаживают под лутрасил — на случай заморозков до первой декады июня.', 'sad-znaniy' );
+	}
+	$warnings[] = __( 'Сроки сдвигаются на 1–2 недели по погоде: проверяйте прогноз и прогревание почвы, а не только календарь.', 'sad-znaniy' );
+
+	return array(
+		'region'         => $region,
+		'crop'           => $crop,
+		'year'           => $year,
+		'method'         => ( $transplant > 0 ) ? 'rassada' : 'grunt',
+		'transplant'     => $transplant,
+		'sow_ts'         => $sow_ts,
+		'plant_ts'       => $plant_ts,
+		'sow_label'      => date_i18n( 'j F Y', $sow_ts ),
+		'plant_label'    => date_i18n( 'j F Y', $plant_ts ),
+		'frost_label'    => date_i18n( 'j F Y', $frost_ts ),
+		'days_to_sow'    => $days_to_sow,
+		'days_to_plant'  => $days_to_plant,
+		'next_sow_label' => $next_sow_label,
+		'sow_month'      => $sow_month,
+		'plant_url'      => $plant_url,
+		'calendar_url'   => sad_znaniy_calendar_url( $year, $sow_month, $region ),
+		'lines'          => $lines,
+		'warnings'       => $warnings,
+	);
+}
+
 /**
  * Растения базы знаний с диапазоном pH и их отношением к текущему pH.
  *
@@ -1351,6 +1639,84 @@ function sad_znaniy_ph_shortcode( $atts ) {
 add_shortcode( 'sz_calc_ph', 'sad_znaniy_ph_shortcode' );
 
 /**
+ * Шорткод «[sz_calc_sow]» — калькулятор посева семян.
+ *
+ * @param array $atts Атрибуты шорткода.
+ * @return string
+ */
+function sad_znaniy_sow_shortcode( $atts ) {
+	$atts = shortcode_atts(
+		array( 'title' => '' ),
+		$atts,
+		'sz_calc_sow'
+	);
+
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- публичный расчёт.
+	$args = array(
+		'region' => isset( $_GET['szs_region'] ) ? sanitize_key( wp_unslash( $_GET['szs_region'] ) ) : 'mid',
+		'crop'   => isset( $_GET['szs_crop'] ) ? sanitize_key( wp_unslash( $_GET['szs_crop'] ) ) : 'tomat',
+		'year'   => isset( $_GET['szs_year'] ) ? (int) wp_unslash( $_GET['szs_year'] ) : 0,
+	);
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+	$calc    = sad_znaniy_sow_calc( $args );
+	$regions = sad_znaniy_region_keys();
+	$crops   = sad_znaniy_sow_crops();
+
+	sad_znaniy_calc_enqueue();
+
+	ob_start();
+	?>
+	<div class="calc">
+		<?php if ( '' !== $atts['title'] ) : ?>
+			<h2 class="calc-title"><?php echo esc_html( $atts['title'] ); ?></h2>
+		<?php endif; ?>
+
+		<form class="calc-form" method="get" action="">
+			<div class="calc-row">
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Регион', 'sad-znaniy' ); ?></span>
+					<select name="szs_region" data-region="1" data-has-region>
+						<?php foreach ( $regions as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $calc['region'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Культура', 'sad-znaniy' ); ?></span>
+					<select name="szs_crop">
+						<?php foreach ( $crops as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $calc['crop'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Год', 'sad-znaniy' ); ?></span>
+					<input type="number" name="szs_year" min="2024" max="2100" step="1" value="<?php echo esc_attr( $calc['year'] ); ?>">
+				</label>
+			</div>
+
+			<p class="calc-actions">
+				<button type="submit" class="btn btn-dark"><?php esc_html_e( 'Рассчитать', 'sad-znaniy' ); ?><span class="arr">→</span></button>
+				<span class="calc-hint"><?php esc_html_e( 'Сроки рассчитаны от даты высадки в грунт для вашего региона: их видно ниже.', 'sad-znaniy' ); ?></span>
+			</p>
+		</form>
+		<?php
+		$tpl = get_template_directory() . '/template-parts/calc-sow-result.php';
+		if ( file_exists( $tpl ) ) {
+			include $tpl;
+		}
+		?>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'sz_calc_sow', 'sad_znaniy_sow_shortcode' );
+
+
+/**
  * Поля нормативов калькулятора грунта и pH для страницы настроек темы.
  *
  * @param array $o Текущие нормативы.
@@ -1405,6 +1771,82 @@ function sad_znaniy_ph_admin_fields( $o ) {
 					<?php $field( '[measure][bucket]', $o['measure']['bucket'], '100' ); ?>
 				</label>
 				<p class="description"><?php esc_html_e( 'Чтобы переводить килограммы в понятные меры. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
+/**
+ * Поля нормативов калькулятора посева семян для страницы настроек темы.
+ *
+ * @param array $o Текущие нормативы.
+ */
+function sad_znaniy_sow_admin_fields( $o ) {
+	$name    = 'sad_znaniy_options[sz_calc_sow]';
+	$regions = sad_znaniy_region_keys();
+	$crops   = sad_znaniy_sow_crops();
+
+	$date = function ( $path, $value ) use ( $name ) {
+		printf(
+			'<input type="text" name="%1$s" value="%2$s" pattern="(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])" placeholder="ММ-ДД" style="width:74px;">',
+			esc_attr( $name . $path ),
+			esc_attr( $value )
+		);
+	};
+	$num = function ( $path, $value ) use ( $name ) {
+		printf(
+			'<input type="number" step="1" name="%1$s" value="%2$s" style="width:66px;">',
+			esc_attr( $name . $path ),
+			esc_attr( $value )
+		);
+	};
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Даты по регионам', 'sad-znaniy' ); ?></th>
+			<td>
+				<table role="presentation" style="font-size:12px;border-collapse:collapse;">
+					<tr>
+						<th style="text-align:left;padding:0 12px 4px 0;"><?php esc_html_e( 'Регион', 'sad-znaniy' ); ?></th>
+						<th style="text-align:left;padding:0 12px 4px 0;"><?php esc_html_e( 'Заморозки до', 'sad-znaniy' ); ?></th>
+						<th style="text-align:left;padding:0 12px 4px 0;"><?php esc_html_e( 'Холодостойкие в грунт', 'sad-znaniy' ); ?></th>
+						<th style="text-align:left;padding:0 0 4px;"><?php esc_html_e( 'Теплолюбивые в грунт', 'sad-znaniy' ); ?></th>
+					</tr>
+					<?php foreach ( $regions as $key => $label ) : ?>
+						<tr>
+							<td style="padding:0 12px 6px 0;"><?php echo esc_html( $label ); ?></td>
+							<td style="padding:0 12px 6px 0;"><?php $date( '[region][' . $key . '][frost]', $o['region'][ $key ]['frost'] ); ?></td>
+							<td style="padding:0 12px 6px 0;"><?php $date( '[region][' . $key . '][cold]', $o['region'][ $key ]['cold'] ); ?></td>
+							<td style="padding:0 0 6px;"><?php $date( '[region][' . $key . '][warm]', $o['region'][ $key ]['warm'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</table>
+				<p class="description"><?php esc_html_e( 'Формат ММ-ДД. От «теплолюбивых в грунт» считается сев на рассаду, от «холодостойких в грунт» — прямой сев. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Возраст рассады, дней', 'sad-znaniy' ); ?></th>
+			<td>
+				<?php foreach ( $crops as $key => $label ) : ?>
+					<label style="display:inline-block;margin:0 16px 10px 0;font-size:12px;">
+						<?php echo esc_html( $label ); ?><br>
+						<?php $num( '[crop][' . $key . ']', $o['crop'][ $key ] ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Сколько дней культура растёт в рассаде. 0 — сеют сразу в грунт, рассада не нужна. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Сдвиг срока, дней', 'sad-znaniy' ); ?></th>
+			<td>
+				<?php foreach ( $crops as $key => $label ) : ?>
+					<label style="display:inline-block;margin:0 16px 10px 0;font-size:12px;">
+						<?php echo esc_html( $label ); ?><br>
+						<?php $num( '[shift][' . $key . ']', $o['shift'][ $key ] ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Опережение (+) или задержка (−) относительно общей даты региона. Например, картофель сажают позже холодостойких. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
 			</td>
 		</tr>
 	</table>

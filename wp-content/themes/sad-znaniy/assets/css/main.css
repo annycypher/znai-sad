@@ -626,3 +626,8 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
 .calc-plants h4{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
 .calc-plants-list{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;margin:0 0 6px;padding-left:18px;font-size:14px}
 @media (max-width:700px){.calc-plants-list{grid-template-columns:1fr}}
+/* Калькулятор посева семян: обратный отсчёт и ссылки */
+.calc-count{font-size:15px;font-weight:600;margin:0 0 12px;color:var(--ink)}
+.calc-links{display:flex;flex-wrap:wrap;gap:6px 20px;margin:0 0 16px}
+.calc-link{font-size:14px;font-weight:600;color:var(--emerald);text-decoration:none;border-bottom:1px solid rgba(0,0,0,.14)}
+.calc-link:hover{border-bottom-color:currentColor}

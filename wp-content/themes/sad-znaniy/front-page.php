@@ -179,7 +179,7 @@ $section_links = array(
 						<strong>Грунт и pH</strong>
 						<span class="circle-go" aria-hidden="true">→</span>
 					</a>
-					<a href="http://sadznaniy.local/kalkulyatory/" class="tile">
+					<a href="http://sadznaniy.local/kalkulyator-poseva/" class="tile">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V10"/><path d="M12 10C12 6 9 4 5 4c0 4 3 6 7 6Z"/><path d="M12 13c0-3.5 2.5-5 6-5 0 3.5-2.5 5-6 5Z"/><path d="M6 22h12"/></svg>
 						</span>

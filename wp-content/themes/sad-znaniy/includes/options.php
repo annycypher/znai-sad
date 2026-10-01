@@ -57,6 +57,10 @@ function sad_znaniy_sanitize_options( $input ) {
 		$output['sz_calc_ph'] = sad_znaniy_ph_sanitize( $input['sz_calc_ph'] );
 	}
 
+	if ( isset( $input['sz_calc_sow'] ) && function_exists( 'sad_znaniy_sow_sanitize' ) ) {
+		$output['sz_calc_sow'] = sad_znaniy_sow_sanitize( $input['sz_calc_sow'] );
+	}
+
 	return $output;
 }
 
@@ -128,6 +132,10 @@ function sad_znaniy_render_options_page() {
 			<h2><?php esc_html_e( 'Калькулятор грунта и pH', 'sad-znaniy' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Сколько извести или серы нужно на 1 м², чтобы сдвинуть pH на единицу, и бытовые мерки. Все числа с пометкой «ФАКТ-ПРОВЕРКА».', 'sad-znaniy' ); ?></p>
 			<?php sad_znaniy_ph_admin_fields( sad_znaniy_ph_options() ); ?>
+
+			<h2><?php esc_html_e( 'Калькулятор посева семян', 'sad-znaniy' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Сроки высадки и рассады по регионам, возраст рассады по культурам. Все числа с пометкой «ФАКТ-ПРОВЕРКА».', 'sad-znaniy' ); ?></p>
+			<?php sad_znaniy_sow_admin_fields( sad_znaniy_sow_options() ); ?>
 
 			<?php submit_button(); ?>
 		</form>
