@@ -24,3 +24,4 @@ require_once SAD_ZNANIY_DIR . '/includes/install.php';
 require_once SAD_ZNANIY_DIR . '/includes/options.php';
 require_once SAD_ZNANIY_DIR . '/includes/patterns.php';
 require_once SAD_ZNANIY_DIR . '/includes/dashboard.php';
+require_once SAD_ZNANIY_DIR . '/includes/seo.php';

@@ -52,12 +52,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 			<div class="footer-col">
 				<h4><?php esc_html_e( 'Инструменты', 'sad-znaniy' ); ?></h4>
-				<ul>
-					<li><a href="#tools"><?php esc_html_e( 'Калькуляторы', 'sad-znaniy' ); ?></a></li>
-					<li><a href="#tools"><?php esc_html_e( 'Планировщик', 'sad-znaniy' ); ?></a></li>
-					<li><a href="#calendar"><?php esc_html_e( 'Календарь', 'sad-znaniy' ); ?></a></li>
-					<li><a href="#sadvogorod"><?php esc_html_e( 'База знаний', 'sad-znaniy' ); ?></a></li>
-				</ul>
+				<?php
+				if ( has_nav_menu( 'footer-tools-menu' ) ) {
+					wp_nav_menu(
+						array(
+							'theme_location' => 'footer-tools-menu',
+							'container'      => false,
+							'menu_class'     => '',
+							'depth'          => 1,
+						)
+					);
+				} else {
+					?>
+					<ul>
+						<li><a href="<?php echo esc_url( home_url( '/kalkulyatory/' ) ); ?>"><?php esc_html_e( 'Калькуляторы', 'sad-znaniy' ); ?></a></li>
+						<li><a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>"><?php esc_html_e( 'Планировщик', 'sad-znaniy' ); ?></a></li>
+						<li><a href="<?php echo esc_url( home_url( '/sobytiya/' ) ); ?>"><?php esc_html_e( 'Календарь', 'sad-znaniy' ); ?></a></li>
+						<li><a href="<?php echo esc_url( home_url( '/rasteniya/' ) ); ?>"><?php esc_html_e( 'База знаний', 'sad-znaniy' ); ?></a></li>
+					</ul>
+					<?php
+				}
+				?>
 			</div>
 			<div class="footer-col">
 				<h4><?php esc_html_e( 'Контакты', 'sad-znaniy' ); ?></h4>

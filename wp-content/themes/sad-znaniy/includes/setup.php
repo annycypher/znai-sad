@@ -24,8 +24,9 @@ function sad_znaniy_setup() {
 
 	register_nav_menus(
 		array(
-			'main-menu'   => __( 'Основное меню (шапка)', 'sad-znaniy' ),
-			'footer-menu' => __( 'Меню в футере', 'sad-znaniy' ),
+			'main-menu'        => __( 'Основное меню (шапка)', 'sad-znaniy' ),
+			'footer-menu'      => __( 'Меню в футере (разделы)', 'sad-znaniy' ),
+			'footer-tools-menu' => __( 'Футер: инструменты', 'sad-znaniy' ),
 		)
 	);
 }
