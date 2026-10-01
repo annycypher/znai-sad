@@ -1048,6 +1048,370 @@ function sad_znaniy_fert_admin_fields( $o ) {
 	<?php
 }
 
+/* ==========================================================
+   КАЛЬКУЛЯТОР ГРУНТА И pH (Этап 4, инструмент №3)
+   ========================================================== */
+
+/**
+ * Нормативы раскисления и подкисления по типам почвы.
+ *
+ * lime — известь/доломитовая мука, sulfur — коллоидная сера:
+ * граммы на 1 м² на сдвиг pH на 1,0. measures — бытовые мерки (г).
+ *
+ * @return array
+ */
+function sad_znaniy_ph_defaults() {
+	return array(
+		'lime'    => array(
+			'sand' => 200,
+			'loam' => 300,
+			'clay' => 400,
+			'peat' => 500,
+		),
+		'sulfur'  => array(
+			'sand' => 30,
+			'loam' => 50,
+			'clay' => 70,
+			'peat' => 40,
+		),
+		'measure' => array(
+			'glass'  => 200,
+			'bucket' => 10000,
+		),
+	);
+}
+
+/**
+ * Подписи материалов для коррекции pH.
+ *
+ * @return array
+ */
+function sad_znaniy_ph_methods() {
+	return array(
+		'lime'   => __( 'Известь или доломитовая мука (раскислить)', 'sad-znaniy' ),
+		'sulfur' => __( 'Коллоидная сера (подкислить)', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Нормативы калькулятора pH из опций темы.
+ *
+ * @return array
+ */
+function sad_znaniy_ph_options() {
+	$saved = get_option( 'sz_calc_ph', array() );
+	if ( ! is_array( $saved ) ) {
+		$saved = array();
+	}
+
+	return sad_znaniy_array_merge_deep( sad_znaniy_ph_defaults(), $saved );
+}
+
+/**
+ * Очищает нормативы pH из админки.
+ *
+ * @param mixed $input Сырые значения.
+ * @return array
+ */
+function sad_znaniy_ph_sanitize( $input ) {
+	$input   = is_array( $input ) ? $input : array();
+	$default = sad_znaniy_ph_defaults();
+	$out     = array();
+
+	foreach ( array( 'lime', 'sulfur' ) as $group ) {
+		foreach ( $default[ $group ] as $soil => $grams ) {
+			$value = isset( $input[ $group ][ $soil ] ) ? (float) $input[ $group ][ $soil ] : $grams;
+			$out[ $group ][ $soil ] = min( 5000, max( 1, $value ) );
+		}
+	}
+
+	foreach ( $default['measure'] as $key => $grams ) {
+		$value = isset( $input['measure'][ $key ] ) ? (float) $input['measure'][ $key ] : $grams;
+		$out['measure'][ $key ] = min( 50000, max( 1, $value ) );
+	}
+
+	return $out;
+}
+
+/**
+ * Растения базы знаний с диапазоном pH и их отношением к текущему pH.
+ *
+ * @param float $current Текущий pH.
+ * @param float $target  Целевой pH.
+ * @return array ['now' => array[], 'after' => array[], 'no' => array[]]
+ */
+function sad_znaniy_ph_plants( $current, $target ) {
+	$plants = get_posts(
+		array(
+			'post_type'      => 'plant',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
+		)
+	);
+
+	$out = array(
+		'now'   => array(),
+		'after' => array(),
+		'no'    => array(),
+	);
+
+	foreach ( $plants as $plant ) {
+		$from = (string) get_post_meta( $plant->ID, '_sz_plant_ph_from', true );
+		$to   = (string) get_post_meta( $plant->ID, '_sz_plant_ph_to', true );
+		if ( '' === $from || '' === $to ) {
+			continue;
+		}
+
+		$from = (float) $from;
+		$to   = (float) $to;
+		$row  = array(
+			'title' => get_the_title( $plant ),
+			'url'   => get_permalink( $plant ),
+			'range' => number_format_i18n( $from, 1 ) . '–' . number_format_i18n( $to, 1 ),
+		);
+
+		if ( $current >= $from && $current <= $to ) {
+			$out['now'][] = $row;
+		} elseif ( $target >= $from && $target <= $to ) {
+			$out['after'][] = $row;
+		} else {
+			$out['no'][] = $row;
+		}
+	}
+
+	return $out;
+}
+
+/**
+ * Считает, сколько материала нужно, чтобы сдвинуть pH.
+ *
+ * @param array $args soil, current, target, qty.
+ * @return array Результат расчёта.
+ */
+function sad_znaniy_ph_calc( $args ) {
+	$o     = sad_znaniy_ph_options();
+	$soils = sad_znaniy_water_soils();
+
+	$args = wp_parse_args(
+		$args,
+		array(
+			'soil'    => 'loam',
+			'current' => 5.5,
+			'target'  => 6.5,
+			'qty'     => 10,
+		)
+	);
+
+	$soil    = isset( $soils[ $args['soil'] ] ) ? $args['soil'] : 'loam';
+	$current = min( 9.0, max( 3.0, (float) $args['current'] ) );
+	$target  = min( 9.0, max( 3.0, (float) $args['target'] ) );
+	$qty     = min( 10000, max( 1, (float) $args['qty'] ) );
+
+	$delta  = round( $target - $current, 2 );
+	$method = ( $delta > 0 ) ? 'lime' : ( ( $delta < 0 ) ? 'sulfur' : '' );
+	$rate   = ( '' !== $method ) ? (float) $o[ $method ][ $soil ] : 0;
+	$dose   = abs( $delta ) * $rate;
+	$total  = $dose * $qty;
+
+	$methods  = sad_znaniy_ph_methods();
+	$glasses  = $total / max( 1, (float) $o['measure']['glass'] );
+	$buckets  = $total / max( 1, (float) $o['measure']['bucket'] );
+
+	$lines = array();
+	if ( '' === $method ) {
+		$lines[] = __( 'Текущий pH совпадает с целевым — корректировать не нужно.', 'sad-znaniy' );
+	} else {
+		$lines[] = sprintf(
+			/* translators: 1: текущий pH, 2: целевой pH, 3: сдвиг, 4: материал, 5: норма */
+			__( 'Сдвиг %1$s → %2$s, то есть на %3$s. Для этой почвы норма «%4$s» — %5$s г/м² на каждый 1,0 pH.', 'sad-znaniy' ),
+			number_format_i18n( $current, 1 ),
+			number_format_i18n( $target, 1 ),
+			number_format_i18n( abs( $delta ), 1 ),
+			$methods[ $method ],
+			number_format_i18n( $rate, 0 )
+		);
+		$lines[] = sprintf(
+			/* translators: 1: сдвиг, 2: норма, 3: доза */
+			__( '%1$s × %2$s г = %3$s г на 1 м².', 'sad-znaniy' ),
+			number_format_i18n( abs( $delta ), 1 ),
+			number_format_i18n( $rate, 0 ),
+			number_format_i18n( $dose, 0 )
+		);
+	}
+
+	$warnings = array();
+	if ( 'lime' === $method ) {
+		$warnings[] = __( 'Известь и доломитовую муку вносят осенью под перекопку, раз в 3–5 лет; большую дозу дробят на два приёма.', 'sad-znaniy' );
+		$warnings[] = __( 'Не вносите известь вместе с азотными удобрениями и навозом — часть азота теряется.', 'sad-znaniy' );
+	}
+	if ( 'sulfur' === $method ) {
+		$warnings[] = __( 'Сера работает медленно: эффект заметен через 6–12 месяцев, в один сезон повторять нельзя.', 'sad-znaniy' );
+	}
+	$warnings[] = __( 'Не выравнивайте pH по всему участку: гортензии, голубике и рододендронам нужна кислая почва — оставьте им отдельную зону.', 'sad-znaniy' );
+	$warnings[] = __( 'pH проверяйте раз в 2–3 года (лакмусовая бумага или pH-метр), а не «на глаз».', 'sad-znaniy' );
+
+	return array(
+		'soil'     => $soil,
+		'current'  => $current,
+		'target'   => $target,
+		'delta'    => $delta,
+		'method'   => $method,
+		'rate'     => $rate,
+		'dose'     => $dose,
+		'total'    => $total,
+		'glasses'  => $glasses,
+		'buckets'  => $buckets,
+		'lines'    => $lines,
+		'warnings' => $warnings,
+		'plants'   => sad_znaniy_ph_plants( $current, $target ),
+	);
+}
+
+/**
+ * Шорткод «[sz_calc_ph]» — калькулятор грунта и pH.
+ *
+ * @param array $atts Атрибуты шорткода.
+ * @return string
+ */
+function sad_znaniy_ph_shortcode( $atts ) {
+	$atts = shortcode_atts(
+		array( 'title' => '' ),
+		$atts,
+		'sz_calc_ph'
+	);
+
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- публичный расчёт.
+	$args = array(
+		'soil'    => isset( $_GET['szp_soil'] ) ? sanitize_key( wp_unslash( $_GET['szp_soil'] ) ) : 'loam',
+		'current' => isset( $_GET['szp_current'] ) ? (float) wp_unslash( $_GET['szp_current'] ) : 5.5,
+		'target'  => isset( $_GET['szp_target'] ) ? (float) wp_unslash( $_GET['szp_target'] ) : 6.5,
+		'qty'     => isset( $_GET['szp_qty'] ) ? (float) wp_unslash( $_GET['szp_qty'] ) : 10,
+	);
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+	$calc  = sad_znaniy_ph_calc( $args );
+	$soils = sad_znaniy_water_soils();
+
+	sad_znaniy_calc_enqueue();
+
+	ob_start();
+	?>
+	<div class="calc">
+		<?php if ( '' !== $atts['title'] ) : ?>
+			<h2 class="calc-title"><?php echo esc_html( $atts['title'] ); ?></h2>
+		<?php endif; ?>
+
+		<form class="calc-form" method="get" action="">
+			<div class="calc-row">
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Тип почвы', 'sad-znaniy' ); ?></span>
+					<select name="szp_soil">
+						<?php foreach ( $soils as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $calc['soil'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Площадь, м²', 'sad-znaniy' ); ?></span>
+					<input type="number" name="szp_qty" min="1" max="10000" step="1" value="<?php echo esc_attr( (int) $calc['qty'] ); ?>">
+				</label>
+			</div>
+
+			<div class="calc-row">
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Текущий pH', 'sad-znaniy' ); ?></span>
+					<input type="number" name="szp_current" min="3" max="9" step="0.1" value="<?php echo esc_attr( number_format( $calc['current'], 1, '.', '' ) ); ?>">
+				</label>
+
+				<label class="calc-field">
+					<span><?php esc_html_e( 'Целевой pH', 'sad-znaniy' ); ?></span>
+					<input type="number" name="szp_target" min="3" max="9" step="0.1" value="<?php echo esc_attr( number_format( $calc['target'], 1, '.', '' ) ); ?>">
+				</label>
+			</div>
+
+			<p class="calc-actions">
+				<button type="submit" class="btn btn-dark"><?php esc_html_e( 'Рассчитать', 'sad-znaniy' ); ?><span class="arr">→</span></button>
+				<span class="calc-hint"><?php esc_html_e( 'Ниже — что из растений базы знаний подойдёт при вашем pH прямо сейчас, а что после коррекции.', 'sad-znaniy' ); ?></span>
+			</p>
+		</form>
+		<?php
+		$tpl = get_template_directory() . '/template-parts/calc-ph-result.php';
+		if ( file_exists( $tpl ) ) {
+			include $tpl;
+		}
+		?>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'sz_calc_ph', 'sad_znaniy_ph_shortcode' );
+
+/**
+ * Поля нормативов калькулятора грунта и pH для страницы настроек темы.
+ *
+ * @param array $o Текущие нормативы.
+ */
+function sad_znaniy_ph_admin_fields( $o ) {
+	$soils = sad_znaniy_water_soils();
+	$name  = 'sad_znaniy_options[sz_calc_ph]';
+
+	$field = function ( $path, $value, $step = '10' ) use ( $name ) {
+		printf(
+			'<input type="number" step="%1$s" name="%2$s" value="%3$s" style="width:92px;">',
+			esc_attr( $step ),
+			esc_attr( $name . $path ),
+			esc_attr( $value )
+		);
+	};
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Раскислить: г/м² на 1,0 pH', 'sad-znaniy' ); ?></th>
+			<td>
+				<?php foreach ( $soils as $key => $label ) : ?>
+					<label style="display:inline-block;margin:0 16px 10px 0;font-size:12px;">
+						<?php echo esc_html( $label ); ?><br>
+						<?php $field( '[lime][' . $key . ']', $o['lime'][ $key ] ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Сколько извести или доломитовой муки нужно на 1 м², чтобы поднять pH на единицу. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Подкислить: г/м² на 1,0 pH', 'sad-znaniy' ); ?></th>
+			<td>
+				<?php foreach ( $soils as $key => $label ) : ?>
+					<label style="display:inline-block;margin:0 16px 10px 0;font-size:12px;">
+						<?php echo esc_html( $label ); ?><br>
+						<?php $field( '[sulfur][' . $key . ']', $o['sulfur'][ $key ] ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Сколько коллоидной серы нужно на 1 м², чтобы опустить pH на единицу. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Бытовые мерки, г', 'sad-znaniy' ); ?></th>
+			<td>
+				<label style="font-size:12px;">
+					<?php esc_html_e( 'Стакан', 'sad-znaniy' ); ?><br>
+					<?php $field( '[measure][glass]', $o['measure']['glass'], '5' ); ?>
+				</label>
+				<label style="font-size:12px;margin-left:18px;">
+					<?php esc_html_e( 'Ведро', 'sad-znaniy' ); ?><br>
+					<?php $field( '[measure][bucket]', $o['measure']['bucket'], '100' ); ?>
+				</label>
+				<p class="description"><?php esc_html_e( 'Чтобы переводить килограммы в понятные меры. ФАКТ-ПРОВЕРКА.', 'sad-znaniy' ); ?></p>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
+
 
 
 

@@ -53,6 +53,10 @@ function sad_znaniy_sanitize_options( $input ) {
 		$output['sz_calc_fert'] = sad_znaniy_fert_sanitize( $input['sz_calc_fert'] );
 	}
 
+	if ( isset( $input['sz_calc_ph'] ) && function_exists( 'sad_znaniy_ph_sanitize' ) ) {
+		$output['sz_calc_ph'] = sad_znaniy_ph_sanitize( $input['sz_calc_ph'] );
+	}
+
 	return $output;
 }
 
@@ -120,6 +124,10 @@ function sad_znaniy_render_options_page() {
 			<h2><?php esc_html_e( 'Калькулятор удобрений', 'sad-znaniy' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Нормы действующего вещества, поправки по культурам, проценты в удобрениях и бытовые мерки. Все числа с пометкой «ФАКТ-ПРОВЕРКА».', 'sad-znaniy' ); ?></p>
 			<?php sad_znaniy_fert_admin_fields( sad_znaniy_fert_options() ); ?>
+
+			<h2><?php esc_html_e( 'Калькулятор грунта и pH', 'sad-znaniy' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Сколько извести или серы нужно на 1 м², чтобы сдвинуть pH на единицу, и бытовые мерки. Все числа с пометкой «ФАКТ-ПРОВЕРКА».', 'sad-znaniy' ); ?></p>
+			<?php sad_znaniy_ph_admin_fields( sad_znaniy_ph_options() ); ?>
 
 			<?php submit_button(); ?>
 		</form>

@@ -172,7 +172,7 @@ $section_links = array(
 						<strong>Удобрения</strong>
 						<span class="circle-go" aria-hidden="true">→</span>
 					</a>
-					<a href="http://sadznaniy.local/kalkulyatory/" class="tile">
+					<a href="http://sadznaniy.local/kalkulyator-grunta-i-ph/" class="tile">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-3 7-7 0-4.5-4-8-7-13-3 5-7 8.5-7 13 0 4 3 7 7 7Z"/></svg>
 						</span>

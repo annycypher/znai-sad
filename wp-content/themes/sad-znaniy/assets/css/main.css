@@ -619,3 +619,10 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
 .calc-warn ul{margin:0;padding-left:18px;font-size:14px}
 .calc-warn li{margin-bottom:6px}
 @media (max-width:700px){.calc-row{grid-template-columns:1fr}.calc-num{font-size:38px}}
+
+/* Калькулятор грунта и pH: блок «что растёт при вашем pH» */
+.calc-plants{margin:18px 0 16px}
+.calc-plants h3{font-size:16px;margin-bottom:10px;color:var(--ink)}
+.calc-plants h4{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+.calc-plants-list{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;margin:0 0 6px;padding-left:18px;font-size:14px}
+@media (max-width:700px){.calc-plants-list{grid-template-columns:1fr}}
