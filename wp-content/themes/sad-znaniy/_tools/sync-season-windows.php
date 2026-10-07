@@ -139,6 +139,31 @@ foreach ( array( 'крокус', 'нарцисс', 'гиацинт', 'муска
 foreach ( array_keys( $sz_melko_ids ) as $sz_mid ) {
 	$sz_crops[ $sz_mid ] = array( 'melko', 'posadka', 'Посадка мелколуковичных', $sz_melko_text );
 }
+
+// Растения, добавленные позже (сопоставление по названию) — тип окна по культуре.
+$sz_late = array(
+	'лилия'   => array( 'perennial', 'posadka', 'Осенняя посадка и деление лилий' ),
+	'примула' => array( 'perennial', 'posadka', 'Осенняя посадка и деление примул' ),
+	'астильба' => array( 'perennial', 'posadka', 'Осенняя посадка и деление астильб' ),
+	'бадан'   => array( 'perennial', 'posadka', 'Осенняя посадка и деление баданов' ),
+	'мята'    => array( 'perennial', 'posadka', 'Осенняя посадка и деление мяты' ),
+	'мелисса' => array( 'perennial', 'posadka', 'Осенняя посадка и деление мелиссы' ),
+	'тимьян'  => array( 'perennial', 'posadka', 'Осенняя посадка и деление тимьяна' ),
+	'чабрец'  => array( 'perennial', 'posadka', 'Осенняя посадка и деление тимьяна' ),
+	'виноград' => array( 'saplings', 'posadka', 'Посадка саженцев винограда осенью' ),
+);
+foreach ( $sz_late as $sz_needle => $sz_meta ) {
+	$sz_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB
+		$wpdb->prepare(
+			"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'plant' AND post_status IN ('publish','draft','pending','future') AND post_title LIKE %s",
+			'%' . $wpdb->esc_like( $sz_needle ) . '%'
+		)
+	);
+	foreach ( (array) $sz_ids as $sz_one ) {
+		$sz_crops[ (int) $sz_one ] = array( $sz_meta[0], $sz_meta[1], $sz_meta[2], ( 'saplings' === $sz_meta[0] ) ? $sz_sapling_text : $sz_peren_text );
+	}
+}
+
 echo 'мелколуковичные на сайте: ' . ( $sz_melko_ids ? implode( ',', array_keys( $sz_melko_ids ) ) : 'пока нет — события будут созданы, когда появятся карточки' ) . "\n";
 
 // Укрытие роз — подготовительное событие (не сезонное окно культуры).
@@ -242,12 +267,14 @@ function sz_sync_target( $index, $work, $regs, $title, $text, $from, $to, $crop,
 			wp_delete_post( (int) $extra, true );
 			$stat['deleted']++;
 		}
+		// Статус не понижаем: уже опубликованное окно остаётся опубликованным.
+		$status = ( 'publish' === get_post_status( $first ) ) ? 'publish' : 'draft';
 		wp_update_post(
 			array(
 				'ID'           => $first,
 				'post_title'   => $title,
 				'post_content' => $text,
-				'post_status'  => 'draft',
+				'post_status'  => $status,
 			)
 		);
 		sz_write_event_meta( $first, $crop, $work, $regs, $from, $to, $hint, $prio );
