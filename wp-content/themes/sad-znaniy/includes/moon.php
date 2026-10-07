@@ -404,8 +404,21 @@ function sad_znaniy_moon_render_page() {
 				</tbody>
 			</table>
 
+			<h2><?php esc_html_e( 'Частые вопросы (FAQ)', 'sad-znaniy' ); ?></h2>
+			<p class="description" style="max-width:820px;">
+				<?php esc_html_e( 'Одна строка = один вопрос в формате «вопрос | ответ». В ответах можно использовать ссылки. Подстановки: {crop} — культура месяца, {month_in} — «в мае», {month_name} — «Май», {year}, {good_days} — ближайшие благоприятные даты, {good_count} — число благоприятных дней, {bad_days} — дни покоя, {base_url} — адрес сайта. Пусто — набор по умолчанию.', 'sad-znaniy' ); ?>
+			</p>
+			<textarea class="widefat" rows="8" style="max-width:900px;font-family:Consolas,monospace;" name="sad_znaniy_moon_faq" placeholder="<?php echo esc_attr( sad_znaniy_moon_faq_default() ); ?>"><?php echo esc_textarea( (string) get_option( 'sad_znaniy_moon_faq', '' ) ); ?></textarea>
+
 			<h2><?php esc_html_e( 'Индексация', 'sad-znaniy' ); ?></h2>
-			<p><label><input type="checkbox" name="sad_znaniy_moon_index" value="1" <?php checked( '1' === (string) get_option( 'sad_znaniy_moon_index', '1' ) ); ?>> <?php esc_html_e( 'Год в индексе — добавлять страницы месяцев в sitemap.xml.', 'sad-znaniy' ); ?></label></p>
+			<p>
+				<input type="hidden" name="sad_znaniy_moon_index" value="0">
+				<label><input type="checkbox" name="sad_znaniy_moon_index" value="1" <?php checked( '1' === (string) get_option( 'sad_znaniy_moon_index', '1' ) ); ?>> <?php esc_html_e( 'Год в индексе — добавлять страницы месяцев в sitemap.xml.', 'sad-znaniy' ); ?></label>
+			</p>
+			<p>
+				<input type="hidden" name="sad_znaniy_moon_index_cat" value="0">
+				<label><input type="checkbox" name="sad_znaniy_moon_index_cat" value="1" <?php checked( '1' === (string) get_option( 'sad_znaniy_moon_index_cat', '1' ) ); ?>> <?php esc_html_e( 'Страницы категорий (48 URL: месяц × культура) в sitemap.xml.', 'sad-znaniy' ); ?></label>
+			</p>
 
 			<?php submit_button(); ?>
 		</form>
@@ -475,6 +488,11 @@ function sad_znaniy_moon_context() {
 	if ( ! $month && isset( $_GET['m'] ) ) {
 		$month = absint( $_GET['m'] );
 	}
+	$cat = sad_znaniy_moon_category_by_slug( (string) get_query_var( 'sz_cat' ) );
+	if ( '' === $cat && isset( $_GET['culture'] ) ) {
+		$c   = sanitize_key( wp_unslash( $_GET['culture'] ) );
+		$cat = array_key_exists( $c, sad_znaniy_lunar_categories() ) ? $c : '';
+	}
 	$year = isset( $_GET['y'] ) ? absint( $_GET['y'] ) : (int) current_time( 'Y' );
 	if ( $month < 1 || $month > 12 ) {
 		$month = (int) current_time( 'n' );
@@ -482,7 +500,7 @@ function sad_znaniy_moon_context() {
 	if ( $year < 2026 || $year > 2028 ) {
 		$year = (int) current_time( 'Y' );
 	}
-	return array( 'month' => $month, 'year' => $year );
+	return array( 'month' => $month, 'year' => $year, 'cat' => $cat );
 }
 
 /**
@@ -535,12 +553,16 @@ function sad_znaniy_moon_seo_option() {
  * @param int $year  Год.
  * @return string
  */
-function sad_znaniy_moon_seo_title( $month, $year ) {
+function sad_znaniy_moon_seo_title( $month, $year, $cat = '' ) {
+	$names = sad_znaniy_moon_month_names();
+	if ( '' !== $cat ) {
+		$seo = sad_znaniy_moon_category_seo( $cat );
+		return 'Лунный календарь на ' . $names[ $month ][1] . ' ' . $year . ': благоприятные дни для ' . $seo[0];
+	}
 	$opt = sad_znaniy_moon_seo_option();
 	if ( ! empty( $opt[ $month ]['title'] ) ) {
 		return $opt[ $month ]['title'];
 	}
-	$names = sad_znaniy_moon_month_names();
 	return 'Лунный посевной календарь на ' . $names[ $month ][1] . ' ' . $year . ': благоприятные дни по культурам';
 }
 
@@ -551,13 +573,18 @@ function sad_znaniy_moon_seo_title( $month, $year ) {
  * @param int $year  Год.
  * @return string
  */
-function sad_znaniy_moon_seo_description( $month, $year ) {
+function sad_znaniy_moon_seo_description( $month, $year, $cat = '' ) {
+	$names = sad_znaniy_moon_month_names();
+	if ( '' !== $cat ) {
+		$seo = sad_znaniy_moon_category_seo( $cat );
+		$n   = count( sad_znaniy_moon_category_days( $year, $month, $cat ) );
+		return $n . ' ' . sad_znaniy_moon_plural( $n, 'благоприятный день', 'благоприятных дня', 'благоприятных дней' ) . ' для ' . $seo[1] . ' в ' . $names[ $month ][2] . ' ' . $year . '. Лунный посевной календарь по дням: фазы Луны, знаки зодиака и запрещённые дни.';
+	}
 	$opt = sad_znaniy_moon_seo_option();
 	if ( ! empty( $opt[ $month ]['desc'] ) ) {
 		return $opt[ $month ]['desc'];
 	}
-	$names = sad_znaniy_moon_month_names();
-	$n     = sad_znaniy_moon_good_count( $year, $month );
+	$n = sad_znaniy_moon_good_count( $year, $month );
 	return $n . ' ' . sad_znaniy_moon_plural( $n, 'благоприятный день', 'благоприятных дня', 'благоприятных дней' ) . ' для посадки в ' . $names[ $month ][2] . ' ' . $year . '. Фазы луны, знаки зодиака, запрещённые дни и совмещение с климатом региона.';
 }
 
@@ -587,55 +614,91 @@ function sad_znaniy_moon_month_crop() {
 }
 
 /**
- * FAQ месяца (3 вопроса).
+ * FAQ по умолчанию. Редактируется в админке (Внешний вид → Лунный справочник).
+ * Подстановки: {crop}, {month_in}, {month_name}, {year}, {good_days},
+ * {good_count}, {bad_days}, {base_url}. Одна строка = «вопрос | ответ».
+ *
+ * @return string
+ */
+function sad_znaniy_moon_faq_default() {
+	return implode(
+		"\n",
+		array(
+			'Когда сеять {crop} по лунному календарю? | Благоприятные дни в {month_in} {year}: {good_days}. Ориентируйтесь также на погоду и агрономические сроки вашего региона.',
+			'Какие дни в {month_in} нельзя работать в саду? | Дни покоя — новолуние и полнолуние: {bad_days}. В эти дни не сеют, не сажают и не обрезают.',
+			'Что такое дни покоя и можно ли сеять в новолуние? | В новолуние и полнолуние (и ±1 день) растения перестраиваются: всходы получаются слабыми, а срезы плохо заживают. В эти даты лучше заняться подготовкой грядок, рыхлением и осмотром растений.',
+			'Как подобрать благоприятный день для конкретной культуры? | Включите фильтр «Показать дни для культуры» либо откройте карточку растения в <a href="{base_url}rasteniya/">Базе знаний</a>: у каждой культуры указана лунная категория, а блок «Лунные дни для посадки» покажет её даты на текущий и следующий месяц.',
+			'Совпадает ли лунный календарь с климатом региона? | Луна от региона не зависит, а сроки посева — зависят. Совместите календарь с <a href="{base_url}kalendar/">Календарём дачника</a>: если луна «за», а в вашем регионе ещё рано — ждём.',
+			'Почему даты в разных лунных календарях отличаются на день? | Фаза может смениться за несколько часов до или после полуночи, а источники считают по разным часовым поясам, поэтому расхождение в ±1 день — норма. Для спорных дат ориентируйтесь на погоду и состояние почвы.',
+		)
+	) . "\n";
+}
+
+/**
+ * FAQ месяца: заголовок и ответ из опции с подстановками.
  *
  * @param int $year  Год.
  * @param int $month Месяц.
  * @return array
  */
 function sad_znaniy_moon_faq( $year, $month ) {
-	$names      = sad_znaniy_moon_month_names();
-	$crop       = sad_znaniy_moon_month_crop();
-	$days       = sad_znaniy_moon_month_days( $year, $month );
-	$good_dates = array();
-	$bad_dates  = array();
-	foreach ( $days as $d ) {
+	$names = sad_znaniy_moon_month_names();
+	$crop  = sad_znaniy_moon_month_crop();
+	$good  = array();
+	$bad   = array();
+	foreach ( sad_znaniy_moon_month_days( $year, $month ) as $d ) {
 		if ( in_array( 'posev', $d['good'], true ) || in_array( 'posadka', $d['good'], true ) ) {
-			$good_dates[] = $d['day'];
+			$good[] = (int) $d['day'];
 		}
 		if ( 'new' === $d['phase']['key'] || 'full' === $d['phase']['key'] ) {
-			$bad_dates[] = $d['day'];
+			$bad[] = (int) $d['day'];
 		}
 	}
-	$gd = $good_dates ? implode( ', ', array_slice( $good_dates, 0, 6 ) ) : '—';
-	$bd = $bad_dates ? implode( ', ', $bad_dates ) : '';
 
-	return array(
-		array(
-			'q' => 'Когда сеять ' . $crop[ $month ] . ' по лунному календарю?',
-			'a' => 'Благоприятные дни в ' . $names[ $month ][2] . ' ' . $year . ': ' . $gd . '. Ориентируйтесь также на погоду и агрономические сроки вашего региона.',
-		),
-		array(
-			'q' => 'Какие дни в ' . $names[ $month ][2] . ' нельзя работать в саду?',
-			'a' => $bd ? ( 'Дни покоя — новолуние и полнолуние: ' . $bd . '. В эти дни не сеют, не сажают и не обрезают.' ) : 'В этом месяце ярко выраженных дней покоя нет.',
-		),
-		array(
-			'q' => 'Что такое дни покоя и можно ли сеять в новолуние?',
-			'a' => 'В новолуние и полнолуние (и ±1 день) растения перестраиваются: всходы получаются слабыми, а срезы плохо заживают. Поэтому в эти даты мы не рекомендуем посев, посадку и обрезку — лучше заняться подготовкой грядок, рыхлением и осмотром растений.',
-		),
-		array(
-			'q' => 'Как подобрать благоприятный день для конкретной культуры?',
-			'a' => 'Включите фильтр «Показать дни для культуры» выше либо откройте карточку растения в <a href="' . esc_url( home_url( '/rasteniya/' ) ) . '">Базе знаний</a>: у каждой культуры указана лунная категория, а блок «Лунные дни для посадки» покажет её даты на текущий и следующий месяц.',
-		),
-		array(
-			'q' => 'Совпадает ли лунный календарь с климатом региона?',
-			'a' => 'Луна от региона не зависит, а сроки посева — зависят. Совместите лунный календарь с <a href="' . esc_url( home_url( '/kalendar/' ) ) . '">Календарём дачника</a>: если луна «за», а в вашем регионе ещё рано — ждём.',
-		),
-		array(
-			'q' => 'Почему даты в разных лунных календарях отличаются на день?',
-			'a' => 'Фаза может смениться за несколько часов до или после полуночи, а источники считают по разным часовым поясам, поэтому расхождение в ±1 день — норма. Для спорных дат ориентируйтесь на погоду и состояние почвы.',
-		),
+	$map = array(
+		'{crop}'       => isset( $crop[ $month ] ) ? $crop[ $month ] : '',
+		'{month_in}'   => $names[ $month ][2],
+		'{month_name}' => $names[ $month ][0],
+		'{year}'       => (string) $year,
+		'{good_days}'  => $good ? implode( ', ', array_slice( $good, 0, 6 ) ) : '—',
+		'{good_count}' => (string) count( $good ),
+		'{bad_days}'   => $bad ? implode( ', ', $bad ) : '—',
+		'{base_url}'   => home_url( '/' ),
 	);
+
+	$raw = (string) get_option( 'sad_znaniy_moon_faq', '' );
+	if ( '' === trim( $raw ) ) {
+		$raw = sad_znaniy_moon_faq_default();
+	}
+
+	$out = array();
+	foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
+		$line = trim( $line );
+		if ( '' === $line || false === strpos( $line, '|' ) ) {
+			continue;
+		}
+		list( $q, $a ) = explode( '|', $line, 2 );
+		$q             = trim( $q );
+		$a             = trim( $a );
+		if ( '' !== $q && '' !== $a ) {
+			$out[] = array(
+				'q' => strtr( $q, $map ),
+				'a' => strtr( $a, $map ),
+			);
+		}
+	}
+
+	return $out;
+}
+
+/**
+ * Очищает FAQ перед сохранением (разрешены ссылки).
+ *
+ * @param mixed $value Значение.
+ * @return string
+ */
+function sad_znaniy_moon_sanitize_faq( $value ) {
+	return wp_kses_post( (string) $value );
 }
 
 /**
@@ -645,10 +708,10 @@ function sad_znaniy_moon_faq( $year, $month ) {
  * @param int $year  Год.
  * @return string
  */
-function sad_znaniy_moon_schema( $month, $year ) {
+function sad_znaniy_moon_schema( $month, $year, $cat = '' ) {
 	$names    = sad_znaniy_moon_month_names();
 	$base     = home_url( '/lunnyj-kalendar/' );
-	$page_url = $base . $names[ $month ][1] . '/';
+	$page_url = ( '' !== $cat ) ? sad_znaniy_moon_category_url( $month, $cat ) : sad_znaniy_moon_month_url( $month );
 
 	$items = array();
 	foreach ( sad_znaniy_moon_month_days( $year, $month ) as $i => $d ) {
@@ -669,17 +732,20 @@ function sad_znaniy_moon_schema( $month, $year ) {
 		);
 	}
 
+	$crumbs = array(
+		array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Главная', 'item' => home_url( '/' ) ),
+		array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Лунный календарь', 'item' => $base ),
+		array( '@type' => 'ListItem', 'position' => 3, 'name' => $names[ $month ][0] . ' ' . $year, 'item' => sad_znaniy_moon_month_url( $month ) ),
+	);
+	if ( '' !== $cat ) {
+		$cat_labels = sad_znaniy_lunar_categories();
+		$crumbs[]   = array( '@type' => 'ListItem', 'position' => 4, 'name' => isset( $cat_labels[ $cat ] ) ? $cat_labels[ $cat ] : $cat, 'item' => $page_url );
+	}
+
 	$graph = array(
 		array( '@type' => 'ItemList', 'name' => 'Дни ' . $names[ $month ][1] . ' ' . $year, 'itemListElement' => $items ),
 		array( '@type' => 'FAQPage', 'mainEntity' => $faq ),
-		array(
-			'@type'           => 'BreadcrumbList',
-			'itemListElement' => array(
-				array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Главная', 'item' => home_url( '/' ) ),
-				array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Лунный календарь', 'item' => $base ),
-				array( '@type' => 'ListItem', 'position' => 3, 'name' => $names[ $month ][0] . ' ' . $year, 'item' => $page_url ),
-			),
-		),
+		array( '@type' => 'BreadcrumbList', 'itemListElement' => $crumbs ),
 	);
 
 	return wp_json_encode( array( '@context' => 'https://schema.org', '@graph' => $graph ), JSON_UNESCAPED_UNICODE );
@@ -703,7 +769,7 @@ function sad_znaniy_moon_is_page() {
 function sad_znaniy_moon_title_parts( $parts ) {
 	if ( sad_znaniy_moon_is_page() ) {
 		$c               = sad_znaniy_moon_context();
-		$parts['title']  = sad_znaniy_moon_seo_title( $c['month'], $c['year'] );
+		$parts['title']  = sad_znaniy_moon_seo_title( $c['month'], $c['year'], $c['cat'] );
 		unset( $parts['site'], $parts['tagline'] );
 	}
 	return $parts;
@@ -717,10 +783,11 @@ function sad_znaniy_moon_head() {
 	if ( ! sad_znaniy_moon_is_page() ) {
 		return;
 	}
-	$c = sad_znaniy_moon_context();
-	echo '<link rel="canonical" href="' . esc_url( sad_znaniy_moon_month_url( $c['month'] ) ) . '" />' . "\n";
-	echo '<meta name="description" content="' . esc_attr( sad_znaniy_moon_seo_description( $c['month'], $c['year'] ) ) . '" />' . "\n";
-	echo '<script type="application/ld+json">' . sad_znaniy_moon_schema( $c['month'], $c['year'] ) . '</script>' . "\n";
+	$c         = sad_znaniy_moon_context();
+	$canonical = ( '' !== $c['cat'] ) ? sad_znaniy_moon_category_url( $c['month'], $c['cat'] ) : sad_znaniy_moon_month_url( $c['month'] );
+	echo '<link rel="canonical" href="' . esc_url( $canonical ) . '" />' . "\n";
+	echo '<meta name="description" content="' . esc_attr( sad_znaniy_moon_seo_description( $c['month'], $c['year'], $c['cat'] ) ) . '" />' . "\n";
+	echo '<script type="application/ld+json">' . sad_znaniy_moon_schema( $c['month'], $c['year'], $c['cat'] ) . '</script>' . "\n";
 }
 add_action( 'wp_head', 'sad_znaniy_moon_head', 3 );
 
@@ -729,7 +796,7 @@ add_action( 'wp_head', 'sad_znaniy_moon_head', 3 );
  */
 function sad_znaniy_moon_assets() {
 	$dir = get_template_directory();
-	$need_css = is_front_page() || is_page_template( 'template-lunar.php' ) || is_page_template( 'template-calendar.php' );
+	$need_css = is_front_page() || is_page_template( 'template-lunar.php' ) || is_page_template( 'template-calendar.php' ) || is_singular( 'post' );
 
 	if ( $need_css ) {
 		wp_enqueue_style( 'sad-znaniy-lunar', get_template_directory_uri() . '/assets/css/lunar.css', array(), filemtime( $dir . '/assets/css/lunar.css' ) );
@@ -833,6 +900,7 @@ function sad_znaniy_moon_month_url( $month ) {
  */
 function sad_znaniy_moon_query_vars( $vars ) {
 	$vars[] = 'sz_mslug';
+	$vars[] = 'sz_cat';
 	return $vars;
 }
 add_filter( 'query_vars', 'sad_znaniy_moon_query_vars' );
@@ -841,6 +909,7 @@ add_filter( 'query_vars', 'sad_znaniy_moon_query_vars' );
  * Rewrite: /lunnyj-kalendar/{month}/ → страница лунного календаря.
  */
 function sad_znaniy_moon_rewrite() {
+	add_rewrite_rule( '^lunnyj-kalendar/([a-z0-9-]+)/([a-z0-9-]+)/?$', 'index.php?pagename=lunnyj-kalendar&sz_mslug=$matches[1]&sz_cat=$matches[2]', 'top' );
 	add_rewrite_rule( '^lunnyj-kalendar/([a-z0-9-]+)/?$', 'index.php?pagename=lunnyj-kalendar&sz_mslug=$matches[1]', 'top' );
 }
 add_action( 'init', 'sad_znaniy_moon_rewrite', 11 );
@@ -849,9 +918,9 @@ add_action( 'init', 'sad_znaniy_moon_rewrite', 11 );
  * Разово сбрасывает правила перезаписи после появления новых.
  */
 function sad_znaniy_moon_maybe_flush() {
-	if ( '1' !== get_option( 'sad_znaniy_moon_rules_version' ) ) {
+	if ( '2' !== get_option( 'sad_znaniy_moon_rules_version' ) ) {
 		flush_rewrite_rules();
-		update_option( 'sad_znaniy_moon_rules_version', '1', false );
+		update_option( 'sad_znaniy_moon_rules_version', '2', false );
 	}
 }
 add_action( 'init', 'sad_znaniy_moon_maybe_flush', 21 );
@@ -860,11 +929,26 @@ add_action( 'init', 'sad_znaniy_moon_maybe_flush', 21 );
  * 301 с ?m=NN на канонический ЧПУ месяца.
  */
 function sad_znaniy_moon_canonical_redirect() {
-	if ( is_page_template( 'template-lunar.php' ) && isset( $_GET['m'] ) ) {
+	if ( ! is_page_template( 'template-lunar.php' ) ) {
+		return;
+	}
+
+	$raw_cat = (string) get_query_var( 'sz_cat' );
+	if ( '' !== $raw_cat && '' === sad_znaniy_moon_category_by_slug( $raw_cat ) ) {
 		$c = sad_znaniy_moon_context();
 		wp_safe_redirect( sad_znaniy_moon_month_url( $c['month'] ), 301 );
 		exit;
 	}
+	if ( '' !== $raw_cat ) {
+		return; // Уже канонический ЧПУ категории.
+	}
+	if ( ! isset( $_GET['m'] ) && ! isset( $_GET['culture'] ) ) {
+		return;
+	}
+	$c      = sad_znaniy_moon_context();
+	$target = ( '' !== $c['cat'] ) ? sad_znaniy_moon_category_url( $c['month'], $c['cat'] ) : sad_znaniy_moon_month_url( $c['month'] );
+	wp_safe_redirect( $target, 301 );
+	exit;
 }
 add_action( 'template_redirect', 'sad_znaniy_moon_canonical_redirect', 2 );
 
@@ -880,6 +964,11 @@ function sad_znaniy_moon_sitemap_urls() {
 	$urls = array();
 	for ( $m = 1; $m <= 12; $m++ ) {
 		$urls[] = sad_znaniy_moon_month_url( $m );
+		if ( '1' === (string) get_option( 'sad_znaniy_moon_index_cat', '1' ) ) {
+			foreach ( array_keys( sad_znaniy_moon_category_slugs() ) as $cat ) {
+				$urls[] = sad_znaniy_moon_category_url( $m, $cat );
+			}
+		}
 	}
 	return $urls;
 }
@@ -925,6 +1014,38 @@ function sad_znaniy_moon_register_index() {
 	);
 }
 add_action( 'admin_init', 'sad_znaniy_moon_register_index' );
+
+/**
+ * Регистрирует опцию FAQ (редактируется в админке).
+ */
+function sad_znaniy_moon_register_faq() {
+	register_setting(
+		'sad_znaniy_moon',
+		'sad_znaniy_moon_faq',
+		array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sad_znaniy_moon_sanitize_faq',
+			'default'           => '',
+		)
+	);
+}
+add_action( 'admin_init', 'sad_znaniy_moon_register_faq' );
+
+/**
+ * Регистрирует флаг индексации страниц категорий.
+ */
+function sad_znaniy_moon_register_index_cat() {
+	register_setting(
+		'sad_znaniy_moon',
+		'sad_znaniy_moon_index_cat',
+		array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sad_znaniy_moon_sanitize_index',
+			'default'           => '1',
+		)
+	);
+}
+add_action( 'admin_init', 'sad_znaniy_moon_register_index_cat' );
 
 /**
  * Очищает флаг индексации.
@@ -1102,7 +1223,7 @@ function sad_znaniy_moon_plant_block( $plant_id ) {
 		$months[] = array(
 			'label' => isset( $names[ $pair[1] ][0] ) ? $names[ $pair[1] ][0] : '',
 			'days'  => sad_znaniy_moon_category_days( $pair[0], $pair[1], $cat ),
-			'url'   => add_query_arg( 'culture', $cat, sad_znaniy_moon_month_url( $pair[1] ) ),
+			'url'   => sad_znaniy_moon_category_url( $pair[1], $cat ),
 		);
 	}
 
@@ -1111,5 +1232,155 @@ function sad_znaniy_moon_plant_block( $plant_id ) {
 		'label'  => isset( $categories[ $cat ] ) ? $categories[ $cat ] : '',
 		'months' => $months,
 	);
+}
+
+/* ====================== ПЕРЕЛИНКОВКА: СТАТЬИ ====================== */
+
+/**
+ * Блок-приглашение в лунный календарь для статей (обратная перелинковка).
+ *
+ * @return string HTML или ''.
+ */
+function sad_znaniy_moon_article_cta() {
+	if ( ! is_singular( 'post' ) || has_category( 'retsepty' ) ) {
+		return '';
+	}
+
+	$year  = (int) current_time( 'Y' );
+	$month = (int) current_time( 'n' );
+	$names = sad_znaniy_moon_month_names();
+
+	$days = array();
+	foreach ( sad_znaniy_moon_month_days( $year, $month ) as $d ) {
+		if ( in_array( 'posev', $d['good'], true ) || in_array( 'posadka', $d['good'], true ) ) {
+			$days[] = (int) $d['day'];
+		}
+	}
+	$n     = count( $days );
+	$first = $days ? implode( ', ', array_slice( $days, 0, 5 ) ) : '—';
+
+	$html  = '<aside class="moon-cta">';
+	$html .= '<h2 class="moon-cta__title"><span aria-hidden="true">🌙</span> ' . esc_html__( 'Свериться с Луной', 'sad-znaniy' ) . '</h2>';
+	$html .= '<p>' . esc_html( sprintf( 'В %1$s %2$d %3$s благоприятны для посева и посадки. Ближайшие даты: %4$s.', $names[ $month ][2] . ' ' . $year, $n, sad_znaniy_moon_plural( $n, 'день', 'дня', 'дней' ), $first ) ) . '</p>';
+	$html .= '<p><a class="btn btn-light" href="' . esc_url( sad_znaniy_moon_month_url( $month ) ) . '">' . esc_html( sprintf( 'Лунный посевной календарь на %s →', $names[ $month ][1] ) ) . '</a></p>';
+	$html .= '</aside>';
+
+	return $html;
+}
+
+/* =================== РАСТЕНИЯ МЕСЯЦА (ПЕРЕЛИНКОВКА) =================== */
+
+/**
+ * Растения, которые сеют или сажают в месяце (карточки для перелинковки).
+ *
+ * @param int $month Месяц (1–12).
+ * @return array ID => заголовок.
+ */
+function sad_znaniy_moon_month_plants( $month ) {
+	$stems = array(
+		1  => array( 'томат', 'перец', 'баклажан', 'сельдерей' ),
+		2  => array( 'томат', 'перец', 'баклажан', 'петуни' ),
+		3  => array( 'томат', 'перец', 'капуст', 'салат' ),
+		4  => array( 'редис', 'салат', 'укроп', 'петрушк', 'морков' ),
+		5  => array( 'огур', 'томат', 'кабач', 'тыкв' ),
+		6  => array( 'перец', 'кабач', 'баклажан', 'огур' ),
+		7  => array( 'томат', 'огур', 'морков', 'свёкл' ),
+		8  => array( 'редьк', 'редис', 'салат', 'дайкон' ),
+		9  => array( 'чеснок', 'лук', 'клубник' ),
+		10 => array( 'чеснок', 'лук', 'морков', 'свёкл' ),
+		11 => array( 'лук', 'чеснок', 'морков' ),
+		12 => array( 'лук', 'чеснок', 'петрушк' ),
+	);
+	$month = (int) $month;
+	if ( empty( $stems[ $month ] ) ) {
+		return array();
+	}
+
+	$out = array();
+	$ids = get_posts(
+		array(
+			'post_type'      => 'plant',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		)
+	);
+	foreach ( $ids as $pid ) {
+		$title = get_the_title( $pid );
+		foreach ( $stems[ $month ] as $stem ) {
+			if ( false !== mb_stripos( $title, $stem ) ) {
+				$out[ (int) $pid ] = $title;
+				break;
+			}
+		}
+		if ( count( $out ) >= 5 ) {
+			break;
+		}
+	}
+
+	return $out;
+}
+
+/* ======================= ЧПУ КАТЕГОРИЙ ======================= */
+
+/**
+ * Слаги категорий для ЧПУ лунного календаря.
+ *
+ * @return array Ключ категории => слаг.
+ */
+function sad_znaniy_moon_category_slugs() {
+	return array(
+		'plod'  => 'plody',
+		'koren' => 'korneplody',
+		'list'  => 'zelen',
+		'cvet'  => 'tsvety',
+	);
+}
+
+/**
+ * Ключ категории по её слагу.
+ *
+ * @param string $slug Слаг.
+ * @return string Ключ или ''.
+ */
+function sad_znaniy_moon_category_by_slug( $slug ) {
+	$key = array_search( (string) $slug, sad_znaniy_moon_category_slugs(), true );
+	return ( $key ) ? (string) $key : '';
+}
+
+/**
+ * ЧПУ-адрес страницы категории в месяце.
+ *
+ * @param int    $month Месяц (1–12).
+ * @param string $cat   Ключ категории.
+ * @return string
+ */
+function sad_znaniy_moon_category_url( $month, $cat ) {
+	$slugs = sad_znaniy_moon_category_slugs();
+	$mslug = sad_znaniy_month_slugs();
+	$month = (int) $month;
+	if ( ! isset( $slugs[ $cat ] ) || $month < 1 || $month > 12 ) {
+		return sad_znaniy_moon_month_url( $month );
+	}
+	return home_url( '/lunnyj-kalendar/' . $mslug[ $month ] . '/' . $slugs[ $cat ] . '/' );
+}
+
+/**
+ * SEO-формулировки категории: [винительный падеж, родительный].
+ *
+ * @param string $cat Ключ категории.
+ * @return array
+ */
+function sad_znaniy_moon_category_seo( $cat ) {
+	$map = array(
+		'plod'  => array( 'плодов и ягод', 'посадки плодовых и ягодных культур' ),
+		'koren' => array( 'корнеплодов и лука', 'посадки корнеплодов, лука и чеснока' ),
+		'list'  => array( 'зелени и листовых', 'посева зелени, салата и капусты' ),
+		'cvet'  => array( 'цветов', 'посадки и посева цветов' ),
+	);
+	return isset( $map[ $cat ] ) ? $map[ $cat ] : array( 'посадок', 'посадок' );
 }
 

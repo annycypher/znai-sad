@@ -26,9 +26,17 @@ $sz_faq    = sad_znaniy_moon_faq( $sz_year, $sz_month );
 $sz_work   = sad_znaniy_work_types();
 $sz_page     = get_permalink();
 $sz_cats     = sad_znaniy_moon_element_category();
-$sz_culture  = isset( $_GET['culture'] ) ? sanitize_key( wp_unslash( $_GET['culture'] ) ) : '';
-if ( ! array_key_exists( $sz_culture, sad_znaniy_lunar_categories() ) ) {
-	$sz_culture = '';
+$sz_cat      = $sz_ctx['cat'];
+$sz_culture  = $sz_cat;
+$sz_cat_info = array();
+if ( '' !== $sz_cat ) {
+	$sz_lab      = sad_znaniy_lunar_categories();
+	$sz_seo      = sad_znaniy_moon_category_seo( $sz_cat );
+	$sz_cat_info = array(
+		'label' => isset( $sz_lab[ $sz_cat ] ) ? $sz_lab[ $sz_cat ] : '',
+		'title' => $sz_seo[0],
+		'days'  => sad_znaniy_moon_category_days( $sz_year, $sz_month, $sz_cat ),
+	);
 }
 
 $sz_today      = current_datetime();
@@ -40,7 +48,7 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 <section class="section lunar">
 	<div class="section-head lunar-head">
 		<div class="article-head">
-			<h1 class="h-cap"><?php echo esc_html( 'Лунный посевной календарь на ' . $sz_names[ $sz_month ][1] . ' ' . $sz_year ); ?></h1>
+			<h1 class="h-cap"><?php echo esc_html( '' !== $sz_cat ? ( 'Лунный календарь на ' . $sz_names[ $sz_month ][1] . ' ' . $sz_year . ': дни для ' . $sz_cat_info['title'] ) : ( 'Лунный посевной календарь на ' . $sz_names[ $sz_month ][1] . ' ' . $sz_year ) ); ?></h1>
 			<div class="meta-line">
 				<?php echo esc_html( $sz_good . ' ' . sad_znaniy_moon_plural( $sz_good, 'благоприятный день', 'благоприятных дня', 'благоприятных дней' ) . ' для посадки' ); ?>
 			</div>
@@ -56,10 +64,17 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 
 	<nav class="lunar-months" aria-label="<?php esc_attr_e( 'Выбор месяца', 'sad-znaniy' ); ?>">
 		<?php foreach ( $sz_names as $sz_m => $sz_nm ) : ?>
-			<?php $sz_chip_url = $sz_culture ? add_query_arg( 'culture', $sz_culture, sad_znaniy_moon_month_url( $sz_m ) ) : sad_znaniy_moon_month_url( $sz_m ); ?>
+			<?php $sz_chip_url = ( '' !== $sz_culture ) ? sad_znaniy_moon_category_url( $sz_m, $sz_culture ) : sad_znaniy_moon_month_url( $sz_m ); ?>
 			<a class="lunar-chip<?php echo $sz_m === $sz_month ? ' on' : ''; ?>" href="<?php echo esc_url( $sz_chip_url ); ?>"><?php echo esc_html( $sz_nm[0] ); ?></a>
 		<?php endforeach; ?>
 	</nav>
+
+	<?php if ( '' !== $sz_cat ) : ?>
+		<div class="lunar-intro">
+			<p><?php echo esc_html( sprintf( 'В %1$s %2$d %3$s благоприятны для %4$s: %5$s.', $sz_names[ $sz_month ][2] . ' ' . $sz_year, count( $sz_cat_info['days'] ), sad_znaniy_moon_plural( count( $sz_cat_info['days'] ), 'день', 'дня', 'дней' ), $sz_cat_info['title'], $sz_cat_info['days'] ? implode( ', ', $sz_cat_info['days'] ) : '—' ) ); ?></p>
+			<p><a href="<?php echo esc_url( sad_znaniy_moon_month_url( $sz_month ) ); ?>"><?php echo esc_html( sprintf( '← Полный календарь на %s', $sz_names[ $sz_month ][1] ) ); ?></a></p>
+		</div>
+	<?php endif; ?>
 
 	<?php if ( $sz_intro ) : ?>
 		<div class="lunar-intro"><?php echo wp_kses_post( wpautop( $sz_intro ) ); ?></div>
@@ -94,6 +109,11 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 				</optgroup>
 			<?php endforeach; ?>
 		</select>
+		<p class="lunar-cats"><span><?php esc_html_e( 'Страницы по культурам:', 'sad-znaniy' ); ?></span>
+			<?php foreach ( sad_znaniy_lunar_categories() as $sz_ck => $sz_cl ) : ?>
+				<a class="lunar-cat-btn<?php echo ( $sz_ck === $sz_culture ) ? ' on' : ''; ?>" href="<?php echo esc_url( sad_znaniy_moon_category_url( $sz_month, $sz_ck ) ); ?>"><?php echo esc_html( $sz_cl ); ?></a>
+			<?php endforeach; ?>
+		</p>
 	</div>
 
 	<div class="lunar-legend">
@@ -113,11 +133,12 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 			$sz_past   = ( $sz_is_cur && $sz_d['day'] < $sz_cur_day );
 			$sz_goodtx = $sz_d['good'] ? implode( ', ', array_map( function ( $w ) use ( $sz_work ) { return $sz_work[ $w ]; }, $sz_d['good'] ) ) : '—';
 			$sz_badtx  = $sz_d['bad'] ? implode( ', ', array_map( function ( $w ) use ( $sz_work ) { return $sz_work[ $w ]; }, $sz_d['bad'] ) ) : '';
-			$sz_cat    = $sz_cats[ $sz_d['sign']['element'] ];
+			$sz_daycat = $sz_cats[ $sz_d['sign']['element'] ];
+			$sz_hilite = ( '' !== $sz_culture && $sz_daycat === $sz_culture && ! $sz_spec ) ? ' moon-hilite' : '';
 			?>
-			<div class="lunar-day<?php echo $sz_spec ? ' spec' : ''; ?><?php echo $sz_istd ? ' today' : ''; ?>"
+			<div class="lunar-day<?php echo $sz_spec ? ' spec' : ''; ?><?php echo $sz_istd ? ' today' : ''; ?><?php echo esc_attr( $sz_hilite ); ?>"
 				id="d<?php echo (int) $sz_d['day']; ?>"
-				data-moon-cat="<?php echo esc_attr( $sz_cat ); ?>"
+				data-moon-cat="<?php echo esc_attr( $sz_daycat ); ?>"
 				<?php echo $sz_past ? 'style="opacity:.55"' : ''; ?>
 				<?php echo $sz_spec ? 'data-spec="' . esc_attr( $sz_d['phase']['name'] ) . '"' : ''; ?>>
 				<div class="lunar-day__top">
@@ -151,6 +172,17 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 			<li><a href="<?php echo esc_url( home_url( '/rasteniya/' ) ); ?>"><?php esc_html_e( 'База знаний: растения с параметрами и совместимостью →', 'sad-znaniy' ); ?></a></li>
 			<li><a href="<?php echo esc_url( home_url( '/stati/' ) ); ?>"><?php esc_html_e( 'Статьи о посеве, уходе и сборе урожая →', 'sad-znaniy' ); ?></a></li>
 		</ul>
+		<?php $sz_month_plants = sad_znaniy_moon_month_plants( $sz_month ); ?>
+		<?php if ( $sz_month_plants ) : ?>
+			<p><?php echo esc_html( sprintf( 'В %s сеют и сажают:', $sz_names[ $sz_month ][2] ) ); ?>
+				<?php
+				$sz_last = array_key_last( $sz_month_plants );
+				foreach ( $sz_month_plants as $sz_ppid => $sz_ptitle ) :
+					?>
+					<a href="<?php echo esc_url( get_permalink( $sz_ppid ) ); ?>"><?php echo esc_html( $sz_ptitle ); ?></a><?php echo ( $sz_ppid !== $sz_last ) ? ', ' : ''; ?>
+				<?php endforeach; ?>
+			</p>
+		<?php endif; ?>
 	</section>
 
 	<p class="lunar-max"><?php esc_html_e( 'Ведём блог и короткие напоминания в MAX —', 'sad-znaniy' ); ?> <a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'мы есть в MAX →', 'sad-znaniy' ); ?></a></p>
