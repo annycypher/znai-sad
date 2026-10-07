@@ -328,7 +328,7 @@ function sad_znaniy_image_hints_editor_assets() {
 		render: function () {
 			return wp.element.createElement(
 				wp.editPost.PluginDocumentSettingPanel,
-				{ name: "sad-znaniy-image-hints-panel", title: "📷 Изображения: требования и alt", initialOpen: false },
+				{ name: "sad-znaniy-image-hints-panel", title: "📷 Изображения: требования и alt", initialOpen: true },
 				wp.element.createElement( "div", { dangerouslySetInnerHTML: { __html: html } } )
 			);
 		}
