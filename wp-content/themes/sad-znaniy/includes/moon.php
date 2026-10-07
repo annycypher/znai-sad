@@ -404,6 +404,9 @@ function sad_znaniy_moon_render_page() {
 				</tbody>
 			</table>
 
+			<h2><?php esc_html_e( 'Индексация', 'sad-znaniy' ); ?></h2>
+			<p><label><input type="checkbox" name="sad_znaniy_moon_index" value="1" <?php checked( '1' === (string) get_option( 'sad_znaniy_moon_index', '1' ) ); ?>> <?php esc_html_e( 'Год в индексе — добавлять страницы месяцев в sitemap.xml.', 'sad-znaniy' ); ?></label></p>
+
 			<?php submit_button(); ?>
 		</form>
 	</div>
@@ -464,8 +467,15 @@ function sad_znaniy_moon_plural( $n, $one, $few, $many ) {
  * @return array
  */
 function sad_znaniy_moon_context() {
-	$month = isset( $_GET['m'] ) ? absint( $_GET['m'] ) : (int) current_time( 'n' );
-	$year  = isset( $_GET['y'] ) ? absint( $_GET['y'] ) : (int) current_time( 'Y' );
+	$month = 0;
+	$slug  = (string) get_query_var( 'sz_mslug' );
+	if ( '' !== $slug ) {
+		$month = sad_znaniy_month_slug_to_num( $slug );
+	}
+	if ( ! $month && isset( $_GET['m'] ) ) {
+		$month = absint( $_GET['m'] );
+	}
+	$year = isset( $_GET['y'] ) ? absint( $_GET['y'] ) : (int) current_time( 'Y' );
 	if ( $month < 1 || $month > 12 ) {
 		$month = (int) current_time( 'n' );
 	}
@@ -696,6 +706,7 @@ function sad_znaniy_moon_head() {
 		return;
 	}
 	$c = sad_znaniy_moon_context();
+	echo '<link rel="canonical" href="' . esc_url( sad_znaniy_moon_month_url( $c['month'] ) ) . '" />' . "\n";
 	echo '<meta name="description" content="' . esc_attr( sad_znaniy_moon_seo_description( $c['month'], $c['year'] ) ) . '" />' . "\n";
 	echo '<script type="application/ld+json">' . sad_znaniy_moon_schema( $c['month'], $c['year'] ) . '</script>' . "\n";
 }
@@ -785,6 +796,92 @@ function sad_znaniy_moon_badge( $year, $month, $day ) {
 	);
 }
 
+/* ============================ ЧПУ, CANONICAL, SITEMAP ============================ */
+
+/**
+ * Канонический ЧПУ-адрес месяца.
+ *
+ * @param int $month Месяц (1–12).
+ * @return string
+ */
+function sad_znaniy_moon_month_url( $month ) {
+	$slugs = sad_znaniy_month_slugs();
+	$month = (int) $month;
+	if ( $month < 1 || $month > 12 ) {
+		return home_url( '/lunnyj-kalendar/' );
+	}
+	return home_url( '/lunnyj-kalendar/' . $slugs[ $month ] . '/' );
+}
+
+/**
+ * Регистрирует query-переменную слага месяца.
+ *
+ * @param string[] $vars Переменные.
+ * @return string[]
+ */
+function sad_znaniy_moon_query_vars( $vars ) {
+	$vars[] = 'sz_mslug';
+	return $vars;
+}
+add_filter( 'query_vars', 'sad_znaniy_moon_query_vars' );
+
+/**
+ * Rewrite: /lunnyj-kalendar/{month}/ → страница лунного календаря.
+ */
+function sad_znaniy_moon_rewrite() {
+	add_rewrite_rule( '^lunnyj-kalendar/([a-z0-9-]+)/?$', 'index.php?pagename=lunnyj-kalendar&sz_mslug=$matches[1]', 'top' );
+}
+add_action( 'init', 'sad_znaniy_moon_rewrite', 11 );
+
+/**
+ * Разово сбрасывает правила перезаписи после появления новых.
+ */
+function sad_znaniy_moon_maybe_flush() {
+	if ( '1' !== get_option( 'sad_znaniy_moon_rules_version' ) ) {
+		flush_rewrite_rules();
+		update_option( 'sad_znaniy_moon_rules_version', '1', false );
+	}
+}
+add_action( 'init', 'sad_znaniy_moon_maybe_flush', 21 );
+
+/**
+ * 301 с ?m=NN на канонический ЧПУ месяца.
+ */
+function sad_znaniy_moon_canonical_redirect() {
+	if ( is_page_template( 'template-lunar.php' ) && isset( $_GET['m'] ) ) {
+		$c = sad_znaniy_moon_context();
+		wp_safe_redirect( sad_znaniy_moon_month_url( $c['month'] ), 301 );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'sad_znaniy_moon_canonical_redirect', 2 );
+
+/**
+ * URL месяцев для sitemap (все 12), если год включён в индекс.
+ *
+ * @return string[]
+ */
+function sad_znaniy_moon_sitemap_urls() {
+	if ( '1' !== (string) get_option( 'sad_znaniy_moon_index', '1' ) ) {
+		return array();
+	}
+	$urls = array();
+	for ( $m = 1; $m <= 12; $m++ ) {
+		$urls[] = sad_znaniy_moon_month_url( $m );
+	}
+	return $urls;
+}
+
+/**
+ * Снимает стандартный rel=canonical на странице лунного календаря.
+ */
+function sad_znaniy_moon_unset_rel_canonical() {
+	if ( is_page_template( 'template-lunar.php' ) ) {
+		remove_action( 'wp_head', 'rel_canonical' );
+	}
+}
+add_action( 'wp', 'sad_znaniy_moon_unset_rel_canonical' );
+
 /**
  * Регистрирует опцию SEO/интро страницы.
  */
@@ -800,6 +897,32 @@ function sad_znaniy_moon_register_seo() {
 	);
 }
 add_action( 'admin_init', 'sad_znaniy_moon_register_seo' );
+
+/**
+ * Регистрирует флаг индексации года.
+ */
+function sad_znaniy_moon_register_index() {
+	register_setting(
+		'sad_znaniy_moon',
+		'sad_znaniy_moon_index',
+		array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sad_znaniy_moon_sanitize_index',
+			'default'           => '1',
+		)
+	);
+}
+add_action( 'admin_init', 'sad_znaniy_moon_register_index' );
+
+/**
+ * Очищает флаг индексации.
+ *
+ * @param mixed $value Значение.
+ * @return string '1' или '0'.
+ */
+function sad_znaniy_moon_sanitize_index( $value ) {
+	return ( '1' === (string) $value ) ? '1' : '0';
+}
 
 /**
  * Очищает SEO/интро перед сохранением.

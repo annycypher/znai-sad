@@ -51,6 +51,24 @@ function sad_znaniy_seo_region_forms() {
 }
 
 /**
+ * Синонимы (разговорные названия культур) для авторазметки.
+ *
+ * Ключ — слаг растения, значение — дополнительные слова, по которым
+ * пользователи ищут культуру (например, «помидор» вместо «томат»).
+ *
+ * @return array Слаг => список слов.
+ */
+function sad_znaniy_seo_plant_synonyms() {
+	return array(
+		'tomat'    => array( 'помидор' ),
+		'kartofel' => array( 'картошка' ),
+		'morkov'   => array( 'морковка' ),
+		'svekla'   => array( 'свекла' ),
+		'perets-sladkiy' => array( 'перц' ),
+	);
+}
+
+/**
  * Словарь культур из CPT «Растение»: ID => словоформы (название + основа + слаг).
  *
  * @return array
@@ -86,13 +104,14 @@ function sad_znaniy_seo_plant_forms() {
 		// Словоформы по словам: первое слово — «роза» → «роз», остальные — «садовая» → «садова».
 		$words = explode( ' ', $title );
 		foreach ( $words as $index => $word ) {
+			$list[] = $word;
 			$wlen = mb_strlen( $word, 'UTF-8' );
 			if ( 0 === $index ) {
 				if ( $wlen >= 4 ) {
 					$list[] = mb_substr( $word, 0, $wlen - 1, 'UTF-8' );
 				}
 			} elseif ( $wlen >= 6 ) {
-				$list[] = mb_substr( $word, 0, $wlen - 2, 'UTF-8' );
+				$list[] = mb_substr( $word, 0, $wlen - 1, 'UTF-8' );
 			}
 		}
 
@@ -101,6 +120,12 @@ function sad_znaniy_seo_plant_forms() {
 			if ( mb_strlen( $word, 'UTF-8' ) > 3 ) {
 				$list[] = $word;
 			}
+		}
+
+		// Синонимы (разговорные названия культур).
+		$synonyms = sad_znaniy_seo_plant_synonyms();
+		if ( isset( $synonyms[ (string) $plant->post_name ] ) ) {
+			$list = array_merge( $list, $synonyms[ (string) $plant->post_name ] );
 		}
 
 		$forms[ (int) $plant->ID ] = array_values( array_unique( array_filter( $list ) ) );
@@ -133,9 +158,9 @@ function sad_znaniy_seo_rules_default() {
 	return implode(
 		"\n",
 		array(
-			'работы, что делать, календарь, посевные > kalendar',
-			'когда сажать, когда сеять, высаживать, посадка, сроки посадки, сроки посева > kogda-sazhat',
-			'подкормка, подкормить, полив, поливать, обрезка, обрезать, уход за, удобрение > uhod',
+			'работы, работа, работах, что делать, календарь, календаря, посевные, посевной > kalendar',
+			'когда сажать, когда сеять, сажать, сажают, сеять, сеют, посадить, высаживать, высаживают, высадить, высадка, высадки, высадку, посадка, посадки, посадку, посадке, сроки посадки, сроки посева > kogda-sazhat',
+			'подкормка, подкормки, подкормку, подкормить, подкармливать, полив, полива, поливать, обрезка, обрезки, обрезку, обрезке, обрезать, обработка, обработки, обработать, обрабатывать, уход за, ухода за, удобрение, удобрения, удобрить, укрытие, укрытия, укрыть, укрывать > uhod',
 		)
 	);
 }
@@ -154,7 +179,7 @@ function sad_znaniy_seo_rules() {
 		$raw = sad_znaniy_seo_rules_default();
 	}
 
-	$allowed = array( 'kalendar', 'kogda-sazhat', 'uhod' );
+	$allowed = array( 'kalendar', 'kogda-sazhat', 'uhod', 'lunnyj' );
 	$rules   = array();
 
 	foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
@@ -222,6 +247,11 @@ function sad_znaniy_seo_build_url( $template, $region, $month, $plant_id ) {
 	$months = sad_znaniy_month_slugs();
 	$url    = '';
 
+	// Лунные страницы существуют всегда (12 месяцев).
+	if ( 'lunnyj' === $template ) {
+		return $month ? home_url( '/lunnyj-kalendar/' . $months[ $month ] . '/' ) : home_url( '/lunnyj-kalendar/' );
+	}
+
 	if ( 'kalendar' === $template && $region && $month ) {
 		$url = home_url( '/kalendar/' . sad_znaniy_region_key_to_slug( $region ) . '/' . $months[ $month ] . '/' );
 	} elseif ( 'kogda-sazhat' === $template && $plant_id && $region ) {
@@ -267,6 +297,37 @@ function sad_znaniy_seo_related_url( $region, $month, $plant_id ) {
 		return sad_znaniy_calendar_url( null, null, (string) $region );
 	}
 
+	return '';
+}
+
+/**
+ * Ключевые слова → слаг статьи для «связанной страницы» (фолбэк по контенту).
+ *
+ * @return array Ключевое слово (основа) => слаг записи.
+ */
+function sad_znaniy_seo_article_map() {
+	return array(
+		'мульчирован' => 'mulchirovanie',
+		'сидерат'     => 'sideraty',
+		'гряд'        => 'gryadki-osenyu',
+	);
+}
+
+/**
+ * Ищет опубликованную статью по ключевому слову из фразы.
+ *
+ * @param string $phrase_l Фраза в нижнем регистре.
+ * @return string URL статьи или ''.
+ */
+function sad_znaniy_seo_article_url( $phrase_l ) {
+	foreach ( sad_znaniy_seo_article_map() as $keyword => $slug ) {
+		if ( sad_znaniy_seo_phrase_has( $phrase_l, $keyword ) ) {
+			$post = get_page_by_path( $slug, OBJECT, 'post' );
+			if ( $post && 'publish' === $post->post_status ) {
+				return get_permalink( $post->ID );
+			}
+		}
+	}
 	return '';
 }
 
@@ -346,6 +407,16 @@ function sad_znaniy_seo_match( $phrase ) {
 		}
 	}
 
+	// Ничего не нашлось по правилам — пробуем связанную статью.
+	if ( '' === $related ) {
+		$related = sad_znaniy_seo_article_url( $phrase_l );
+	}
+
+	// Навигационные «календарь дачника / лунный календарь» → календарь работ.
+	if ( '' === $related && sad_znaniy_seo_phrase_has( $phrase_l, 'календар' ) ) {
+		$related = sad_znaniy_calendar_url();
+	}
+
 	return array(
 		'url'      => '',
 		'template' => '',
@@ -400,6 +471,7 @@ function sad_znaniy_seo_keys_import( $text ) {
 	$table = $t['keys'];
 
 	$text  = str_replace( array( "\r\n", "\r" ), "\n", (string) $text );
+	$text  = str_replace( "\xEF\xBB\xBF", '', $text );
 	$lines = preg_split( '/\n/', $text );
 	$delim = '';
 
@@ -434,8 +506,8 @@ function sad_znaniy_seo_keys_import( $text ) {
 			continue;
 		}
 
-		// Заголовок выгрузки: текст без цифр.
-		if ( preg_match( '/^(фраза|phrase|запрос|слово|ключ|word)/ui', $phrase ) && ! $stats['added'] && ! $stats['updated'] ) {
+		// Заголовок выгрузки: текст без цифр (пропускаем в любой позиции — бывает несколько файлов).
+		if ( preg_match( '/^(фраза|phrase|запрос|слово|ключ|word)/ui', $phrase ) ) {
 			$stats['skipped']++;
 			continue;
 		}
@@ -446,6 +518,11 @@ function sad_znaniy_seo_keys_import( $text ) {
 			if ( '' !== $digits ) {
 				$freq = max( $freq, (int) $digits );
 			}
+		}
+		// Битые частоты (слиплись с артикулом/заголовком) — пропускаем.
+		if ( $freq > 1000000 ) {
+			$stats['skipped']++;
+			continue;
 		}
 		if ( $freq < 1 ) {
 			$stats['skipped']++;
@@ -870,22 +947,39 @@ function sad_znaniy_seo_hub_keys_page() {
 
 	// Импорт CSV-выгрузки (файлом или вставкой текста).
 	if ( isset( $_POST['sz_keys_import'] ) && check_admin_referer( 'sz_keys_import', 'sz_keys_nonce' ) ) {
-		$text = isset( $_POST['sz_keys_text'] ) ? wp_unslash( $_POST['sz_keys_text'] ) : '';
+		$texts = array();
 
-		$tmp = isset( $_FILES['sz_keys_file']['tmp_name'] ) ? (string) $_FILES['sz_keys_file']['tmp_name'] : '';
-		if ( '' !== $tmp && is_uploaded_file( $tmp ) ) {
-			$file_text = file_get_contents( $tmp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- локальный временный файл загрузки.
-			if ( false !== $file_text && '' !== trim( (string) $file_text ) ) {
-				$text = $file_text;
+		// Поле вставки (необязательно).
+		$pasted = isset( $_POST['sz_keys_text'] ) ? trim( (string) wp_unslash( $_POST['sz_keys_text'] ) ) : '';
+		if ( '' !== $pasted ) {
+			$texts[] = $pasted;
+		}
+
+		// Один или несколько файлов (drag-and-drop партией).
+		$files     = isset( $_FILES['sz_keys_files'] ) && is_array( $_FILES['sz_keys_files'] ) ? $_FILES['sz_keys_files'] : array();
+		$tmp_names = isset( $files['tmp_name'] ) ? (array) $files['tmp_name'] : array();
+		foreach ( $tmp_names as $tmp ) {
+			$tmp = (string) $tmp;
+			if ( '' !== $tmp && is_uploaded_file( $tmp ) ) {
+				$file_text = file_get_contents( $tmp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- локальный временный файл загрузки.
+				if ( false !== $file_text && '' !== trim( (string) $file_text ) ) {
+					$texts[] = $file_text;
+				}
 			}
 		}
 
-		if ( '' === trim( (string) $text ) ) {
-			$notice = '<div class="notice notice-warning"><p>Нет данных: приложите CSV-файл или вставьте строки в поле вставки.</p></div>';
+		if ( empty( $texts ) ) {
+			$notice = '<div class="notice notice-warning"><p>Нет данных: перетащите CSV-файлы или вставьте строки в поле вставки.</p></div>';
 		} else {
-			$stats  = sad_znaniy_seo_keys_import( $text );
-			$notice = '<div class="notice notice-success is-dismissible"><p>Импорт готов: добавлено '
-				. (int) $stats['added'] . ', обновлено ' . (int) $stats['updated'] . ', пропущено ' . (int) $stats['skipped'] . '.</p></div>';
+			$stats = array( 'added' => 0, 'updated' => 0, 'skipped' => 0 );
+			foreach ( $texts as $text ) {
+				$part              = sad_znaniy_seo_keys_import( $text );
+				$stats['added']   += (int) $part['added'];
+				$stats['updated'] += (int) $part['updated'];
+				$stats['skipped'] += (int) $part['skipped'];
+			}
+			$notice = '<div class="notice notice-success is-dismissible"><p>Импорт готов: блоков/файлов — ' . count( $texts )
+				. ', добавлено ' . (int) $stats['added'] . ', обновлено ' . (int) $stats['updated'] . ', пропущено ' . (int) $stats['skipped'] . '.</p></div>';
 			sad_znaniy_seo_log( 'Импорт ключей: +' . (int) $stats['added'] . ' / ~' . (int) $stats['updated'] );
 		}
 	}
@@ -967,19 +1061,80 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		?>
 
 		<h2>1. Импорт выгрузки Вордстата</h2>
-		<form method="post" enctype="multipart/form-data" style="margin-bottom:10px;">
+		<form method="post" style="margin-bottom:10px;">
 			<?php wp_nonce_field( 'sz_keys_import', 'sz_keys_nonce' ); ?>
+			<div id="sz-drop" class="sz-drop">
+				<p>Перетащите сюда CSV-файлы Вордстата — можно сразу несколько</p>
+				<p class="sz-drop-sub">или нажмите, чтобы выбрать файлы</p>
+				<input type="file" id="sz-file-input" multiple accept=".csv,.txt" style="display:none;">
+			</div>
+			<div id="sz-files-list" class="sz-files-list"></div>
 			<p>
-				<input type="file" name="sz_keys_file" accept=".csv,.txt">
-				<span class="description">файл CSV (фраза;показы)</span>
-			</p>
-			<p>
-				<textarea name="sz_keys_text" rows="4" style="width:100%;max-width:760px;" placeholder="или вставьте строки:&#10;когда сажать огурцы в сибири;1240&#10;работы в саду в мае;890"></textarea>
+				<textarea name="sz_keys_text" id="sz-keys-text" rows="6" style="width:100%;max-width:760px;" placeholder="или вставьте строки:&#10;когда сажать огурцы в сибири;1240&#10;работы в саду в мае;890"></textarea>
 			</p>
 			<p class="submit">
 				<button type="submit" name="sz_keys_import" class="button button-primary">Импортировать</button>
 			</p>
 		</form>
+		<script>
+		( function () {
+			'use strict';
+			var zone = document.getElementById( 'sz-drop' );
+			var input = document.getElementById( 'sz-file-input' );
+			var list = document.getElementById( 'sz-files-list' );
+			var textarea = document.getElementById( 'sz-keys-text' );
+			if ( ! zone || ! input || ! list || ! textarea ) { return; }
+
+			var names = [];
+
+			function render() {
+				if ( ! names.length ) { list.innerHTML = ''; return; }
+				var html = '<strong>Загружено файлов: ' + names.length + '</strong><ul>';
+				names.forEach( function ( n ) { html += '<li>' + n + '</li>'; } );
+				html += '</ul>';
+				list.innerHTML = html;
+			}
+
+			function readFiles( files ) {
+				Array.prototype.slice.call( files ).forEach( function ( f ) {
+					names.push( f.name );
+					var reader = new FileReader();
+					reader.onload = function ( ev ) {
+						var t = String( ev.target.result || '' );
+						if ( '' === t.trim() ) { return; }
+						textarea.value = ( '' !== textarea.value.trim() ? textarea.value + '\n' : '' ) + t + '\n';
+						render();
+					};
+					reader.readAsText( f );
+				} );
+				render();
+			}
+
+			zone.addEventListener( 'click', function ( e ) {
+				if ( e.target === input ) { return; }
+				input.click();
+			} );
+
+			[ 'dragenter', 'dragover' ].forEach( function ( ev ) {
+				zone.addEventListener( ev, function ( e ) { e.preventDefault(); e.stopPropagation(); zone.classList.add( 'over' ); } );
+			} );
+			[ 'dragleave', 'drop' ].forEach( function ( ev ) {
+				zone.addEventListener( ev, function ( e ) { e.preventDefault(); e.stopPropagation(); zone.classList.remove( 'over' ); } );
+			} );
+			zone.addEventListener( 'drop', function ( e ) {
+				if ( e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length ) {
+					readFiles( e.dataTransfer.files );
+				}
+			} );
+
+			input.addEventListener( 'change', function () {
+				if ( input.files && input.files.length ) {
+					readFiles( input.files );
+					input.value = '';
+				}
+			} );
+		} )();
+		</script>
 
 		<h2>2. Правила авторазметки</h2>
 		<form method="post" style="margin-bottom:10px;">
@@ -1077,6 +1232,13 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		<style>
 			.sz-status{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
 			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-weak{background:#f1f1f1;color:#999}.sz-manual{background:#fdf3e0;color:#a9714b}.sz-related{background:#eaf2fb;color:#2f6fa8}
+			.sz-drop{border:2px dashed #c9ced4;border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer;background:#fafbfc;transition:border-color .15s,background .15s;max-width:760px}
+			.sz-drop.over{border-color:#2e6b4f;background:#e7f0e9}
+			.sz-drop p{margin:4px 0;color:#5c645d}
+			.sz-drop p:first-child{font-weight:600;color:#20241f}
+			.sz-drop-sub{font-size:12px}
+			.sz-files-list{max-width:760px;margin-top:8px;font-size:13px}
+			.sz-files-list ul{margin:4px 0 0 18px}
 		</style>
 	</div>
 	<?php

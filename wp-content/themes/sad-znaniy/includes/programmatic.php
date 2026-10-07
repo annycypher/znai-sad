@@ -421,6 +421,11 @@ function sad_znaniy_programmatic_sitemap() {
 			echo "\t<url><loc>" . esc_url( $page['url'] ) . "</loc></url>\n";
 		}
 	}
+	if ( function_exists( 'sad_znaniy_moon_sitemap_urls' ) ) {
+		foreach ( sad_znaniy_moon_sitemap_urls() as $moon_url ) {
+			echo "\t<url><loc>" . esc_url( $moon_url ) . "</loc></url>\n";
+		}
+	}
 	echo '</urlset>';
 	exit;
 }
