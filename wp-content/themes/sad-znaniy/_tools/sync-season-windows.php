@@ -308,6 +308,7 @@ $sz_cover_title = 'Подготовка роз к зиме: укрытие';
 $sz_cover_text  = 'Укрывают в сухую погоду при устойчивых −3…−5 °C: снимают листья с нижней части куста, окучивают торфом или компостом на 15–20 см, побеги пригибают и укрывают лапником или каркасом с агроволокном. Раньше времени не укрывать — выпреет.';
 
 $sz_gkeys = array( 'yug', 'mid', 'sib' );
+$sz_valid = array();
 
 foreach ( $sz_crops as $sz_crop_id => $sz_c ) {
 	list( $sz_type, $sz_work, $sz_title, $sz_text ) = $sz_c;
@@ -352,6 +353,8 @@ foreach ( $sz_crops as $sz_crop_id => $sz_c ) {
 			$sz_stat
 		);
 
+		$sz_valid[ $sz_crop_id ][ $sz_work ][ $sz_key ] = true;
+
 		$sz_rows[ $sz_type ][ $sz_cropttl ][ $sz_gk ] = $sz_fmt( $sz_from ) . '–' . $sz_fmt( $sz_to );
 	}
 }
@@ -361,6 +364,7 @@ $sz_rose_index = sz_autumn_index( 12 );
 foreach ( $sz_cover as $sz_cv ) {
 	$sz_rs = $sz_cv[0];
 	sort( $sz_rs );
+	$sz_valid[12]['podgotovka'][ implode( ',', $sz_rs ) ] = true;
 	sz_sync_target(
 		$sz_rose_index,
 		'podgotovka',
@@ -375,6 +379,29 @@ foreach ( $sz_cover as $sz_cv ) {
 		$sz_stat
 	);
 }
+
+// Устаревшие точечные окна: события культуры с набором регионов, которого больше нет в модели.
+// Например, старые окна чеснока «Сибирь», «Сибирь и Урал», «Средняя полоса», «ДВ» по отдельности.
+$sz_clean = 0;
+foreach ( $sz_crops as $sz_crop_id => $sz_c ) {
+	list( , $sz_work ) = $sz_c;
+	$sz_index = sz_autumn_index( $sz_crop_id );
+	if ( empty( $sz_index[ $sz_work ] ) ) {
+		continue;
+	}
+	foreach ( $sz_index[ $sz_work ] as $sz_key => $sz_ids ) {
+		if ( ! empty( $sz_valid[ $sz_crop_id ][ $sz_work ][ $sz_key ] ) ) {
+			continue;
+		}
+		foreach ( (array) $sz_ids as $sz_eid ) {
+			echo '  удаляю устаревшее окно #' . $sz_eid . ' | ' . get_the_title( $sz_eid ) . ' | регионы: ' . $sz_key . ' | ' . get_post_meta( $sz_eid, '_sz_event_date_from', true ) . " |\n";
+			wp_delete_post( (int) $sz_eid, true );
+			$sz_stat['deleted']++;
+			$sz_clean++;
+		}
+	}
+}
+echo 'устаревших точечных окон удалено: ' . $sz_clean . "\n";
 
 echo "\n=== ИТОГИ ===\n";
 echo 'создано: ' . $sz_stat['created'] . ' · обновлено: ' . $sz_stat['updated'] . ' · удалено: ' . $sz_stat['deleted'] . "\n";
