@@ -144,9 +144,10 @@ $section_links = array(
 						while ( $blog_query->have_posts() ) :
 							$blog_query->the_post();
 							?>
-							<article id="post-<?php the_ID(); ?>" <?php post_class( 'post-card' ); ?>>
-								<?php if ( has_post_thumbnail() ) : ?>
-									<a href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'large', array( 'loading' => 'lazy' ) ); ?></a>
+							<?php $sad_znaniy_img = sad_znaniy_card_image( get_the_ID() ); ?>
+							<article id="post-<?php the_ID(); ?>" <?php post_class( $sad_znaniy_img ? 'post-card post-card--thumb' : 'post-card' ); ?>>
+								<?php if ( $sad_znaniy_img ) : ?>
+									<a class="post-card__media" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1"><?php echo sad_znaniy_card_image_tag( $sad_znaniy_img ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- безопасная разметка из помощника. ?></a>
 								<?php endif; ?>
 								<div class="post-body">
 									<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
