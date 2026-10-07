@@ -339,6 +339,31 @@ function sad_znaniy_plant_moon_data( $plant_id, $region = '' ) {
 		$good = array_values( array_unique( $good ) );
 		sort( $good );
 		$data['good_days'] = $good;
+
+		// Переход месяца: подзимние окна живут на стыке — показываем дни предыдущего месяца.
+		if ( ! $good ) {
+			$pm = ( 1 === $month ) ? 12 : $month - 1;
+			$py = ( 1 === $month ) ? $year - 1 : $year;
+			$pd = array();
+			foreach ( $in_month as $win ) {
+				$prev_days = sad_znaniy_season_window_days( $win, $py, $pm );
+				if ( $prev_days ) {
+					$pd = array_merge( $pd, array_values( array_intersect( sad_znaniy_moon_category_days( $py, $pm, $cat ), $prev_days ) ) );
+				}
+			}
+			$pd = array_values( array_unique( $pd ) );
+			sort( $pd );
+			if ( $pd ) {
+				$data['prev'] = array(
+					'month' => $pm,
+					'label' => isset( $names[ $pm ][1] ) ? $names[ $pm ][1] : '',
+					'in'    => isset( $names[ $pm ][2] ) ? $names[ $pm ][2] : '',
+					'days'  => $pd,
+					'url'   => sad_znaniy_moon_category_url( $pm, $cat ),
+				);
+			}
+		}
+
 		return $data;
 	}
 
@@ -365,6 +390,24 @@ function sad_znaniy_plant_moon_data( $plant_id, $region = '' ) {
 }
 
 /**
+ * Региональная пометка для карточки растения (например, косточковые в Сибири).
+ *
+ * @param int    $plant_id ID растения.
+ * @param string $region   Ключ региона.
+ * @return string Текст пометки или ''.
+ */
+function sad_znaniy_season_region_note( $plant_id, $region ) {
+	$stone = array( 161, 476, 479, 434 ); // вишня, черешня, слива, абрикос
+	$note  = '';
+
+	if ( in_array( (int) $plant_id, $stone, true ) && in_array( (string) $region, array( 'sib', 'dv' ), true ) ) {
+		$note = 'В Сибири и на Дальнем Востоке косточковые сажают только весной — осенняя посадка вымерзает.';
+	}
+
+	return (string) apply_filters( 'sad_znaniy_season_region_note', $note, (int) $plant_id, (string) $region );
+}
+
+/**
  * Рендер сезонного блока растения (SSR и REST используют одно и то же).
  *
  * @param int    $plant_id ID растения.
@@ -381,6 +424,8 @@ function sad_znaniy_plant_moon_render( $plant_id, $region = '' ) {
 		$days = array_filter( array_map( 'intval', (array) $days ) );
 		return $days ? implode( ', ', array_map( 'strval', $days ) ) : '—';
 	};
+
+	$names = sad_znaniy_moon_month_names();
 
 	ob_start();
 	?>
@@ -406,7 +451,23 @@ function sad_znaniy_plant_moon_render( $plant_id, $region = '' ) {
 					<a href="<?php echo esc_url( sad_znaniy_moon_category_url( $data['month'], $data['cat'] ) ); ?>"><?php esc_html_e( 'весь месяц →', 'sad-znaniy' ); ?></a>
 				</p>
 				<?php if ( ! $data['good_days'] ) : ?>
-					<p class="plant-lunar__note"><?php esc_html_e( 'В окне нет благоприятных лунных дней — ориентируйтесь на погоду, а точные числа смотрите в календаре месяца.', 'sad-znaniy' ); ?></p>
+					<?php if ( ! empty( $data['prev'] ) ) : ?>
+						<p class="plant-lunar__note">
+							<?php
+							echo esc_html(
+								sprintf(
+									'В %s благоприятных дней в окне нет — ближайшие в %s: %s.',
+									isset( $names[ $data['month'] ][2] ) ? $names[ $data['month'] ][2] : '',
+									$data['prev']['in'],
+									$list( $data['prev']['days'] )
+								)
+							);
+							?>
+							<a href="<?php echo esc_url( $data['prev']['url'] ); ?>"><?php esc_html_e( 'открыть в календаре →', 'sad-znaniy' ); ?></a>
+						</p>
+					<?php else : ?>
+						<p class="plant-lunar__note"><?php esc_html_e( 'В окне нет благоприятных лунных дней — ориентируйтесь на погоду, а точные числа смотрите в календаре месяца.', 'sad-znaniy' ); ?></p>
+					<?php endif; ?>
 				<?php endif; ?>
 			<?php elseif ( 'closed' === $data['mode'] && ! empty( $data['next'] ) ) : ?>
 				<p class="plant-lunar__closed">
@@ -416,6 +477,10 @@ function sad_znaniy_plant_moon_render( $plant_id, $region = '' ) {
 				</p>
 			<?php else : ?>
 				<p class="plant-lunar__note"><?php echo esc_html( $data['note'] ); ?></p>
+				<?php $sz_rnote = sad_znaniy_season_region_note( $data['plant_id'], $data['region'] ); ?>
+				<?php if ( '' !== $sz_rnote ) : ?>
+					<p class="plant-lunar__note"><?php echo esc_html( $sz_rnote ); ?></p>
+				<?php endif; ?>
 				<?php foreach ( (array) $data['months'] as $mn ) : ?>
 					<p>
 						<strong><?php echo esc_html( $mn['label'] ); ?>:</strong>
