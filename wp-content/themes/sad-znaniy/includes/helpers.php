@@ -514,13 +514,51 @@ function sad_znaniy_get_month_events( $year, $month ) {
 		if ( '' === $from ) {
 			continue;
 		}
-		$to_eff = '' !== $to ? $to : $from;
-		if ( $from <= $last && $to_eff >= $first ) {
+		$recurring = sad_znaniy_event_is_recurring( $event->ID );
+		$from_eff  = sad_znaniy_event_date_in_year( $from, $year, $recurring );
+		$to_eff    = '' !== $to ? sad_znaniy_event_date_in_year( $to, $year, $recurring ) : $from_eff;
+
+		if ( $recurring && $to_eff < $from_eff ) {
+			// Ежегодное событие переходит через границу года (напр. 25 дек — 5 янв).
+			if ( $from_eff <= $last || $to_eff >= $first ) {
+				$result[] = $event;
+			}
+		} elseif ( $from_eff <= $last && $to_eff >= $first ) {
 			$result[] = $event;
 		}
 	}
 
 	return $result;
+}
+
+/**
+ * Повторяется ли событие ежегодно.
+ *
+ * Пустое значение трактуется как «повторяется»: уже созданные события сразу
+ * ведут себя как ежегодные, миграция не нужна. Разовым считается только
+ * событие с явным значением «0».
+ *
+ * @param int $post_id ID события.
+ * @return bool
+ */
+function sad_znaniy_event_is_recurring( $post_id ) {
+	return '0' !== (string) get_post_meta( $post_id, '_sz_event_recurring', true );
+}
+
+/**
+ * Приводит дату события к нужному году (для ежегодных событий).
+ *
+ * @param string $date      Дата в формате Y-m-d.
+ * @param int    $year      Отображаемый год.
+ * @param bool   $recurring Ежегодное событие.
+ * @return string Дата в формате Y-m-d.
+ */
+function sad_znaniy_event_date_in_year( $date, $year, $recurring ) {
+	if ( '' === $date || ! $recurring ) {
+		return $date;
+	}
+
+	return sprintf( '%04d-%s', (int) $year, substr( $date, 5 ) );
 }
 
 /**
@@ -534,6 +572,11 @@ function sad_znaniy_get_month_events( $year, $month ) {
 function sad_znaniy_event_data( $post_id, $year, $month ) {
 	$from = (string) get_post_meta( $post_id, '_sz_event_date_from', true );
 	$to   = (string) get_post_meta( $post_id, '_sz_event_date_to', true );
+
+	if ( sad_znaniy_event_is_recurring( $post_id ) ) {
+		$from = sad_znaniy_event_date_in_year( $from, $year, true );
+		$to   = sad_znaniy_event_date_in_year( $to, $year, true );
+	}
 
 	$all_regions = '1' === (string) get_post_meta( $post_id, '_sz_event_all_regions', true );
 	$regions_raw = (string) get_post_meta( $post_id, '_sz_event_regions', true );

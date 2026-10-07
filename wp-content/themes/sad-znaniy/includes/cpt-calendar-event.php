@@ -93,6 +93,21 @@ function sad_znaniy_work_type_rewrite() {
 add_action( 'init', 'sad_znaniy_work_type_rewrite', 11 );
 
 /**
+ * Снимает конфликт параметра «year» календаря с query-переменной WordPress.
+ *
+ * WP считает «year» служебной переменной архивов по датам, из-за чего запрос
+ * вида /kalendar/?year=2027 (нет записей за 2027) уходил в 404. Календарь
+ * читает год напрямую из $_GET, поэтому убираем это резервирование.
+ *
+ * @param string[] $vars Публичные query-переменные.
+ * @return string[]
+ */
+function sad_znaniy_calendar_unset_year_var( $vars ) {
+	return array_diff( $vars, array( 'year' ) );
+}
+add_filter( 'query_vars', 'sad_znaniy_calendar_unset_year_var' );
+
+/**
  * Добавляет метабокс «Дата и регион».
  */
 function sad_znaniy_event_add_meta_box() {
@@ -123,6 +138,7 @@ function sad_znaniy_event_meta_box_html( $post ) {
 	$difficulty   = (string) get_post_meta( $post->ID, '_sz_event_difficulty', true );
 	$priority     = (string) get_post_meta( $post->ID, '_sz_event_priority', true );
 	$weather_hint = (string) get_post_meta( $post->ID, '_sz_event_weather_hint', true );
+	$recurring    = (string) get_post_meta( $post->ID, '_sz_event_recurring', true );
 
 	$plants = get_posts(
 		array(
@@ -175,6 +191,10 @@ function sad_znaniy_event_meta_box_html( $post ) {
 	<p>
 		<label for="sz_event_weather_hint"><strong><?php esc_html_e( 'Подсказка по погоде', 'sad-znaniy' ); ?></strong></label><br>
 		<input type="text" id="sz_event_weather_hint" name="sz_event_weather_hint" value="<?php echo esc_attr( $weather_hint ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'например: при сухой почве', 'sad-znaniy' ); ?>">
+	</p>
+	<p>
+		<label><input type="checkbox" name="sz_event_recurring" value="1" <?php checked( '0' !== $recurring ); ?>> <strong><?php esc_html_e( 'Повторять ежегодно', 'sad-znaniy' ); ?></strong></label><br>
+		<span class="description"><?php esc_html_e( 'Событие показывается в этом месяце каждый год. Снимите галочку для разового события.', 'sad-znaniy' ); ?></span>
 	</p>
 	<?php
 }
@@ -230,6 +250,7 @@ function sad_znaniy_event_save_meta( $post_id ) {
 	}
 
 	$weather_hint = isset( $_POST['sz_event_weather_hint'] ) ? sanitize_text_field( wp_unslash( $_POST['sz_event_weather_hint'] ) ) : '';
+	$recurring    = isset( $_POST['sz_event_recurring'] ) ? '1' : '0';
 
 	update_post_meta( $post_id, '_sz_event_date_from', $from );
 	update_post_meta( $post_id, '_sz_event_date_to', $to );
@@ -239,6 +260,7 @@ function sad_znaniy_event_save_meta( $post_id ) {
 	update_post_meta( $post_id, '_sz_event_difficulty', $difficulty );
 	update_post_meta( $post_id, '_sz_event_priority', $priority );
 	update_post_meta( $post_id, '_sz_event_weather_hint', $weather_hint );
+	update_post_meta( $post_id, '_sz_event_recurring', $recurring );
 }
 add_action( 'save_post_calendar_event', 'sad_znaniy_event_save_meta' );
 
@@ -254,9 +276,10 @@ function sad_znaniy_event_columns( $columns ) {
 	foreach ( $columns as $key => $label ) {
 		$new[ $key ] = $label;
 		if ( 'title' === $key ) {
-			$new['sz_event_date']   = __( 'Дата', 'sad-znaniy' );
-			$new['sz_work_type']    = __( 'Работы', 'sad-znaniy' );
-			$new['sz_event_region'] = __( 'Регион', 'sad-znaniy' );
+			$new['sz_event_date']      = __( 'Дата', 'sad-znaniy' );
+			$new['sz_work_type']       = __( 'Работы', 'sad-znaniy' );
+			$new['sz_event_region']    = __( 'Регион', 'sad-znaniy' );
+			$new['sz_event_recurring'] = __( 'Повтор', 'sad-znaniy' );
 		}
 	}
 
@@ -308,6 +331,14 @@ function sad_znaniy_event_column_content( $column, $post_id ) {
 				}
 			}
 			echo $labels ? esc_html( implode( ', ', $labels ) ) : '&mdash;';
+		}
+	}
+
+	if ( 'sz_event_recurring' === $column ) {
+		if ( sad_znaniy_event_is_recurring( $post_id ) ) {
+			esc_html_e( 'Ежегодно', 'sad-znaniy' );
+		} else {
+			esc_html_e( 'Разово', 'sad-znaniy' );
 		}
 	}
 }
