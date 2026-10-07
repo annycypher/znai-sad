@@ -20,6 +20,7 @@ require_once SAD_ZNANIY_DIR . '/includes/assets.php';
 require_once SAD_ZNANIY_DIR . '/includes/menus.php';
 require_once SAD_ZNANIY_DIR . '/includes/cpt-calendar-event.php';
 require_once SAD_ZNANIY_DIR . '/includes/cpt-plant.php';
+require_once SAD_ZNANIY_DIR . '/includes/admin-image-hints.php';
 require_once SAD_ZNANIY_DIR . '/includes/install.php';
 require_once SAD_ZNANIY_DIR . '/includes/options.php';
 require_once SAD_ZNANIY_DIR . '/includes/patterns.php';
