@@ -30,3 +30,10 @@
 	.region-ask{left:14px;right:14px;bottom:14px;max-width:none}
 	.region-menu{right:auto;left:0}
 }
+
+/* Подсветка текущего региона в таблицах статей и карточек растений */
+.is-current-region{background:rgba(63,164,111,.10)}
+tr.is-current-region>td:first-child,
+tr.is-current-region>th:first-child{border-left:3px solid var(--accent)}
+th.is-current-region{color:var(--accent)}
+

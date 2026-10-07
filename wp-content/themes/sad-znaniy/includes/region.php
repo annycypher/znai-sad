@@ -83,10 +83,37 @@ function sad_znaniy_region_assets() {
 			'current'    => sad_znaniy_current_region(),
 			'regions'    => $items,
 			'emptyLabel' => __( 'Выберите регион', 'sad-znaniy' ),
+			'aliases'    => sad_znaniy_region_aliases(),
 		)
 	);
+
+	// Подсветка региона в таблицах статей и карточек растений.
+	if ( is_singular( array( 'post', 'plant', 'page' ) ) ) {
+		wp_enqueue_script(
+			'sad-znaniy-region-tables',
+			$uri . '/assets/js/region-tables.js',
+			array( 'sad-znaniy-region' ),
+			sad_znaniy_asset_ver( 'assets/js/region-tables.js' ),
+			true
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'sad_znaniy_region_assets', 20 );
+
+/**
+ * Словоформы регионов для поиска в тексте таблиц (нижний регистр, основы).
+ *
+ * @return array
+ */
+function sad_znaniy_region_aliases() {
+	return array(
+		'south' => array( 'юг' ),
+		'mid'   => array( 'средн' ),
+		'ural'  => array( 'урал' ),
+		'sib'   => array( 'сибир' ),
+		'dv'    => array( 'дальн' ),
+	);
+}
 
 /**
  * Индикатор региона в шапке: «📍 {регион} ▾».
