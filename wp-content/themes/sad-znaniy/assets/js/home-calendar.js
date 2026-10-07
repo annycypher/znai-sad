@@ -16,25 +16,34 @@
 		return;
 	}
 
-	var region = '';
-	try {
-		region = ( JSON.parse( localStorage.getItem( 'sad_znaniy_cal' ) || '{}' ) || {} ).region || '';
-	} catch ( e ) {}
+	var region = window.szRegion ? window.szRegion.getRegion() : '';
 
-	if ( ! region ) {
-		block.style.display = 'none';
-		return;
+	function apply( value ) {
+		if ( ! value ) {
+			block.style.display = 'none';
+			return;
+		}
+		block.style.display = '';
+
+		var shown = 0;
+		events.forEach( function ( ev ) {
+			var regions = ( ev.dataset.regions || '' ).split( ',' );
+			var match = regions.indexOf( 'all' ) !== -1 || regions.indexOf( value ) !== -1;
+			if ( match && shown < 3 ) {
+				ev.classList.remove( 'is-extra' );
+				shown++;
+			} else {
+				ev.classList.add( 'is-extra' );
+			}
+		} );
 	}
 
-	var shown = 0;
-	events.forEach( function ( ev ) {
-		var regions = ( ev.dataset.regions || '' ).split( ',' );
-		var match = regions.indexOf( 'all' ) !== -1 || regions.indexOf( region ) !== -1;
-		if ( match && shown < 3 ) {
-			ev.classList.remove( 'is-extra' );
-			shown++;
-		} else {
-			ev.classList.add( 'is-extra' );
-		}
-	} );
+	apply( region );
+
+	if ( window.szRegion ) {
+		window.szRegion.onChange( function ( next ) {
+			region = next;
+			apply( region );
+		} );
+	}
 } )();

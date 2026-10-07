@@ -24,7 +24,7 @@
 	}
 
 	var S = {
-		region: params.get( 'region' ) || saved.region || '',
+		region: params.get( 'region' ) || ( window.szRegion ? window.szRegion.getRegion() : ( saved.region || '' ) ),
 		exp: params.get( 'exp' ) || saved.exp || '',
 		types: new Set( Array.isArray( saved.types ) ? saved.types : [] ),
 		view: saved.view === 'list' ? 'list' : 'grid',
@@ -66,7 +66,7 @@
 
 	function save() {
 		try {
-			localStorage.setItem( LS_KEY, JSON.stringify( { region: S.region, exp: S.exp, types: Array.from( S.types ), view: S.view } ) );
+			localStorage.setItem( LS_KEY, JSON.stringify( { exp: S.exp, types: Array.from( S.types ), view: S.view } ) );
 		} catch ( e ) {}
 	}
 
@@ -181,12 +181,28 @@
 	document.querySelectorAll( '.chip.region' ).forEach( function ( b ) {
 		b.addEventListener( 'click', function ( e ) {
 			e.preventDefault();
-			S.region = ( b.dataset.region === S.region ) ? '' : b.dataset.region;
+			var next = ( b.dataset.region === S.region ) ? '' : b.dataset.region;
+			if ( window.szRegion ) {
+				window.szRegion.setRegion( next ); // событие обновит S.region, чипы и список
+				return;
+			}
+			S.region = next;
 			save();
 			syncChips();
 			apply();
 			updateUrl();
 		} );
+	} );
+
+	// Смена региона в шапке (единый контур) — перерисовка без перезагрузки.
+	document.addEventListener( 'sz:region-change', function ( e ) {
+		if ( ( e.detail.region || '' ) === S.region ) {
+			return;
+		}
+		S.region = e.detail.region || '';
+		syncChips();
+		apply();
+		updateUrl();
 	} );
 
 	document.querySelectorAll( '.chip.exp' ).forEach( function ( b ) {

@@ -56,6 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</nav>
 
 		<div class="topbar-actions">
+			<?php sad_znaniy_region_indicator(); ?>
 			<button class="icon-btn" aria-label="<?php esc_attr_e( 'Поиск по сайту', 'sad-znaniy' ); ?>">
 				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
 			</button>
