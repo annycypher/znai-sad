@@ -14,13 +14,12 @@
 		if (!sel) {
 			return;
 		}
-		var rows = Array.prototype.slice.call(document.querySelectorAll('[data-moon-good]'));
+		var rows = Array.prototype.slice.call(document.querySelectorAll('[data-moon-cat]'));
 
 		function apply() {
 			var cat = sel.value;
 			rows.forEach(function (row) {
-				var good = (row.getAttribute('data-moon-good') || '').split(',');
-				var on = cat !== '' && good.indexOf(cat) !== -1;
+				var on = cat !== '' && row.getAttribute('data-moon-cat') === cat;
 				row.classList.toggle('moon-hilite', on);
 			});
 		}

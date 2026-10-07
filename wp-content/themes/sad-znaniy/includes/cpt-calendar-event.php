@@ -95,15 +95,16 @@ add_action( 'init', 'sad_znaniy_work_type_rewrite', 11 );
 /**
  * Снимает конфликт параметра «year» календаря с query-переменной WordPress.
  *
- * WP считает «year» служебной переменной архивов по датам, из-за чего запрос
- * вида /kalendar/?year=2027 (нет записей за 2027) уходил в 404. Календарь
- * читает год напрямую из $_GET, поэтому убираем это резервирование.
+ * WP считает «year» и «m» служебными переменными архивов по датам, из-за чего
+ * запросы /kalendar/?year=2027 и /lunnyj-kalendar/?m=5 уходили в 404. Календарь
+ * и лунный календарь читают эти параметры напрямую из $_GET, поэтому снимаем
+ * резервирование.
  *
  * @param string[] $vars Публичные query-переменные.
  * @return string[]
  */
 function sad_znaniy_calendar_unset_year_var( $vars ) {
-	return array_diff( $vars, array( 'year' ) );
+	return array_diff( $vars, array( 'year', 'm' ) );
 }
 add_filter( 'query_vars', 'sad_znaniy_calendar_unset_year_var' );
 
