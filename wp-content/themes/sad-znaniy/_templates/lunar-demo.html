@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лунный посевной календарь — Сад знаний</title>
+<style>
+:root{
+    --bg:#E3E6EA; --ink:#20241F; --muted:#5C645D; --accent:#2E6B4F; --accent-soft:#E7F0E9;
+    --glass:linear-gradient(150deg, rgba(255,255,255,.8), rgba(248,250,250,.55));
+    --glass-strong:rgba(255,255,255,.92); --gb:rgba(255,255,255,.95);
+    --neu-sm:4px 4px 10px rgba(160,168,176,.4), -4px -4px 10px rgba(255,255,255,.9);
+    --neu:8px 8px 20px rgba(160,168,176,.45), -8px -8px 20px rgba(255,255,255,.95);
+    --sh:0 16px 40px rgba(100,112,124,.2);
+    --r-md:20px; --r-tile:16px;
+    --fire:#D14D57; --earth:#8A6F55; --air:#7C9DB8; --water:#4A90D9;
+    --ok:#27AE60; --no:#C0392B; --mid:#D4A017;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Golos Text',system-ui,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+
+/* ===== ШАПКА ===== */
+.topbar{display:flex;align-items:center;gap:16px;margin:16px auto 0;max-width:1120px;padding:10px 12px 10px 20px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:0 14px 34px rgba(100,112,124,.24),inset 0 1px 0 #fff;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.logo{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14.5px}
+.logo span{color:var(--accent)}
+.topbar nav{display:flex;gap:18px;margin-left:auto;font-size:14px;font-weight:500}
+.topbar nav a:hover{color:var(--accent)}
+
+/* ===== HERO ===== */
+.hero{margin:34px 0 8px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.hero h1{font-size:clamp(24px,3vw,34px);font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.15}
+.hero .today{display:flex;align-items:center;gap:14px;background:var(--glass-strong);border:1px solid var(--gb);border-radius:var(--r-md);box-shadow:var(--neu-sm);padding:12px 18px}
+.moon-big{width:52px;height:52px;flex-shrink:0;border-radius:50%;background:#1E2B24;position:relative;overflow:hidden;box-shadow:inset 4px 4px 10px rgba(0,0,0,.5), 0 4px 12px rgba(60,70,80,.3)}
+.moon-big::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 60%)}
+.hero .today .t-info{font-size:13.5px;line-height:1.4}
+.hero .today .t-info b{font-size:14.5px}
+.t-info .sub{color:var(--muted)}
+
+/* ===== МЕСЯЦЫ ===== */
+.months{display:flex;gap:8px;overflow-x:auto;padding:14px 2px;scrollbar-width:none}
+.months::-webkit-scrollbar{display:none}
+.months button{flex-shrink:0;padding:9px 18px;border-radius:999px;font-size:13.5px;font-weight:600;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:var(--neu-sm);transition:all .2s;letter-spacing:.03em}
+.months button:hover{color:var(--accent)}
+.months button.on{background:linear-gradient(160deg,#3A423B,#22271F);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(35,42,34,.3)}
+
+/* ===== ПАНЕЛЬ ФИЛЬТРОВ ===== */
+.panel{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r-md);box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:18px 20px;margin-bottom:22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.f-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chip{padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:600;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:var(--neu-sm);transition:all .2s}
+.chip:hover{color:var(--accent)}
+.chip.on{background:linear-gradient(160deg,#3A423B,#22271F);color:#fff;border-color:transparent}
+select{font:inherit;font-size:13.5px;font-weight:600;padding:9px 14px;border-radius:999px;border:1px solid var(--gb);background:var(--glass-strong);box-shadow:var(--neu-sm);color:var(--ink);cursor:pointer}
+
+/* ===== ЛЕГЕНДА ===== */
+.legend{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:14px;align-items:center}
+.legend .li{display:inline-flex;align-items:center;gap:6px}
+.legend .sq{width:12px;height:12px;border-radius:4px;display:inline-block}
+.legend .el{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.legend .el i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.el-fire{background:var(--fire)}.el-earth{background:var(--earth)}.el-air{background:var(--air)}.el-water{background:var(--water)}
+
+/* ===== ТАБЛИЦА ДНЕЙ ===== */
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.day{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r-md);box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:13px 14px;position:relative;transition:transform .2s,box-shadow .25s;animation:tin .3s ease both}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.day:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(100,112,124,.28),inset 0 1px 0 rgba(255,255,255,.9)}
+.day .d-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.d-num{font-size:22px;font-weight:700;line-height:1}
+.d-dow{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.d-moon{margin-left:auto;font-size:20px;line-height:1}
+.day.spec{border:1.5px solid rgba(46,107,79,.45)}
+.day.spec::before{content:attr(data-spec);position:absolute;top:-10px;right:10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:#fff;padding:2px 10px;border-radius:999px}
+.d-sign{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:9px}
+.d-sign i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.d-good,.d-bad{font-size:12.3px;line-height:1.45}
+.d-good{color:var(--accent)}
+.d-bad{color:var(--no);margin-top:5px}
+.d-good b,.d-bad b{font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:block;opacity:.75;margin-bottom:2px}
+.day.hilite{outline:3px solid var(--accent);outline-offset:2px}
+.day .why{margin-top:8px;font-size:11.5px;color:var(--muted);background:rgba(46,107,79,.08);border-radius:10px;padding:6px 9px}
+
+/* ===== СОВМЕЩЁННЫЙ РЕЖИМ ===== */
+.combo-note{background:var(--accent-soft);border:1px solid rgba(46,107,79,.25);border-radius:var(--r-md);padding:14px 18px;margin-bottom:18px;font-size:14px;display:flex;gap:12px;align-items:flex-start}
+.combo-note .ico{font-size:20px;line-height:1}
+.combo-note b{color:var(--accent)}
+
+/* ===== ИНФО-СЕКЦИЯ ===== */
+.about{margin:30px 0 40px;background:var(--glass);border:1px solid var(--gb);border-radius:var(--r-md);box-shadow:var(--sh);padding:24px 26px}
+.about h2{font-size:18px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.about p{font-size:14px;color:var(--muted);margin-bottom:8px}
+.about b{color:var(--ink)}
+.max-link{margin:0 0 44px;font-size:13.5px;color:var(--muted)}
+.max-link a{color:var(--accent);font-weight:600;border-bottom:1px dashed rgba(46,107,79,.4)}
+.max-link a:hover{border-bottom-style:solid}
+.back{margin-left:auto;font-size:13px;font-weight:600;padding:9px 18px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--gb);box-shadow:var(--neu-sm)}
+.back:hover{color:var(--accent)}
+
+@media print{
+    .topbar,.months,.panel,.legend,.max-link,.back{display:none!important}
+    body{background:#fff}
+    .day{box-shadow:none;border:1px solid #ddd;break-inside:avoid;animation:none}
+    .hero .today{box-shadow:none}
+}
+@media(max-width:640px){
+    .days{grid-template-columns:repeat(2,1fr)}
+    .hero .today{width:100%}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="/" class="logo">Сад <span>знаний</span></a>
+    <nav>
+        <a href="#">Календарь дачника</a>
+        <a href="#">Инструменты</a>
+    </nav>
+    <a href="/" class="back">← На главную</a>
+</header>
+
+<main class="wrap">
+
+    <div class="hero">
+        <div>
+            <h1>Лунный посевной календарь<br>на 2026 год</h1>
+        </div>
+        <div class="today">
+            <div class="moon-big" id="moonToday"></div>
+            <div class="t-info" id="todayInfo"></div>
+        </div>
+    </div>
+
+    <div class="months" id="months"></div>
+
+    <div class="panel">
+        <span class="f-label">Культура</span>
+        <select id="fCrop">
+            <option value="">Все культуры</option>
+            <option value="plod">Плоды (томаты, перец, огурцы…)</option>
+            <option value="koren">Корнеплоды (морковь, свёкла, лук…)</option>
+            <option value="list">Листовые (капуста, салат, зелень…)</option>
+            <option value="cvet">Цветы</option>
+        </select>
+        <span class="f-label" style="margin-left:8px">Совместить с регионом</span>
+        <select id="fRegion">
+            <option value="">Без региона (только луна)</option>
+            <option value="south">Юг</option>
+            <option value="mid" selected>Средняя полоса</option>
+            <option value="ural">Урал</option>
+            <option value="sib">Сибирь</option>
+            <option value="dv">Дальний Восток</option>
+        </select>
+    </div>
+
+    <div class="legend">
+        <span class="li"><i class="sq" style="background:var(--accent)"></i>Благоприятно</span>
+        <span class="li"><i class="sq" style="background:var(--mid)"></i>Нейтрально / осторожно</span>
+        <span class="li"><i class="sq" style="background:var(--no)"></i>Не рекомендуется</span>
+        <span style="margin-left:auto;display:flex;gap:12px;flex-wrap:wrap">
+            <span class="el"><i class="el-fire"></i>Огонь — плоды</span>
+            <span class="el"><i class="el-earth"></i>Земля — корнеплоды</span>
+            <span class="el"><i class="el-air"></i>Воздух — цветы</span>
+            <span class="el"><i class="el-water"></i>Вода — листовые</span>
+        </span>
+    </div>
+
+    <div class="combo-note" id="comboNote" hidden>
+        <span class="ico">🌍</span>
+        <div><b>Совмещённый режим:</b> зелёное = луна благоприятствует <u>и</u> ваш климат позволяет; жёлтое = луна «за», но в вашем регионе рано; серое — срок подошёл, но луна не советует. Решение всегда за вами.</div>
+    </div>
+
+    <div class="days" id="days"></div>
+
+    <section class="about">
+        <h2>Как мы считаем</h2>
+        <p><b>Фазы и знаки</b> — астрономия: рассчитываются математически, точность ±1 сутки. <b>Рекомендации</b> — традиционная школа лунного посевного календаря: растущая луна и «плодные» знаки — надземные культуры, убывающая и «корневые» — корнеплоды, полнолуние и новолуние — дни покоя.</p>
+        <p><b>Важно:</b> лунный календарь — инструмент планирования, а не гарантия. Агрономические сроки вашего региона (см. <a href="#" style="color:var(--accent);font-weight:600">Календарь дачника</a>) всегда приоритетнее: если луна «за», а в вашем саду ещё минус ночью — ждём.</p>
+    </section>
+
+    <p class="max-link">Ведём блог и короткие напоминания в MAX — <a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener">мы есть в MAX →</a></p>
+
+</main>
+
+<script>
+/* ================= АСТРОНОМИЯ: фаза луны и знак зодиака ================= */
+/* Синодический цикл 29,530588 сут; новая луна — эталон 2026-01-18 19:52 UTC */
+const SYNODIC=29.530588853;
+const NEW_MOON_REF=Date.UTC(2026,0,18,19,52)/86400000; // в сутках юлианского времени
+
+function moonInfo(dateUTCmid){
+    const days=dateUTCmid/86400000;
+    let age=((days-NEW_MOON_REF)%SYNODIC+SYNODIC)%SYNODIC;
+    const phase=age/SYNODIC; // 0..1
+    // имя фазы
+    let name,ico;
+    if(age<1.5){name='Новолуние';ico='🌑'}
+    else if(age<6.5){name='Растущая молодая';ico='🌒'}
+    else if(age<8.5){name='Первая четверть';ico='🌓'}
+    else if(age<13.5){name='Растущая';ico='🌔'}
+    else if(age<15.5){name='Полнолуние';ico='🌕'}
+    else if(age<21.5){name='Убывающая';ico='🌖'}
+    else if(age<23.5){name='Последняя четверть';ico='🌗'}
+    else {name='Убывающая старая';ico='🌘'}
+    // знак зодиака: луна проходит 12 знаков за сидерический месяц 27,32 сут
+    const SIDEREAL=27.321661;
+    const sid=(age%SIDEREAL)/SIDEREAL; // 0..1 по кругу от новолуния (приближение для демо)
+    const zodiac=['Овен','Телец','Близнецы','Рак','Лев','Дева','Весы','Скорпион','Стрелец','Козерог','Водолей','Рыбы'];
+    const elements=['fire','earth','air','water'];
+    const idx=Math.floor(sid*12)%12;
+    return{age,name,ico,sign:zodiac[idx],element:elements[idx%4]};
+}
+/* Точность знака для демо — приближённая (±полдня). В проде агент заменит
+   на таблицу пересечений границ на 2026 (статичный справочник в админке). */
+
+/* ================= ИНТЕРПРЕТАЦИЯ (канон) ================= */
+const ELEMENT_GOOD={ // элементы знаков → благоприятные категории
+    fire:['plod'],      // огонь — плоды
+    earth:['koren'],    // земля — корнеплоды
+    air:['cvet'],       // воздух — цветы
+    water:['list']      // вода — листовые
+};
+function dayVerdict(m){
+    // фаза
+    let phaseGood=[],phaseBad=[],phaseNote='';
+    if(m.name==='Новолуние'){phaseBad=['посев','посадка','обрезка','подкормка'];phaseNote='День покоя — не сажаем и не тревожим растения'}
+    else if(m.name==='Полнолуние'){phaseBad=['посев','посадка','обрезка'];phaseNote='Растения уязвимы — работы только защитные'}
+    else if(m.age<15){ // растущая
+        phaseGood=['plod','list','cvet'];
+        phaseNote='Сила вверх — сажаем надземные';
+    } else { // убывающая
+        phaseGood=['koren'];
+        phaseNote='Сила в корень — корнеплоды и луковичные';
+    }
+    const signGood=ELEMENT_GOOD[m.element]||[];
+    const good=[...new Set([...(m.name.includes('Убывающ')?['koren']:m.name.includes('Растущ')?['plod','list','cvet']:[]),...signGood])];
+    return{good,bad:phaseBad,note:phaseNote};
+}
+
+/* ================= РЕГИОНАЛЬНЫЕ ОКНА (совмещённый режим) ================= */
+/* Сводные сроки начала посева/посадки в грунт по регионам (для демо) */
+const REGION_WINDOWS={
+    south:{start:new Date(2026,3,5),label:'Юг'},
+    mid:{start:new Date(2026,4,10),label:'Средняя полоса'},
+    ural:{start:new Date(2026,4,20),label:'Урал'},
+    sib:{start:new Date(2026,4,20),label:'Сибирь'},
+    dv:{start:new Date(2026,4,18),label:'Дальний Восток'}
+};
+/* Живые события из календаря дачника (в проде — REST). Для демо: май–июнь
+   есть работы у всех, апрель только у юга */
+function regionWorks(region,date){
+    if(!region)return null;
+    const w=REGION_WINDOWS[region];
+    return date>=w.start; // с этого момента в регионе идут посадочные работы
+}
+
+/* ================= ДАННЫЕ КУЛЬТУР (категории) ================= */
+const CAT_LABEL={plod:'Плоды',koren:'Корнеплоды',list:'Листовые',cvet:'Цветы'};
+const CROP_EX={plod:['Томаты','Перец','Огурцы'],koren:['Морковь','Свёкла','Лук'],list:['Капуста','Салат','Укроп'],cvet:['Однолетники','Многолетники']};
+
+/* ================= СОСТОЯНИЕ ================= */
+const $=id=>document.getElementById(id);
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const DOW=['вс','пн','вт','ср','чт','пт','сб'];
+let cur=new Date();
+let selMonth=cur.getMonth();
+const today=new Date();today.setHours(0,0,0,0);
+
+/* ================= РЕНДЕР ================= */
+function renderMonths(){
+    $('months').innerHTML=MONTHS.map((m,i)=>{
+        const past=(i<today.getMonth()&&cur.getFullYear()===today.getFullYear());
+        return `<button data-m="${i}" class="${i===selMonth?'on':''}" ${past?'style="opacity:.45"':''}>${m}</button>`}).join('');
+    $('months').querySelectorAll('button').forEach(b=>b.onclick=()=>{selMonth=+b.dataset.m;render()});
+}
+function moonCSS(phase){ // фазовая иконка через CSS-маску
+    return '';
+}
+function render(){
+    renderMonths();
+    /* сегодня */
+    const tInfo=moonInfo(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate(),12)/1);
+    $('moonToday').style.background='#1E2B24';
+    $('todayInfo').innerHTML=`<b>Сегодня, ${today.getDate()} ${MONTHS[today.getMonth()].toLowerCase()}: ${tInfo.name.toLowerCase()}</b><br>
+        <span class="sub">Луна в ♈ ${tInfo.sign} · благоприятно: ${dayVerdict(tInfo).good.map(g=>CAT_LABEL[g].toLowerCase()).join(', ')||'—'}</span><br>
+        <a href="#days" style="color:var(--accent);font-weight:600">К дням месяца ↓</a>`;
+    /* месяц */
+    const year=cur.getFullYear();
+    const nd=new Date(year,selMonth+1,0).getDate();
+    const cropF=$('fCrop').value,region=$('fRegion').value;
+    $('comboNote').hidden=!region;
+    let html='';
+    const isCurrent=(selMonth===today.getMonth()&&year===today.getFullYear());
+    for(let d=1;d<=nd;d++){
+        const dt=new Date(year,selMonth,d,12);
+        const mi=moonInfo(Date.UTC(year,selMonth,d,12));
+        const v=dayVerdict(mi);
+        const full=mi.name==='Полнолуние'||mi.name==='Новолуние';
+        const isToday=isCurrent&&d===today.getDate();
+        /* фильтр культуры */
+        const matchCrop=!cropF||v.good.includes(cropF);
+        /* совмещённый режим */
+        let combo=null;
+        if(region){
+            const works=regionWorks(region,dt);
+            if(v.good.length&&works)combo='ok';
+            else if(v.good.length)combo='wait';
+            else if(!v.bad.includes('посев')||!v.bad.length)combo=null;
+            else combo='moonno';
+        }
+        const spec=full?mi.name.toLowerCase():null;
+        const dim=isCurrent&&dt<today?'opacity:.55':'';
+        const hl=matchCrop?'hilite':'';
+        const goodTxt=v.good.length?v.good.map(g=>CAT_LABEL[g]).join(', '):'—';
+        const badTxt=v.bad.length?v.bad.join(', '):'—';
+        let comboLine='';
+        if(region&&combo==='ok')comboLine=`<div class="why">✅ Идеальное окно: в вашем регионе (${REGION_WINDOWS[region].label}) уже сезон</div>`;
+        if(region&&combo==='wait')comboLine=`<div class="why">⏳ Луна «за», но сезон в вашем регионе откроется ~${REGION_WINDOWS[region].start.getDate()} ${MONTHS[REGION_WINDOWS[region].start.getMonth()].toLowerCase()}</div>`;
+        if(region&&combo==='moonno')comboLine=`<div class="why">⏸ Сроки подходят, но по луне лучше подождать благоприятного дня</div>`;
+        html+=`<div class="day ${full?'spec':''} ${hl}" ${spec?`data-spec="${spec}"`:''} style="${dim};animation-delay:${Math.min(d*12,300)}ms">
+            <div class="d-top">
+                <span class="d-num">${d}</span>
+                <span class="d-dow">${DOW[dt.getDay()]}</span>
+                <span class="d-moon" title="${mi.name}">${mi.ico}</span>
+            </div>
+            <div class="d-sign"><i class="el-${mi.element}"></i>${mi.sign}${isToday?' · <b style="color:var(--accent)">сегодня</b>':''}</div>
+            <div class="d-good"><b>Благоприятно</b>${goodTxt}</div>
+            ${v.bad.length?`<div class="d-bad"><b>Неблагоприятно</b>${badTxt}</div>`:''}
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">${v.note}</div>
+            ${comboLine}
+        </div>`;
+    }
+    $('days').innerHTML=html;
+}
+ $('fCrop').onchange=render;
+ $('fRegion').onchange=render;
+/* старт: текущий месяц */
+selMonth=today.getMonth();
+render();
+</script>
+</body>
+</html>
