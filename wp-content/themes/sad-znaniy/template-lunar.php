@@ -139,9 +139,18 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 		<?php foreach ( $sz_faq as $sz_q ) : ?>
 			<details>
 				<summary><?php echo esc_html( $sz_q['q'] ); ?></summary>
-				<p><?php echo esc_html( $sz_q['a'] ); ?></p>
+				<p><?php echo wp_kses_post( $sz_q['a'] ); ?></p>
 			</details>
 		<?php endforeach; ?>
+	</section>
+
+	<section class="lunar-faq lunar-links">
+		<h2><?php esc_html_e( 'Смотрите также', 'sad-znaniy' ); ?></h2>
+		<ul>
+			<li><a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>"><?php esc_html_e( 'Календарь дачника — работы по месяцам и регионам →', 'sad-znaniy' ); ?></a></li>
+			<li><a href="<?php echo esc_url( home_url( '/rasteniya/' ) ); ?>"><?php esc_html_e( 'База знаний: растения с параметрами и совместимостью →', 'sad-znaniy' ); ?></a></li>
+			<li><a href="<?php echo esc_url( home_url( '/stati/' ) ); ?>"><?php esc_html_e( 'Статьи о посеве, уходе и сборе урожая →', 'sad-znaniy' ); ?></a></li>
+		</ul>
 	</section>
 
 	<p class="lunar-max"><?php esc_html_e( 'Ведём блог и короткие напоминания в MAX —', 'sad-znaniy' ); ?> <a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'мы есть в MAX →', 'sad-znaniy' ); ?></a></p>
