@@ -26,7 +26,7 @@ if ( have_posts() ) :
 				<?php endif; ?>
 				<div class="post-body">
 					<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-					<p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 20 ) ); ?></p>
+					<p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 30 ) ); ?></p>
 					<span class="post-date"><?php echo esc_html( get_the_date() ); ?></span>
 				</div>
 			</article>

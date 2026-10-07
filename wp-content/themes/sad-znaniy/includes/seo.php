@@ -46,7 +46,7 @@ function sad_znaniy_seo_meta_box_html( $post ) {
 	<p>
 		<label for="sz_seo_description"><strong><?php esc_html_e( 'SEO-описание (description)', 'sad-znaniy' ); ?></strong></label><br>
 		<textarea id="sz_seo_description" name="sz_seo_description" rows="2" class="widefat" maxlength="170"><?php echo esc_textarea( $desc ); ?></textarea>
-		<span class="description"><?php esc_html_e( 'Рекомендуется 120–160 знаков, с призывом или выгодой.', 'sad-znaniy' ); ?></span>
+		<span class="description"><?php esc_html_e( 'Рекомендуется 120–160 знаков, с призывом или выгодой. Этот текст автоматически становится анонсом в карточках на /stati/ и в соцпостах, если не заполнено поле «Отрывок».', 'sad-znaniy' ); ?></span>
 	</p>
 	<?php
 }

@@ -78,7 +78,7 @@ function sad_znaniy_social_excerpt( $post_id, $network ) {
 		return '';
 	}
 
-	$raw = '' !== trim( (string) $post->post_excerpt ) ? $post->post_excerpt : wp_strip_all_tags( (string) $post->post_content );
+	$raw = sad_znaniy_announce_text( $post );
 	$raw = trim( preg_replace( '/\s+/u', ' ', (string) $raw ) );
 	if ( '' === $raw ) {
 		return '';
