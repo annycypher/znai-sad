@@ -181,8 +181,12 @@ function sad_znaniy_image_hint_block( $post, $compact = false ) {
 		<p style="margin:0 0 8px;"><em><?php echo esc_html( $spec['note'] ); ?></em></p>
 		<p style="margin:0 0 4px;"><strong><?php esc_html_e( 'Подсказка alt для этого материала (скопируйте и уточните, что видно на снимке):', 'sad-znaniy' ); ?></strong></p>
 		<p style="margin:0 0 8px;">
-			<input type="text" class="widefat" readonly id="<?php echo esc_attr( $uid ); ?>" value="<?php echo esc_attr( $alt ); ?>" onclick="this.select();">
-			<button type="button" class="button button-small sz-img-hint__copy" data-target="<?php echo esc_attr( $uid ); ?>" style="margin-top:4px;"><?php esc_html_e( 'Скопировать alt', 'sad-znaniy' ); ?></button>
+			<?php if ( '' === $alt ) : ?>
+				<em><?php esc_html_e( 'Сохраните запись — подсказка alt соберётся из заголовка автоматически.', 'sad-znaniy' ); ?></em>
+			<?php else : ?>
+				<input type="text" class="widefat" readonly id="<?php echo esc_attr( $uid ); ?>" value="<?php echo esc_attr( $alt ); ?>" onclick="this.select();">
+				<button type="button" class="button button-small" style="margin-top:4px;" onclick="var f=document.getElementById('<?php echo esc_attr( $uid ); ?>');if(f){f.select();f.setSelectionRange(0,999);var ok=false;try{ok=document.execCommand('copy');}catch(e){ok=false;}if(!ok&&navigator.clipboard){navigator.clipboard.writeText(f.value);}this.textContent=ok?'<?php echo esc_js( __( 'Скопировано ✓', 'sad-znaniy' ) ); ?>':'<?php echo esc_js( __( 'Выделено — нажмите Ctrl+C', 'sad-znaniy' ) ); ?>';var b=this;setTimeout(function(){b.textContent='<?php echo esc_js( __( 'Скопировать alt', 'sad-znaniy' ) ); ?>';},2500);}"><?php esc_html_e( 'Скопировать alt', 'sad-znaniy' ); ?></button>
+			<?php endif; ?>
 		</p>
 		<?php if ( ! $compact ) : ?>
 			<p style="margin:0 0 6px;"><?php esc_html_e( 'Готовый alt тема подставляет файлу миниатюры автоматически, если он ещё пустой — останется проверить и уточнить в «Медиафайлы».', 'sad-znaniy' ); ?></p>
@@ -288,33 +292,53 @@ function sad_znaniy_image_alt_on_thumbnail_meta( $meta_id, $object_id, $meta_key
 }
 
 /**
- * Скрипт копирования alt в буфер (работает и по http, и по https).
+ * Панель в правой колонке блочного редактора: подсказка всегда под рукой.
+ *
+ * Классический метабокс в блочном редакторе отрисовывается в самом низу экрана,
+ * поэтому дублируем подсказку панелью настроек записи (рядом с «Изображение записи»).
  */
-function sad_znaniy_image_hints_script() {
-	?>
-	<script>
-	( function () {
-		document.querySelectorAll( '.sz-img-hint__copy' ).forEach( function ( btn ) {
-			btn.addEventListener( 'click', function () {
-				var field = document.getElementById( btn.getAttribute( 'data-target' ) );
-				if ( ! field ) { return; }
-				field.select();
-				field.setSelectionRange( 0, 999 );
-				var ok = false;
-				try { ok = document.execCommand( 'copy' ); } catch ( e ) { ok = false; }
-				if ( ! ok && navigator.clipboard ) {
-					navigator.clipboard.writeText( field.value );
-					ok = true;
-				}
-				btn.textContent = ok ? 'Скопировано ✓' : 'Выделено — нажмите Ctrl+C';
-				window.setTimeout( function () { btn.textContent = 'Скопировать alt'; }, 2500 );
-			} );
-		} );
-	}() );
-	</script>
-	<?php
+function sad_znaniy_image_hints_editor_assets() {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen ) {
+		return;
+	}
+
+	$post_id = isset( $_GET['post'] ) ? absint( wp_unslash( $_GET['post'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$post    = $post_id ? get_post( $post_id ) : null;
+	$type    = $post ? $post->post_type : ( isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : 'post' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	if ( ! in_array( $type, array( 'post', 'plant', 'page' ), true ) ) {
+		return;
+	}
+
+	ob_start();
+	sad_znaniy_image_hint_block( $post ? $post : $type, false );
+	$html = (string) ob_get_clean();
+
+	$handle = 'sad-znaniy-image-hints-panel';
+	wp_register_script( $handle, false, array( 'wp-plugins', 'wp-edit-post', 'wp-element' ), SAD_ZNANIY_VERSION, true );
+	wp_add_inline_script( $handle, 'window.szImageHintHtml = ' . wp_json_encode( $html ) . ';', 'before' );
+	wp_add_inline_script(
+		$handle,
+		'( function ( wp ) {
+	if ( ! wp || ! wp.plugins || ! wp.editPost || ! wp.element ) { return; }
+	var html = window.szImageHintHtml;
+	if ( ! html ) { return; }
+	wp.plugins.registerPlugin( "sad-znaniy-image-hints", {
+		render: function () {
+			return wp.element.createElement(
+				wp.editPost.PluginDocumentSettingPanel,
+				{ name: "sad-znaniy-image-hints-panel", title: "📷 Изображения: требования и alt", initialOpen: false },
+				wp.element.createElement( "div", { dangerouslySetInnerHTML: { __html: html } } )
+			);
+		}
+	} );
+} )( window.wp );',
+		'after'
+	);
+	wp_enqueue_script( $handle );
 }
-add_action( 'admin_print_footer_scripts', 'sad_znaniy_image_hints_script' );
+add_action( 'enqueue_block_editor_assets', 'sad_znaniy_image_hints_editor_assets' );
 
 /**
  * Регистрирует страницу-справочник «Изображения: требования».
