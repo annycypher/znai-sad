@@ -138,6 +138,7 @@ function sad_znaniy_plant_growing_meta_box_html( $post ) {
 	$ph_from = (string) get_post_meta( $post->ID, '_sz_plant_ph_from', true );
 	$ph_to   = (string) get_post_meta( $post->ID, '_sz_plant_ph_to', true );
 	$soil    = (string) get_post_meta( $post->ID, '_sz_plant_soil', true );
+	$lunar   = (string) get_post_meta( $post->ID, '_sz_plant_lunar_cat', true );
 	?>
 	<p>
 		<label for="sz_plant_light"><strong><?php esc_html_e( 'Свет', 'sad-znaniy' ); ?></strong></label><br>
@@ -167,6 +168,16 @@ function sad_znaniy_plant_growing_meta_box_html( $post ) {
 	<p>
 		<label for="sz_plant_soil"><strong><?php esc_html_e( 'Почва', 'sad-znaniy' ); ?></strong></label><br>
 		<input type="text" id="sz_plant_soil" name="sz_plant_soil" value="<?php echo esc_attr( $soil ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'например: рыхлая, плодородная, дренированная', 'sad-znaniy' ); ?>">
+	</p>
+	<p>
+		<label for="sz_plant_lunar_cat"><strong><?php esc_html_e( 'Лунная категория', 'sad-znaniy' ); ?></strong></label><br>
+		<select id="sz_plant_lunar_cat" name="sz_plant_lunar_cat">
+			<option value=""><?php esc_html_e( '— не задано —', 'sad-znaniy' ); ?></option>
+			<?php foreach ( sad_znaniy_lunar_categories() as $key => $label ) : ?>
+				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $lunar, $key ); ?>><?php echo esc_html( $label ); ?></option>
+			<?php endforeach; ?>
+		</select>
+		<span class="description"><?php esc_html_e( 'Для блока «Лунные дни» в карточке растения и фильтра лунного календаря.', 'sad-znaniy' ); ?></span>
 	</p>
 	<?php
 }
@@ -225,6 +236,10 @@ function sad_znaniy_plant_save_meta( $post_id ) {
 	$soil = isset( $_POST['sz_plant_soil'] ) ? sanitize_text_field( wp_unslash( $_POST['sz_plant_soil'] ) ) : '';
 	$good = isset( $_POST['sz_plant_neighbors_good'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sz_plant_neighbors_good'] ) ) : '';
 	$bad  = isset( $_POST['sz_plant_neighbors_bad'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sz_plant_neighbors_bad'] ) ) : '';
+	$lunar = isset( $_POST['sz_plant_lunar_cat'] ) ? sanitize_key( wp_unslash( $_POST['sz_plant_lunar_cat'] ) ) : '';
+	if ( ! array_key_exists( $lunar, sad_znaniy_lunar_categories() ) ) {
+		$lunar = '';
+	}
 
 	update_post_meta( $post_id, '_sz_plant_light', $light );
 	update_post_meta( $post_id, '_sz_plant_water', $water );
@@ -233,6 +248,7 @@ function sad_znaniy_plant_save_meta( $post_id ) {
 	update_post_meta( $post_id, '_sz_plant_soil', $soil );
 	update_post_meta( $post_id, '_sz_plant_neighbors_good', $good );
 	update_post_meta( $post_id, '_sz_plant_neighbors_bad', $bad );
+	update_post_meta( $post_id, '_sz_plant_lunar_cat', $lunar );
 }
 add_action( 'save_post_plant', 'sad_znaniy_plant_save_meta' );
 

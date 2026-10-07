@@ -116,6 +116,31 @@ while ( have_posts() ) :
 					</div>
 				</div>
 			<?php endif; ?>
+
+			<?php
+			$sz_moon = sad_znaniy_moon_plant_block( $plant_id );
+			if ( $sz_moon ) :
+				?>
+				<div class="about-panel plant-lunar">
+					<div>
+						<h2><?php esc_html_e( 'Лунные дни для посадки', 'sad-znaniy' ); ?></h2>
+						<p><?php echo esc_html( sprintf( __( 'Культура лунной категории «%s»: посев и посадку лучше проводить в дни, когда Луна в знаках подходящей стихии (не в ново- и полнолуние).', 'sad-znaniy' ), $sz_moon['label'] ) ); ?></p>
+					</div>
+					<div>
+						<?php foreach ( $sz_moon['months'] as $sz_mn ) : ?>
+							<p>
+								<strong><?php echo esc_html( $sz_mn['label'] ); ?>:</strong>
+								<?php if ( $sz_mn['days'] ) : ?>
+									<?php echo esc_html( implode( ', ', array_map( 'strval', $sz_mn['days'] ) ) ); ?>
+								<?php else : ?>
+									<?php esc_html_e( 'нет подходящих дней', 'sad-znaniy' ); ?>
+								<?php endif; ?>
+								&nbsp;&mdash;&nbsp;<a href="<?php echo esc_url( $sz_mn['url'] ); ?>"><?php esc_html_e( 'открыть в календаре →', 'sad-znaniy' ); ?></a>
+							</p>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			<?php endif; ?>
 		</section>
 	</article>
 	<?php

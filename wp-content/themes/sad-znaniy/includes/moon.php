@@ -943,3 +943,161 @@ function sad_znaniy_moon_sanitize_seo( $input ) {
 	}
 	return $out;
 }
+
+/* ====================== ЛУННЫЕ КАТЕГОРИИ КУЛЬТУР ====================== */
+
+/**
+ * Лунные категории культур (каждый орган «управляется» стихией знака).
+ *
+ * @return array Ключ => подпись.
+ */
+function sad_znaniy_lunar_categories() {
+	return array(
+		'plod'  => __( 'Плоды и ягоды', 'sad-znaniy' ),
+		'koren' => __( 'Корнеплоды и лук', 'sad-znaniy' ),
+		'list'  => __( 'Зелень и листовые', 'sad-znaniy' ),
+		'cvet'  => __( 'Цветы и декоративные', 'sad-znaniy' ),
+	);
+}
+
+/**
+ * Соответствие «стихия знака → лунная категория».
+ *
+ * @return array
+ */
+function sad_znaniy_moon_element_category() {
+	return array(
+		'fire'  => 'plod',
+		'earth' => 'koren',
+		'air'   => 'cvet',
+		'water' => 'list',
+	);
+}
+
+/**
+ * Стихия знака, благоприятная для лунной категории.
+ *
+ * @param string $cat Ключ категории.
+ * @return string Ключ стихии или ''.
+ */
+function sad_znaniy_moon_category_element( $cat ) {
+	$el = array_search( (string) $cat, sad_znaniy_moon_element_category(), true );
+	return ( $el ) ? (string) $el : '';
+}
+
+/**
+ * Дни месяца, благоприятные для лунной категории: знак нужной стихии,
+ * фаза не новолуние/полнолуние, посев и посадка не в запрете.
+ *
+ * @param int    $year  Год.
+ * @param int    $month Месяц (1–12).
+ * @param string $cat   Ключ категории.
+ * @return int[] Номера благоприятных дней.
+ */
+function sad_znaniy_moon_category_days( $year, $month, $cat ) {
+	$el = sad_znaniy_moon_category_element( $cat );
+	if ( '' === $el ) {
+		return array();
+	}
+
+	$year   = (int) $year;
+	$month  = (int) $month;
+	$total  = (int) gmdate( 't', gmmktime( 12, 0, 0, $month, 1, $year ) );
+	$result = array();
+
+	for ( $day = 1; $day <= $total; $day++ ) {
+		$data = sad_znaniy_moon_day( $year, $month, $day );
+		if ( $data['sign']['element'] !== $el ) {
+			continue;
+		}
+		if ( in_array( $data['phase']['key'], array( 'new', 'full' ), true ) ) {
+			continue;
+		}
+		if ( in_array( 'posev', $data['bad'], true ) || in_array( 'posadka', $data['bad'], true ) ) {
+			continue;
+		}
+		$result[] = (int) $day;
+	}
+
+	return $result;
+}
+
+/**
+ * Лунная категория растения (мета «_sz_plant_lunar_cat»).
+ *
+ * @param int $plant_id ID растения.
+ * @return string Ключ категории или ''.
+ */
+function sad_znaniy_moon_plant_category( $plant_id ) {
+	$cat = (string) get_post_meta( (int) $plant_id, '_sz_plant_lunar_cat', true );
+	return array_key_exists( $cat, sad_znaniy_lunar_categories() ) ? $cat : '';
+}
+
+/**
+ * Растения с заданной лунной категорией (для фильтра календаря).
+ *
+ * @param string $cat Ключ категории.
+ * @return array ID => заголовок.
+ */
+function sad_znaniy_moon_plants_by_category( $cat ) {
+	static $cache = null;
+	if ( null === $cache ) {
+		$cache = array();
+		$ids   = get_posts(
+			array(
+				'post_type'      => 'plant',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $ids as $pid ) {
+			$c = sad_znaniy_moon_plant_category( $pid );
+			if ( '' !== $c ) {
+				$cache[ $c ][ (int) $pid ] = get_the_title( $pid );
+			}
+		}
+	}
+
+	return isset( $cache[ $cat ] ) ? $cache[ $cat ] : array();
+}
+
+/**
+ * Данные лунного блока карточки растения: текущий и следующий месяц.
+ *
+ * @param int $plant_id ID растения.
+ * @return array|null null, если лунная категория не задана.
+ */
+function sad_znaniy_moon_plant_block( $plant_id ) {
+	$cat = sad_znaniy_moon_plant_category( $plant_id );
+	if ( '' === $cat ) {
+		return null;
+	}
+
+	$categories = sad_znaniy_lunar_categories();
+	$names      = sad_znaniy_moon_month_names();
+	$year       = (int) current_time( 'Y' );
+	$month      = (int) current_time( 'n' );
+
+	$pairs   = array( array( $year, $month ) );
+	$pairs[] = ( 12 === $month ) ? array( $year + 1, 1 ) : array( $year, $month + 1 );
+
+	$months = array();
+	foreach ( $pairs as $pair ) {
+		$months[] = array(
+			'label' => isset( $names[ $pair[1] ][0] ) ? $names[ $pair[1] ][0] : '',
+			'days'  => sad_znaniy_moon_category_days( $pair[0], $pair[1], $cat ),
+			'url'   => add_query_arg( 'culture', $cat, sad_znaniy_moon_month_url( $pair[1] ) ),
+		);
+	}
+
+	return array(
+		'cat'    => $cat,
+		'label'  => isset( $categories[ $cat ] ) ? $categories[ $cat ] : '',
+		'months' => $months,
+	);
+}
+

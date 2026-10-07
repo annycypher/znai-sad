@@ -24,8 +24,12 @@ $sz_good   = sad_znaniy_moon_good_count( $sz_year, $sz_month );
 $sz_intro  = sad_znaniy_moon_intro( $sz_month );
 $sz_faq    = sad_znaniy_moon_faq( $sz_year, $sz_month );
 $sz_work   = sad_znaniy_work_types();
-$sz_page   = get_permalink();
-$sz_cats   = array( 'fire' => 'plod', 'earth' => 'koren', 'air' => 'cvet', 'water' => 'list' );
+$sz_page     = get_permalink();
+$sz_cats     = sad_znaniy_moon_element_category();
+$sz_culture  = isset( $_GET['culture'] ) ? sanitize_key( wp_unslash( $_GET['culture'] ) ) : '';
+if ( ! array_key_exists( $sz_culture, sad_znaniy_lunar_categories() ) ) {
+	$sz_culture = '';
+}
 
 $sz_today      = current_datetime();
 $sz_is_cur     = ( (int) $sz_today->format( 'n' ) === $sz_month && (int) $sz_today->format( 'Y' ) === $sz_year );
@@ -52,7 +56,8 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 
 	<nav class="lunar-months" aria-label="<?php esc_attr_e( 'Выбор месяца', 'sad-znaniy' ); ?>">
 		<?php foreach ( $sz_names as $sz_m => $sz_nm ) : ?>
-			<a class="lunar-chip<?php echo $sz_m === $sz_month ? ' on' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'm', $sz_m, $sz_page ) ); ?>"><?php echo esc_html( $sz_nm[0] ); ?></a>
+			<?php $sz_chip_url = $sz_culture ? add_query_arg( 'culture', $sz_culture, sad_znaniy_moon_month_url( $sz_m ) ) : sad_znaniy_moon_month_url( $sz_m ); ?>
+			<a class="lunar-chip<?php echo $sz_m === $sz_month ? ' on' : ''; ?>" href="<?php echo esc_url( $sz_chip_url ); ?>"><?php echo esc_html( $sz_nm[0] ); ?></a>
 		<?php endforeach; ?>
 	</nav>
 
@@ -64,10 +69,30 @@ $sz_real_today = sad_znaniy_moon_day( (int) $sz_today->format( 'Y' ), (int) $sz_
 		<label class="lunar-panel__label" for="moonCrop"><?php esc_html_e( 'Показать дни для культуры', 'sad-znaniy' ); ?></label>
 		<select id="moonCrop" data-moon-crop>
 			<option value=""><?php esc_html_e( 'Все культуры', 'sad-znaniy' ); ?></option>
-			<option value="plod"><?php esc_html_e( 'Плоды (томаты, перец, огурцы…)', 'sad-znaniy' ); ?></option>
-			<option value="koren"><?php esc_html_e( 'Корнеплоды (морковь, свёкла, лук…)', 'sad-znaniy' ); ?></option>
-			<option value="list"><?php esc_html_e( 'Листовые (капуста, салат, зелень…)', 'sad-znaniy' ); ?></option>
-			<option value="cvet"><?php esc_html_e( 'Цветы', 'sad-znaniy' ); ?></option>
+			<?php
+			$sz_cat_hint = array(
+				'plod'  => __( 'Плоды (томаты, перец, огурцы…)', 'sad-znaniy' ),
+				'koren' => __( 'Корнеплоды (морковь, свёкла, лук…)', 'sad-znaniy' ),
+				'list'  => __( 'Листовые (капуста, салат, зелень…)', 'sad-znaniy' ),
+				'cvet'  => __( 'Цветы', 'sad-znaniy' ),
+			);
+			foreach ( sad_znaniy_lunar_categories() as $sz_ck => $sz_cl ) :
+				?>
+				<option value="<?php echo esc_attr( $sz_ck ); ?>" <?php selected( $sz_culture, $sz_ck ); ?>><?php echo esc_html( isset( $sz_cat_hint[ $sz_ck ] ) ? $sz_cat_hint[ $sz_ck ] : $sz_cl ); ?></option>
+			<?php endforeach; ?>
+			<?php
+			foreach ( sad_znaniy_lunar_categories() as $sz_ck => $sz_cl ) :
+				$sz_plants = sad_znaniy_moon_plants_by_category( $sz_ck );
+				if ( ! $sz_plants ) {
+					continue;
+				}
+				?>
+				<optgroup label="<?php echo esc_attr( $sz_cl ); ?>">
+					<?php foreach ( $sz_plants as $sz_pid => $sz_ptitle ) : ?>
+						<option value="<?php echo esc_attr( $sz_ck ); ?>"><?php echo esc_html( $sz_ptitle ); ?></option>
+					<?php endforeach; ?>
+				</optgroup>
+			<?php endforeach; ?>
 		</select>
 	</div>
 
