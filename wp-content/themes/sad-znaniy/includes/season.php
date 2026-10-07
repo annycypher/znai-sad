@@ -215,7 +215,7 @@ function sad_znaniy_season_month_genitive( $month ) {
 	}
 	$base = (string) $names[ $month ][1];
 	$last = mb_substr( $base, -1 );
-	return ( 'ь' === $last ) ? ( mb_substr( $base, 0, -1 ) . 'я' ) : ( $base . 'а' );
+	return ( 'ь' === $last || 'й' === $last ) ? ( mb_substr( $base, 0, -1 ) . 'я' ) : ( $base . 'а' );
 }
 
 /**
