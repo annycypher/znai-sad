@@ -192,11 +192,16 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 							<span class="t-type <?php echo esc_attr( $t['type'] ); ?>"><?php echo esc_html( $type_label ); ?></span>
 							<span class="t-pr <?php echo 'must' === $t['pr'] ? 'must' : ''; ?>"><?php echo esc_html( $pr_label ); ?></span>
 						</div>
+						<?php $sz_mb = sad_znaniy_moon_badge( $year, $month, (int) $t['d1'] ); ?>
 						<div class="t-meta">
 							<span>📅 <?php echo esc_html( $d_str ); ?> <?php echo esc_html( mb_strtolower( $month_name, 'UTF-8' ) ); ?></span>
 							<?php if ( $t['crop'] ) : ?><span>🌱 <?php echo esc_html( $t['crop'] ); ?></span><?php endif; ?>
 							<span>👤 <?php echo esc_html( $exp_label ); ?></span>
+							<?php if ( $sz_mb ) : ?><span class="t-moon" title="<?php echo esc_attr( $sz_mb['name'] ); ?>"><?php echo esc_html( $sz_mb['icon'] . ' ' . $sz_mb['name'] ); ?></span><?php endif; ?>
 						</div>
+						<?php if ( $sz_mb && $sz_mb['unfav'] && $sz_mb['best_day'] ) : ?>
+							<div class="t-hint t-moon-hint">🌙 <?php echo esc_html( sprintf( __( 'По лунному календарю лучше %d-го — в этот день Луна благоприятствует посадке.', 'sad-znaniy' ), $sz_mb['best_day'] ) ); ?> <a href="<?php echo esc_url( home_url( '/lunnyj-kalendar/' ) ); ?>"><?php esc_html_e( 'Лунный календарь', 'sad-znaniy' ); ?></a></div>
+						<?php endif; ?>
 						<?php if ( $t['hint'] ) : ?>
 							<div class="t-hint">💡 <?php echo esc_html( $t['hint'] ); ?></div>
 						<?php endif; ?>

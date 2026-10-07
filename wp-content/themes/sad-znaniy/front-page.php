@@ -105,6 +105,15 @@ $section_links = array(
 				<span class="circle-go" aria-hidden="true">→</span>
 			</a>
 
+			<a href="<?php echo esc_url( home_url( '/lunnyj-kalendar/' ) ); ?>" class="tool-card">
+				<span class="tile-ico" aria-hidden="true">
+					<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>
+				</span>
+				<h3>Лунный календарь</h3>
+				<p>Благоприятные дни для посева и посадки по фазам Луны</p>
+				<span class="circle-go" aria-hidden="true">→</span>
+			</a>
+
 		</div>
 
 		<div class="ad-slot" aria-hidden="true">Рекламный блок РСЯ — 970×90</div>
@@ -238,6 +247,8 @@ $section_links = array(
 					<h2 class="h-cap" style="font-size:21px;">Календарь работ</h2>
 					<a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>" class="btn btn-light" style="padding:8px 18px; min-height:38px; font-size:12px;"><?php esc_html_e( 'Весь календарь', 'sad-znaniy' ); ?></a>
 				</div>
+
+				<?php echo sad_znaniy_moon_today_widget(); // phpcs:ignore WordPress.Security.EscapeOutput -- HTML собран с экранированием. ?>
 
 				<?php
 				$events = new WP_Query(

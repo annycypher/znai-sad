@@ -702,17 +702,88 @@ function sad_znaniy_moon_head() {
 add_action( 'wp_head', 'sad_znaniy_moon_head', 3 );
 
 /**
- * Подключает стили и скрипт страницы лунного календаря.
+ * Подключает стили и скрипт лунного календаря (страница, главная, календарь).
  */
 function sad_znaniy_moon_assets() {
-	if ( ! is_page_template( 'template-lunar.php' ) ) {
-		return;
-	}
 	$dir = get_template_directory();
-	wp_enqueue_style( 'sad-znaniy-lunar', get_template_directory_uri() . '/assets/css/lunar.css', array(), filemtime( $dir . '/assets/css/lunar.css' ) );
-	wp_enqueue_script( 'sad-znaniy-moon', get_template_directory_uri() . '/assets/js/moon.js', array(), filemtime( $dir . '/assets/js/moon.js' ), true );
+	$need_css = is_front_page() || is_page_template( 'template-lunar.php' ) || is_page_template( 'template-calendar.php' );
+
+	if ( $need_css ) {
+		wp_enqueue_style( 'sad-znaniy-lunar', get_template_directory_uri() . '/assets/css/lunar.css', array(), filemtime( $dir . '/assets/css/lunar.css' ) );
+	}
+	if ( is_page_template( 'template-lunar.php' ) ) {
+		wp_enqueue_script( 'sad-znaniy-moon', get_template_directory_uri() . '/assets/js/moon.js', array(), filemtime( $dir . '/assets/js/moon.js' ), true );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'sad_znaniy_moon_assets' );
+
+/**
+ * Виджет «Луна сегодня» для главной. SSR, кеш на сутки.
+ *
+ * @return string HTML.
+ */
+function sad_znaniy_moon_today_widget() {
+	$cache_key = 'sz_moon_widget_' . current_time( 'Ymd' );
+	$html      = get_transient( $cache_key );
+	if ( false !== $html ) {
+		return $html;
+	}
+
+	$now  = current_datetime();
+	$day  = sad_znaniy_moon_day( (int) $now->format( 'Y' ), (int) $now->format( 'n' ), (int) $now->format( 'j' ) );
+	$work = sad_znaniy_work_types();
+	$good = $day['good'] ? implode( ', ', array_map( function ( $w ) use ( $work ) { return $work[ $w ]; }, $day['good'] ) ) : '—';
+	$url  = home_url( '/lunnyj-kalendar/' );
+
+	$html  = '<a class="moon-widget" href="' . esc_url( $url ) . '">';
+	$html .= '<span class="moon-widget__ico" aria-hidden="true">' . esc_html( $day['phase']['icon'] ) . '</span>';
+	$html .= '<span class="moon-widget__txt"><strong>' . esc_html( 'Луна сегодня: ' . $day['phase']['name'] . ', ' . $day['sign']['name'] ) . '</strong>';
+	$html .= '<span>' . esc_html( 'Благоприятно: ' . $good ) . '</span></span>';
+	$html .= '<span class="circle-go" aria-hidden="true">→</span></a>';
+
+	set_transient( $cache_key, $html, DAY_IN_SECONDS );
+	return $html;
+}
+
+/**
+ * Лунный бейдж для даты события календаря.
+ *
+ * @param int $year  Год.
+ * @param int $month Месяц.
+ * @param int $day   День.
+ * @return array|null
+ */
+function sad_znaniy_moon_badge( $year, $month, $day ) {
+	$day = (int) $day;
+	if ( $day < 1 ) {
+		return null;
+	}
+	$d     = sad_znaniy_moon_day( $year, $month, $day );
+	$unfav = ( 'new' === $d['phase']['key'] || 'full' === $d['phase']['key'] );
+
+	$best = 0;
+	if ( $unfav ) {
+		$nd = (int) gmdate( 't', gmmktime( 0, 0, 0, $month, 1, $year ) );
+		for ( $off = 1; $off <= $nd; $off++ ) {
+			foreach ( array( $day - $off, $day + $off ) as $cand ) {
+				if ( $cand >= 1 && $cand <= $nd ) {
+					$c = sad_znaniy_moon_day( $year, $month, $cand );
+					if ( in_array( 'posadka', $c['good'], true ) || in_array( 'posev', $c['good'], true ) ) {
+						$best = $cand;
+						break 2;
+					}
+				}
+			}
+		}
+	}
+
+	return array(
+		'icon'     => $d['phase']['icon'],
+		'name'     => $d['phase']['name'],
+		'unfav'    => $unfav,
+		'best_day' => $best,
+	);
+}
 
 /**
  * Регистрирует опцию SEO/интро страницы.
