@@ -19,13 +19,13 @@ if ( have_posts() ) :
 			the_post();
 			?>
 			<?php $sad_znaniy_img = sad_znaniy_card_image( get_the_ID() ); ?>
-			<article id="post-<?php the_ID(); ?>" <?php post_class( $sad_znaniy_img ? 'post-card post-card--thumb' : 'post-card' ); ?>>
+			<article id="post-<?php the_ID(); ?>" <?php post_class( 'post-card' ); ?>>
 				<?php if ( $sad_znaniy_img ) : ?>
 					<a class="post-card__media" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1"><?php echo sad_znaniy_card_image_tag( $sad_znaniy_img ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- безопасная разметка из помощника. ?></a>
 				<?php endif; ?>
 				<div class="post-body">
 					<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-					<p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 30 ) ); ?></p>
+					<p><?php echo esc_html( sad_znaniy_announce_short( get_the_ID() ) ); ?></p>
 					<span class="post-date"><?php echo esc_html( get_the_date() ); ?></span>
 				</div>
 			</article>

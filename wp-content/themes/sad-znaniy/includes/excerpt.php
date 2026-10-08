@@ -65,3 +65,33 @@ function sad_znaniy_excerpt_filter( $excerpt, $post = null ) {
 	return '' !== $announce ? $announce : $excerpt;
 }
 add_filter( 'get_the_excerpt', 'sad_znaniy_excerpt_filter', 20, 2 );
+
+/**
+ * Короткий анонс для карточек: полное предложение, без обрыва посреди фразы.
+ *
+ * @param WP_Post|int $post  Запись или её ID.
+ * @param int         $limit Предел в знаках.
+ * @return string
+ */
+function sad_znaniy_announce_short( $post, $limit = 110 ) {
+	$text = sad_znaniy_announce_text( $post );
+	if ( '' === $text || mb_strlen( $text ) <= $limit ) {
+		return $text;
+	}
+
+	$cut = mb_substr( $text, 0, $limit );
+
+	// Заканчиваем на последнем целом предложении, если оно не слишком короткое.
+	if ( preg_match( '/^(.{40,}?[.!?])(\s|$)/u', $cut, $m ) ) {
+		return trim( $m[1] );
+	}
+
+	// Иначе режем по границе слова.
+	$pos = mb_strrpos( $cut, ' ' );
+	if ( false !== $pos && $pos > 20 ) {
+		$cut = mb_substr( $cut, 0, $pos );
+	}
+
+	return rtrim( $cut, ' ,;:—-–' ) . '…';
+}
+
