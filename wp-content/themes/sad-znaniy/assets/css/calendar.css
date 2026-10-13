@@ -258,3 +258,15 @@
 	.tools-handle{border-radius:0 10px 10px 0;width:28px;height:40px}
 	.tools-handle[hidden]{display:none!important}
 }
+/* ---------- Ручка-иконка панели: зелёная кнопка сохранения ---------- */
+.tools-handle{background:var(--emerald);color:var(--on-emerald);border:0;box-shadow:var(--emerald-shadow)}
+.tools-handle:hover,.tools-handle:focus-visible{background:var(--emerald-dark);color:var(--on-emerald);outline:0}
+.tools-handle svg{display:block}
+
+@media (max-width:820px){
+	.tools-handle{width:54px;height:54px;border-radius:50%}
+	.tools-handle svg{width:23px;height:23px}
+}
+@media (min-width:821px){
+	.tools-handle{width:32px;height:44px;border-radius:0 12px 12px 0}
+}

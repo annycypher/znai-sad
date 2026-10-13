@@ -152,7 +152,7 @@ function sad_znaniy_calendar_tools_fab() {
 		<a class="fab-btn" href="<?php echo esc_url( $sz_year_url ); ?>" title="<?php esc_attr_e( "Календарь на год (печать/PDF)", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Календарь на год", "sad-znaniy" ); ?>">📅</a>
 		<button type="button" class="fab-btn" id="fabShare" title="<?php esc_attr_e( "Поделиться", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Поделиться", "sad-znaniy" ); ?>">🔗</button>
 	</div>
-	<button type="button" class="tools-handle" id="toolsHandle" title="<?php esc_attr_e( "Инструменты календаря", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Показать панель инструментов", "sad-znaniy" ); ?>" hidden>⚙</button>
+	<button type="button" class="tools-handle" id="toolsHandle" title="<?php esc_attr_e( "Инструменты календаря", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Показать панель инструментов", "sad-znaniy" ); ?>" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg></button>
 		<?php
 }
 add_action( "wp_footer", "sad_znaniy_calendar_tools_fab", 5 );
