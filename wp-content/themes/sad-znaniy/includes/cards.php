@@ -113,5 +113,9 @@ function sad_znaniy_card_image_tag( $image ) {
 		);
 	}
 
+	if ( function_exists( 'sad_znaniy_ng_picture_url' ) ) {
+		return sad_znaniy_ng_picture_url( (string) $image['url'], (string) $image['alt'], 'post-card__img' );
+	}
+
 	return '<img class="post-card__img" src="' . esc_url( $image['url'] ) . '" alt="' . esc_attr( $image['alt'] ) . '" loading="lazy" decoding="async">';
 }

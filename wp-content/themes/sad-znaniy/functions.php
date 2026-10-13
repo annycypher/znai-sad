@@ -21,6 +21,8 @@ require_once SAD_ZNANIY_DIR . '/includes/menus.php';
 require_once SAD_ZNANIY_DIR . '/includes/cpt-calendar-event.php';
 require_once SAD_ZNANIY_DIR . '/includes/cpt-plant.php';
 require_once SAD_ZNANIY_DIR . '/includes/admin-image-hints.php';
+require_once SAD_ZNANIY_DIR . '/includes/image-compress.php';
+require_once SAD_ZNANIY_DIR . '/includes/image-nextgen.php';
 require_once SAD_ZNANIY_DIR . '/includes/excerpt.php';
 require_once SAD_ZNANIY_DIR . '/includes/cards.php';
 require_once SAD_ZNANIY_DIR . '/includes/install.php';
