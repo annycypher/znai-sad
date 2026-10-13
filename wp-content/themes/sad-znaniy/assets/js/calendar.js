@@ -280,6 +280,42 @@
 	var btnShare = document.getElementById( 'btnShare' );
 	if ( btnShare ) { btnShare.addEventListener( 'click', share ); }
 
+	/* Плавающая панель инструментов: те же действия + скрытие крестиком. */
+	var fabPrint = document.getElementById( 'fabPrint' );
+	if ( fabPrint ) { fabPrint.addEventListener( 'click', function () { window.print(); } ); }
+	var fabPdf = document.getElementById( 'fabPdf' );
+	if ( fabPdf ) { fabPdf.addEventListener( 'click', function () { window.print(); } ); }
+	var fabJpg = document.getElementById( 'fabJpg' );
+	if ( fabJpg ) { fabJpg.addEventListener( 'click', exportJpg ); }
+	var fabShare = document.getElementById( 'fabShare' );
+	if ( fabShare ) { fabShare.addEventListener( 'click', share ); }
+
+	var toolsFab = document.getElementById( 'toolsFab' );
+	var toolsClose = document.getElementById( 'toolsClose' );
+	var toolsHandle = document.getElementById( 'toolsHandle' );
+	var TOOLS_KEY = 'szCalToolsHidden';
+
+	function toolsApply() {
+		var hidden = false;
+		try { hidden = '1' === localStorage.getItem( TOOLS_KEY ); } catch ( e ) { hidden = false; }
+		if ( toolsFab ) { toolsFab.classList.toggle( 'is-hidden', hidden ); }
+		if ( toolsHandle ) { toolsHandle.hidden = ! hidden; }
+	}
+
+	if ( toolsClose ) {
+		toolsClose.addEventListener( 'click', function () {
+			try { localStorage.setItem( TOOLS_KEY, '1' ); } catch ( e ) {}
+			toolsApply();
+		} );
+	}
+	if ( toolsHandle ) {
+		toolsHandle.addEventListener( 'click', function () {
+			try { localStorage.removeItem( TOOLS_KEY ); } catch ( e ) {}
+			toolsApply();
+		} );
+	}
+	toolsApply();
+
 	function regionLabel() {
 		var el = document.querySelector( '.chip.region.on' );
 		return el ? el.textContent.trim() : 'Все регионы';

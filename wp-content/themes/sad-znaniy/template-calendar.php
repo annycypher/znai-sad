@@ -45,6 +45,11 @@ if ( ! in_array( $exp, array( 'new', 'exp', 'all' ), true ) ) {
 	$exp = '';
 }
 
+// Режимы печати: ?print=1 — чистый лист месяца, ?print=1&all=1 — книжка на год.
+$print_mode = ( isset( $_GET['print'] ) && '1' === (string) $_GET['print'] );
+$year_book  = ( $print_mode && isset( $_GET['all'] ) && '1' === (string) $_GET['all'] );
+$region_lbl = ( '' !== $region ) ? sad_znaniy_option_label( sad_znaniy_region_keys(), $region ) : __( 'Все регионы', 'sad-znaniy' );
+
 $events = sad_znaniy_get_month_events( $year, $month );
 $tasks  = array();
 foreach ( $events as $ev ) {
@@ -76,7 +81,52 @@ $difficulty_label = array( 'new' => 'Новичку', 'exp' => 'Опытным',
 $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Желательно', 'weather' => 'По погоде' );
 ?>
 
-<div class="cal-wrap" data-month="<?php echo (int) $month; ?>" data-year="<?php echo (int) $year; ?>">
+<div class="cal-wrap<?php echo $print_mode ? ' is-print' : ''; ?><?php echo $year_book ? ' is-yearbook' : ''; ?>" data-month="<?php echo (int) $month; ?>" data-year="<?php echo (int) $year; ?>">
+
+	<div class="print-head<?php echo $print_mode ? ' is-visible' : ''; ?>">
+		<h1><?php printf( esc_html__( 'Календарь работ — %1$s %2$s', 'sad-znaniy' ), esc_html( $month_name ), (int) $year ); ?><?php echo '' !== $region ? ' · ' . esc_html( $region_lbl ) : ''; ?></h1>
+		<p><?php echo esc_html( 'znai-sad.ru · ' . $region_lbl . ' · распечатано ' . current_time( 'd.m.Y' ) . ( 'new' === $exp ? ' · для новичка' : '' ) ); ?></p>
+	</div>
+
+<?php if ( $year_book ) : ?>
+	<?php
+	for ( $sz_m = 1; $sz_m <= 12; $sz_m++ ) :
+		$sz_month_tasks = array();
+		foreach ( sad_znaniy_get_month_events( $year, $sz_m ) as $sz_one ) {
+			$sz_month_tasks[] = sad_znaniy_event_data( $sz_one->ID, $year, $sz_m );
+		}
+		$sz_rows = array();
+		foreach ( $sz_month_tasks as $sz_row ) {
+			if ( $region && ! in_array( 'all', $sz_row['regions'], true ) && ! in_array( $region, $sz_row['regions'], true ) ) {
+				continue;
+			}
+			if ( 'new' === $exp && 'exp' === $sz_row['exp'] ) {
+				continue;
+			}
+			$sz_rows[] = $sz_row;
+		}
+		if ( ! $sz_rows ) {
+			continue;
+		}
+		$sz_mname = $wp_locale->month[ zeroise( $sz_m, 2 ) ];
+		?>
+		<section class="print-month">
+			<h2><?php echo esc_html( $sz_mname . ' ' . $year ); ?></h2>
+			<ul class="print-list">
+				<?php foreach ( $sz_rows as $sz_row ) : ?>
+					<?php
+					$sz_d = ( $sz_row['d1'] === $sz_row['d2'] ) ? (string) $sz_row['d1'] : $sz_row['d1'] . '–' . $sz_row['d2'];
+					?>
+					<li>
+						<span class="pm-box" aria-hidden="true">☐</span>
+						<span class="pm-title"><?php echo esc_html( $sz_row['title'] ); ?></span>
+						<span class="pm-meta"><?php echo esc_html( $sz_d . ' ' . mb_strtolower( $sz_mname, 'UTF-8' ) . ' · ' . sad_znaniy_option_label( sad_znaniy_work_types(), $sz_row['type'] ) ); ?><?php echo $sz_row['crop'] ? esc_html( ' · ' . $sz_row['crop'] ) : ''; ?></span>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+		</section>
+	<?php endfor; ?>
+<?php endif; ?>
 
 	<div class="cal-head">
 		<div>
@@ -228,11 +278,25 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 
 	<div class="export-row">
 		<button class="btn" onclick="window.print()">🖨 <?php esc_html_e( 'Печать', 'sad-znaniy' ); ?></button>
-		<button class="btn" id="btnPdf">📄 <?php esc_html_e( 'Сохранить в PDF', 'sad-znaniy' ); ?></button>
+		<button class="btn" id="btnPdf" title="<?php esc_attr_e( 'В диалоге печати выберите «Сохранить как PDF»', 'sad-znaniy' ); ?>">📄 <?php esc_html_e( 'Сохранить в PDF', 'sad-znaniy' ); ?></button>
 		<button class="btn" id="btnJpg">🖼 <?php esc_html_e( 'Сохранить в JPG', 'sad-znaniy' ); ?></button>
+		<a class="btn" href="<?php echo esc_url( add_query_arg( array( 'print' => '1', 'all' => '1' ) ) ); ?>">📅 <?php esc_html_e( 'Календарь на год', 'sad-znaniy' ); ?></a>
 		<button class="btn btn-dark" id="btnShare">🔗 <?php esc_html_e( 'Поделиться', 'sad-znaniy' ); ?></button>
+		<p class="btn-hint"><?php esc_html_e( 'PDF: в диалоге печати выберите «Сохранить как PDF» — получится лист А4 с чек-листом. «Календарь на год» открывает 12 месяцев подряд для печати одним файлом.', 'sad-znaniy' ); ?></p>
 		<p class="max-link"><?php esc_html_e( 'Ведём блог и короткие напоминания в MAX —', 'sad-znaniy' ); ?> <a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'мы есть в MAX →', 'sad-znaniy' ); ?></a></p>
 	</div>
+
+	<?php if ( ! $print_mode ) : ?>
+		<div class="tools-fab" id="toolsFab">
+			<button type="button" class="fab-close" id="toolsClose" title="<?php esc_attr_e( 'Скрыть панель', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Скрыть панель инструментов', 'sad-znaniy' ); ?>">✕</button>
+			<button type="button" class="fab-btn" id="fabPrint" title="<?php esc_attr_e( 'Печать', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Печать', 'sad-znaniy' ); ?>">🖨</button>
+			<button type="button" class="fab-btn" id="fabPdf" title="<?php esc_attr_e( 'Сохранить в PDF — в диалоге выберите «Сохранить как PDF»', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Сохранить в PDF', 'sad-znaniy' ); ?>">📄</button>
+			<button type="button" class="fab-btn" id="fabJpg" title="<?php esc_attr_e( 'Сохранить в JPG', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Сохранить в JPG', 'sad-znaniy' ); ?>">🖼</button>
+			<a class="fab-btn" href="<?php echo esc_url( add_query_arg( array( 'print' => '1', 'all' => '1' ) ) ); ?>" title="<?php esc_attr_e( 'Календарь на год (печать/PDF)', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Календарь на год', 'sad-znaniy' ); ?>">📅</a>
+			<button type="button" class="fab-btn" id="fabShare" title="<?php esc_attr_e( 'Поделиться', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Поделиться', 'sad-znaniy' ); ?>">🔗</button>
+		</div>
+		<button type="button" class="tools-handle" id="toolsHandle" title="<?php esc_attr_e( 'Инструменты календаря', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Показать панель инструментов', 'sad-znaniy' ); ?>" hidden>⚙</button>
+	<?php endif; ?>
 
 </div>
 

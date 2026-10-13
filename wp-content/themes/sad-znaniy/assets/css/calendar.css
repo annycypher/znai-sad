@@ -138,3 +138,62 @@
 	.cb{display:none}
 }
 
+
+/* ---------- Печатная шапка, панель инструментов, книжка на год (v2) ---------- */
+.print-head{display:none}
+.print-head.is-visible{display:block;margin:0 0 18px}
+.print-head h1{font-size:24px;margin:0 0 6px}
+.print-head p{margin:0;color:var(--muted);font-size:13.5px}
+.btn-hint{margin:8px 0 0;font-size:12.5px;color:var(--muted);max-width:640px}
+
+.tools-fab{position:fixed;top:50%;right:14px;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:6px;padding:8px 7px;background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r-md);box-shadow:var(--sh-glass)}
+.tools-fab.is-hidden{display:none}
+.fab-btn,.fab-close{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:0;border-radius:10px;background:transparent;color:var(--ink);font-size:16px;line-height:1;cursor:pointer;text-decoration:none;transition:background .15s,transform .15s}
+.fab-btn:hover,.fab-close:hover{background:rgba(0,0,0,.06);transform:translateY(-1px)}
+.fab-close{height:24px;font-size:12px;color:var(--muted);border-radius:8px}
+.tools-handle{position:fixed;top:50%;right:0;transform:translateY(-50%);z-index:60;width:28px;height:40px;border:1px solid var(--glass-border);border-left:0;border-radius:0 10px 10px 0;background:var(--glass);color:var(--ink);font-size:14px;cursor:pointer}
+
+.print-month{margin:0 0 22px}
+.print-month h2{font-size:16px;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #e3e3e3}
+.print-list{list-style:none;margin:0;padding:0}
+.print-list li{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px dotted #ddd;font-size:13.5px}
+.pm-box{flex:0 0 auto;color:#666}
+.pm-title{font-weight:600}
+.pm-meta{color:var(--muted);font-size:12.5px}
+
+/* Чистый лист месяца: убираем навигацию и панель на экране */
+.cal-wrap.is-print .month-nav,.cal-wrap.is-print .view-toggle,.cal-wrap.is-print .filters,.cal-wrap.is-print .progress-row,.cal-wrap.is-print .export-row,.cal-wrap.is-print .max-link,.cal-wrap.is-print .btn-hint{display:none}
+.cal-wrap.is-print #gridView{display:none}
+/* Книжка на год: на экране показываем только 12 месяцев */
+.cal-wrap.is-yearbook .cal-head,.cal-wrap.is-yearbook .month-nav,.cal-wrap.is-yearbook .view-toggle,.cal-wrap.is-yearbook .filters,.cal-wrap.is-yearbook .progress-row,.cal-wrap.is-yearbook #gridView,.cal-wrap.is-yearbook #listView,.cal-wrap.is-yearbook .export-row{display:none}
+
+@media (max-width:820px){
+	.tools-fab{top:auto;bottom:12px;right:12px;transform:none;flex-direction:row}
+	.tools-handle{top:auto;bottom:12px;right:12px;transform:none;width:38px;height:38px;border-radius:10px}
+}
+
+/* ---------- Лист А4 и чёрно-белая печать ---------- */
+@page{size:A4;margin:12mm 14mm}
+@media print{
+	body{background:#fff;color:#000}
+	.topbar,.footer,.ambient,.leaf,.skip-link,.nav,.topbar-actions,.tools-fab,.tools-handle,.btn-hint{display:none!important}
+	.inner{padding:0!important}
+	.cal-wrap{max-width:none}
+	.cal-head,.month-nav,.view-toggle,.filters,.progress-row,#gridView,.export-row,.max-link{display:none!important}
+	.print-head{display:block!important;margin:0 0 8mm}
+	.print-head h1{font-size:16pt;margin:0 0 3mm}
+	.print-head p{font-size:9pt;color:#333}
+	.print-head::after{content:"Заметки: ______________________________";display:block;margin-top:4mm;font-size:9pt;color:#666}
+	.is-yearbook #listView{display:none!important}
+	.tasks{gap:5mm}
+	.task{background:#fff;border:1px solid #bbb;border-radius:3mm;box-shadow:none;animation:none;break-inside:avoid;padding:3mm 4mm}
+	.task.hidden{display:none!important}
+	.t-hint{font-size:9pt;color:#333}
+	.t-meta{font-size:9pt}
+	.t-type{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+	.cb{display:inline-flex!important;align-items:center;justify-content:center;width:11px;height:11px;min-width:11px;border:1px solid #666;border-radius:2px;background:#fff;margin-top:2px}
+	.cb svg{display:none}
+	.print-month{margin:0 0 6mm}
+	.print-month + .print-month{break-before:page}
+	.print-list li{border-bottom:1px dotted #bbb;font-size:10.5pt;padding:1.5mm 0}
+}
