@@ -82,3 +82,77 @@ function sad_znaniy_rest_save_done( WP_REST_Request $request ) {
 
 	return rest_ensure_response( array( 'ok' => true ) );
 }
+
+/**
+ * Иконки типов работ (для карточек печати и списков).
+ *
+ * @return array Ключ таксономии work_type => эмодзи.
+ */
+function sad_znaniy_work_type_icons() {
+	return array(
+		"posev"      => "🌱",
+		"posadka"    => "🌿",
+		"poliv"      => "💧",
+		"podkormka"  => "🧴",
+		"obrezka"    => "✂️",
+		"zashchita"  => "🛡️",
+		"sbor"       => "🧺",
+		"podgotovka" => "🧰",
+	);
+}
+
+/**
+ * Место под узкий баннер над содержимым страницы календаря.
+ *
+ * Наполняется виджетом в «Внешний вид → Виджеты → Баннер над содержимым».
+ * Пустая заглушка видна только администратору и в печать не попадает.
+ *
+ * @return void
+ */
+function sad_znaniy_banner_slot() {
+	if ( is_active_sidebar( "banner-top" ) ) {
+		echo "<div class=\"banner-slot\">";
+		dynamic_sidebar( "banner-top" );
+		echo "</div>";
+		return;
+	}
+	if ( current_user_can( "manage_options" ) ) {
+		echo "<div class=\"banner-slot banner-slot--empty\"><span>"
+			. esc_html__( "Здесь место под баннер 728×90 — добавьте виджет в «Внешний вид → Виджеты → Баннер над содержимым (узкий)». В печать этот блок не выводится.", "sad-znaniy" )
+			. "</span></div>";
+	}
+}
+
+/**
+ * Плавающая панель инструментов календаря.
+ *
+ * Выводится через wp_footer — уже ЗА пределами .frame, у которого стоит
+ * backdrop-filter (он делает предка контейнером для position: fixed и
+ * «приклеивал» панель к странице).
+ *
+ * @return void
+ */
+function sad_znaniy_calendar_tools_fab() {
+	if ( ! is_page_template( "template-calendar.php" ) ) {
+		return;
+	}
+	$args = array( "print" => "1", "all" => "1" );
+	foreach ( array( "region", "exp" ) as $sz_k ) {
+		if ( isset( $_GET[ $sz_k ] ) && "" !== (string) $_GET[ $sz_k ] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- ссылка печати.
+			$args[ $sz_k ] = sanitize_key( wp_unslash( (string) $_GET[ $sz_k ] ) );
+		}
+	}
+	$sz_year_url = add_query_arg( $args, home_url( "/kalendar/" ) );
+		?>
+	<div class="tools-fab" id="toolsFab">
+		<button type="button" class="fab-close" id="toolsClose" title="<?php esc_attr_e( "Скрыть панель", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Скрыть панель инструментов", "sad-znaniy" ); ?>">✕</button>
+		<button type="button" class="fab-btn" id="fabPrint" title="<?php esc_attr_e( "Печать", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Печать", "sad-znaniy" ); ?>">🖨</button>
+		<button type="button" class="fab-btn" id="fabPdf" title="<?php esc_attr_e( "Сохранить в PDF — в диалоге выберите «Сохранить как PDF»", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Сохранить в PDF", "sad-znaniy" ); ?>">📄</button>
+		<button type="button" class="fab-btn" id="fabJpg" title="<?php esc_attr_e( "Сохранить в JPG", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Сохранить в JPG", "sad-znaniy" ); ?>">🖼</button>
+		<a class="fab-btn" href="<?php echo esc_url( $sz_year_url ); ?>" title="<?php esc_attr_e( "Календарь на год (печать/PDF)", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Календарь на год", "sad-znaniy" ); ?>">📅</a>
+		<button type="button" class="fab-btn" id="fabShare" title="<?php esc_attr_e( "Поделиться", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Поделиться", "sad-znaniy" ); ?>">🔗</button>
+	</div>
+	<button type="button" class="tools-handle" id="toolsHandle" title="<?php esc_attr_e( "Инструменты календаря", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Показать панель инструментов", "sad-znaniy" ); ?>" hidden>⚙</button>
+		<?php
+}
+add_action( "wp_footer", "sad_znaniy_calendar_tools_fab", 5 );

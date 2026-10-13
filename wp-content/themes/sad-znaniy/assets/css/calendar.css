@@ -197,3 +197,30 @@
 	.print-month + .print-month{break-before:page}
 	.print-list li{border-bottom:1px dotted #bbb;font-size:10.5pt;padding:1.5mm 0}
 }
+/* ---------- Баннер-слот и карточки «книжки на год» (2 в ряд) ---------- */
+.banner-slot{display:flex;justify-content:center;margin:0 0 18px}
+.banner-slot__item{max-width:100%}
+.banner-slot--empty{border:1px dashed var(--glass-border);border-radius:var(--r-md);padding:10px 14px;color:var(--muted);font-size:12.5px;text-align:center}
+
+.pm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pm-card{position:relative;display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--glass);border:1px solid var(--glass-border);border-left:3px solid var(--accent);border-radius:var(--r-md);box-shadow:var(--sh-glass)}
+.pm-head{display:flex;align-items:center;gap:8px;padding-right:22px}
+.pm-ico{font-size:17px;line-height:1}
+.pm-type{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.pm-title{margin:0;font-size:14.5px;font-weight:600;line-height:1.35}
+.pm-meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted)}
+.pm-box{position:absolute;top:12px;right:13px;font-size:13px;color:#9aa39c}
+
+@media (max-width:640px){.pm-grid{grid-template-columns:1fr}}
+
+@media print{
+	.banner-slot{display:none!important}
+	.pm-grid{grid-template-columns:1fr 1fr;gap:4mm}
+	.pm-card{background:#fff;border:1px solid #bbb;border-left:3px solid #555;box-shadow:none;break-inside:avoid;padding:3mm}
+	.pm-head{padding-right:8mm}
+	.pm-type{color:#333}
+	.pm-box{color:#666}
+	.pm-title{font-size:10pt}
+	.pm-meta{font-size:9pt}
+	.print-month h2{color:#000;border-color:#999}
+}

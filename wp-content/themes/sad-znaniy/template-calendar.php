@@ -83,6 +83,8 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 
 <div class="cal-wrap<?php echo $print_mode ? ' is-print' : ''; ?><?php echo $year_book ? ' is-yearbook' : ''; ?>" data-month="<?php echo (int) $month; ?>" data-year="<?php echo (int) $year; ?>">
 
+	<?php sad_znaniy_banner_slot(); ?>
+
 	<div class="print-head<?php echo $print_mode ? ' is-visible' : ''; ?>">
 		<h1><?php printf( esc_html__( 'Календарь работ — %1$s %2$s', 'sad-znaniy' ), esc_html( $month_name ), (int) $year ); ?><?php echo '' !== $region ? ' · ' . esc_html( $region_lbl ) : ''; ?></h1>
 		<p><?php echo esc_html( 'znai-sad.ru · ' . $region_lbl . ' · распечатано ' . current_time( 'd.m.Y' ) . ( 'new' === $exp ? ' · для новичка' : '' ) ); ?></p>
@@ -90,6 +92,7 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 
 <?php if ( $year_book ) : ?>
 	<?php
+	$sz_type_icons = sad_znaniy_work_type_icons();
 	for ( $sz_m = 1; $sz_m <= 12; $sz_m++ ) :
 		$sz_month_tasks = array();
 		foreach ( sad_znaniy_get_month_events( $year, $sz_m ) as $sz_one ) {
@@ -112,18 +115,27 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 		?>
 		<section class="print-month">
 			<h2><?php echo esc_html( $sz_mname . ' ' . $year ); ?></h2>
-			<ul class="print-list">
+			<div class="pm-grid">
 				<?php foreach ( $sz_rows as $sz_row ) : ?>
 					<?php
-					$sz_d = ( $sz_row['d1'] === $sz_row['d2'] ) ? (string) $sz_row['d1'] : $sz_row['d1'] . '–' . $sz_row['d2'];
+					$sz_d    = ( $sz_row['d1'] === $sz_row['d2'] ) ? (string) $sz_row['d1'] : $sz_row['d1'] . '–' . $sz_row['d2'];
+					$sz_ico  = isset( $sz_type_icons[ $sz_row['type'] ] ) ? $sz_type_icons[ $sz_row['type'] ] : '🌿';
+					$sz_tlbl = sad_znaniy_option_label( sad_znaniy_work_types(), $sz_row['type'] );
 					?>
-					<li>
+					<article class="pm-card">
 						<span class="pm-box" aria-hidden="true">☐</span>
-						<span class="pm-title"><?php echo esc_html( $sz_row['title'] ); ?></span>
-						<span class="pm-meta"><?php echo esc_html( $sz_d . ' ' . mb_strtolower( $sz_mname, 'UTF-8' ) . ' · ' . sad_znaniy_option_label( sad_znaniy_work_types(), $sz_row['type'] ) ); ?><?php echo $sz_row['crop'] ? esc_html( ' · ' . $sz_row['crop'] ) : ''; ?></span>
-					</li>
+						<div class="pm-head">
+							<span class="pm-ico" aria-hidden="true"><?php echo esc_html( $sz_ico ); ?></span>
+							<span class="pm-type"><?php echo esc_html( $sz_tlbl ); ?></span>
+						</div>
+						<h3 class="pm-title"><?php echo esc_html( $sz_row['title'] ); ?></h3>
+						<div class="pm-meta">
+							<span>📅 <?php echo esc_html( $sz_d . ' ' . mb_strtolower( $sz_mname, 'UTF-8' ) ); ?></span>
+							<?php if ( $sz_row['crop'] ) : ?><span>🌱 <?php echo esc_html( $sz_row['crop'] ); ?></span><?php endif; ?>
+						</div>
+					</article>
 				<?php endforeach; ?>
-			</ul>
+			</div>
 		</section>
 	<?php endfor; ?>
 <?php endif; ?>
@@ -286,17 +298,6 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 		<p class="max-link"><?php esc_html_e( 'Ведём блог и короткие напоминания в MAX —', 'sad-znaniy' ); ?> <a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'мы есть в MAX →', 'sad-znaniy' ); ?></a></p>
 	</div>
 
-	<?php if ( ! $print_mode ) : ?>
-		<div class="tools-fab" id="toolsFab">
-			<button type="button" class="fab-close" id="toolsClose" title="<?php esc_attr_e( 'Скрыть панель', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Скрыть панель инструментов', 'sad-znaniy' ); ?>">✕</button>
-			<button type="button" class="fab-btn" id="fabPrint" title="<?php esc_attr_e( 'Печать', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Печать', 'sad-znaniy' ); ?>">🖨</button>
-			<button type="button" class="fab-btn" id="fabPdf" title="<?php esc_attr_e( 'Сохранить в PDF — в диалоге выберите «Сохранить как PDF»', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Сохранить в PDF', 'sad-znaniy' ); ?>">📄</button>
-			<button type="button" class="fab-btn" id="fabJpg" title="<?php esc_attr_e( 'Сохранить в JPG', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Сохранить в JPG', 'sad-znaniy' ); ?>">🖼</button>
-			<a class="fab-btn" href="<?php echo esc_url( add_query_arg( array( 'print' => '1', 'all' => '1' ) ) ); ?>" title="<?php esc_attr_e( 'Календарь на год (печать/PDF)', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Календарь на год', 'sad-znaniy' ); ?>">📅</a>
-			<button type="button" class="fab-btn" id="fabShare" title="<?php esc_attr_e( 'Поделиться', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Поделиться', 'sad-znaniy' ); ?>">🔗</button>
-		</div>
-		<button type="button" class="tools-handle" id="toolsHandle" title="<?php esc_attr_e( 'Инструменты календаря', 'sad-znaniy' ); ?>" aria-label="<?php esc_attr_e( 'Показать панель инструментов', 'sad-znaniy' ); ?>" hidden>⚙</button>
-	<?php endif; ?>
 
 </div>
 
