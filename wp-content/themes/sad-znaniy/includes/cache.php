@@ -53,6 +53,31 @@ function sad_znaniy_cache_dir() {
 }
 
 /**
+ * «Штамп» файлов темы: при правке кода (includes, css, js, functions.php)
+ * ключ кэша меняется, и посетитель не получает старую разметку/старые ссылки
+ * на ассеты. Проверка — быстрый stat по десяткам файлов.
+ *
+ * @return int
+ */
+function sad_znaniy_cache_theme_stamp() {
+	static $stamp = null;
+	if ( null !== $stamp ) {
+		return $stamp;
+	}
+	$stamp = 0;
+	$root  = get_template_directory();
+	foreach ( array( '/includes', '/assets/css', '/assets/js' ) as $dir ) {
+		foreach ( (array) glob( $root . $dir . '/*' ) as $file ) {
+			if ( is_file( $file ) ) {
+				$stamp = max( $stamp, (int) filemtime( $file ) );
+			}
+		}
+	}
+	$stamp = max( $stamp, (int) filemtime( $root . '/functions.php' ) );
+	return $stamp;
+}
+
+/**
  * Файл кэша для текущего запроса.
  *
  * @return string
@@ -60,7 +85,7 @@ function sad_znaniy_cache_dir() {
 function sad_znaniy_cache_file() {
 	$uri    = isset( $_SERVER["REQUEST_URI"] ) ? (string) $_SERVER["REQUEST_URI"] : "/"; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 	$region = isset( $_COOKIE["sz_region"] ) ? sanitize_key( wp_unslash( (string) $_COOKIE["sz_region"] ) ) : "";
-	$key    = md5( $uri . "|" . $region . "|" . ( is_ssl() ? "https" : "http" ) );
+	$key    = md5( $uri . "|" . $region . "|" . ( is_ssl() ? "https" : "http" ) . "|" . sad_znaniy_cache_theme_stamp() );
 	return sad_znaniy_cache_dir() . "/" . substr( $key, 0, 2 ) . "/" . $key . ".html";
 }
 
