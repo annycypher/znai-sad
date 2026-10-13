@@ -242,3 +242,7 @@
 	.pm-check .pm-cb{display:none!important}
 	.pm-check .pm-box{display:block;color:#666}
 }
+/* Пустой месяц (все галочки сняты) в печать не выводится */
+@media print{
+	.print-month.is-off{display:none!important}
+}

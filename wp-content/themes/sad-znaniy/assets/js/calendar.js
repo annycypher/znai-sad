@@ -332,6 +332,15 @@
 			} );
 			var info = document.getElementById( 'pmCount' );
 			if ( info ) { info.textContent = 'К печати: ' + on + ' из ' + pmBoxes.length; }
+
+			/* Месяц, где сняты все галочки, в печать не идёт (пустой заголовок не нужен). */
+			Array.prototype.forEach.call( document.querySelectorAll( '.print-month' ), function ( sec ) {
+				var any = false;
+				Array.prototype.forEach.call( sec.querySelectorAll( '.pm-cb' ), function ( cb ) {
+					if ( cb.checked ) { any = true; }
+				} );
+				sec.classList.toggle( 'is-off', ! any );
+			} );
 		}
 
 		Array.prototype.forEach.call( pmBoxes, function ( cb ) {
