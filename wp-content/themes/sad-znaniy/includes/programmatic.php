@@ -640,7 +640,9 @@ function sad_znaniy_programmatic_related( $ctx ) {
 		if ( $key === $ctx['key'] ) {
 			continue;
 		}
-		if ( 'empty' === sad_znaniy_programmatic_status( $page ) ) {
+		// Ссылки ведём только на ВКЛЮЧЁННЫЕ страницы семейства: иначе в блоке
+		// «Другие регионы» появляются адреса, которые отдают 404.
+		if ( 'live' !== sad_znaniy_programmatic_status( $page ) ) {
 			continue;
 		}
 		if ( 'region-month' === $ctx['template'] && 'region-month' === $page['family'] && $page['month'] === $ctx['month'] ) {
