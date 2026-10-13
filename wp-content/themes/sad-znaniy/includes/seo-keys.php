@@ -213,6 +213,81 @@ function sad_znaniy_seo_rules() {
 }
 
 /**
+ * Стоп-лист авторазметки (опция sz_seo_stopwords, правится на экране «Ключи»).
+ *
+ * Фраза, содержащая любое стоп-слово, получает статус «junk» и в счёт «живых»
+ * не входит. Разделители: запятая или новая строка; строки «# …» — комментарии.
+ *
+ * @return string[] Стоп-слова в нижнем регистре.
+ */
+function sad_znaniy_seo_stopwords() {
+	static $words = null;
+	if ( null !== $words ) {
+		return $words;
+	}
+
+	$raw = get_option( 'sz_seo_stopwords', '' );
+	if ( ! is_string( $raw ) || '' === trim( $raw ) ) {
+		$raw = sad_znaniy_seo_stopwords_default();
+	}
+
+	$words = array();
+	foreach ( preg_split( '/[\r\n]+/', $raw ) as $line ) {
+		$line = trim( (string) $line );
+		if ( '' === $line || str_starts_with( $line, '#' ) ) {
+			continue;
+		}
+		foreach ( explode( ',', $line ) as $word ) {
+			$word = mb_strtolower( trim( $word ), 'UTF-8' );
+			if ( '' !== $word ) {
+				$words[] = $word;
+			}
+		}
+	}
+
+	$words = array_values( array_unique( $words ) );
+	return $words;
+}
+
+/**
+ * Стоп-лист по умолчанию: мусор чужих ниш из выгрузок Вордстата.
+ *
+ * Список подобран по фактическому шуму (кулинария, телесериалы, школьная
+ * биология, магазины, комнатные растения). Спорные слова («фото», «отзыв»,
+ * «подсветка») сюда не входят — при необходимости владелец добавляет их сам.
+ *
+ * @return string
+ */
+function sad_znaniy_seo_stopwords_default() {
+	return 'рецепт, курин, крабов, палочк, сериал, сезон 1, сезон 2, сезон 3, сезон 4, серия, актер,'
+		. ' фильм, песн, смотреть, онлайн, видео, картинк, купить, цена, дешев, скачать, бесплатн,'
+		. ' заказ, в духовке, закуск, панель, 2110, популяц, особей, генотип, скрещив, биолог, задач,'
+		. ' егэ, огэ, 5 класс, 6 класс, комнатн, сон, примет, гадан, молитв, заговор, что такое,'
+		. ' значени, перевод, торрент, порно, кроссворд, сканворд';
+}
+
+/**
+ * Проверяет фразу на стоп-слова.
+ *
+ * @param string $phrase Фраза.
+ * @return bool true — фраза мусорная (статус «junk»).
+ */
+function sad_znaniy_seo_is_junk( $phrase ) {
+	$phrase_l = mb_strtolower( trim( (string) $phrase ), 'UTF-8' );
+	if ( '' === $phrase_l ) {
+		return false;
+	}
+
+	foreach ( sad_znaniy_seo_stopwords() as $stop ) {
+		if ( false !== mb_strpos( $phrase_l, $stop ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Индекс программатик-страниц: URL => статус (live/draft/empty).
  *
  * @return array
@@ -241,15 +316,21 @@ function sad_znaniy_seo_pages_index() {
  * @param string $region   Ключ региона ('' — нет).
  * @param int    $month    Месяц (0 — нет).
  * @param int    $plant_id ID растения (0 — нет).
- * @return string URL или '' (если не хватает данных или страницы нет в матрице).
+ * @return array ['url' => string, 'kind' => string]:
+ *               kind = 'live'  — страница включена и с данными («живая»);
+ *               kind = 'ready' — данные есть, но страница не включена («готовая»);
+ *               kind = ''      — страницы нет (пустая или вне матрицы).
  */
-function sad_znaniy_seo_build_url( $template, $region, $month, $plant_id ) {
+function sad_znaniy_seo_build_url_info( $template, $region, $month, $plant_id ) {
 	$months = sad_znaniy_month_slugs();
 	$url    = '';
 
 	// Лунные страницы существуют всегда (12 месяцев).
 	if ( 'lunnyj' === $template ) {
-		return $month ? home_url( '/lunnyj-kalendar/' . $months[ $month ] . '/' ) : home_url( '/lunnyj-kalendar/' );
+		return array(
+			'url'  => $month ? home_url( '/lunnyj-kalendar/' . $months[ $month ] . '/' ) : home_url( '/lunnyj-kalendar/' ),
+			'kind' => 'live',
+		);
 	}
 
 	if ( 'kalendar' === $template && $region && $month ) {
@@ -266,8 +347,47 @@ function sad_znaniy_seo_build_url( $template, $region, $month, $plant_id ) {
 		}
 	}
 
-	// Страницы нет в матрице — разметка будет «manual».
-	return ( '' !== $url && isset( sad_znaniy_seo_pages_index()[ $url ] ) ) ? $url : '';
+	$index = sad_znaniy_seo_pages_index();
+
+	// Страницы нет в матрице — фраза уйдёт в «привязана» или «manual».
+	if ( '' === $url || ! isset( $index[ $url ] ) ) {
+		return array(
+			'url'  => '',
+			'kind' => '',
+		);
+	}
+
+	// Страница есть: включённая — «живая», с данными, но выключенная — «готовая».
+	// Пустая (событий < 5) цели не даёт: страница физически не существует.
+	$status = (string) $index[ $url ];
+	if ( 'empty' === $status ) {
+		return array(
+			'url'  => '',
+			'kind' => '',
+		);
+	}
+
+	return array(
+		'url'  => $url,
+		'kind' => ( 'live' === $status ) ? 'live' : 'ready',
+	);
+}
+
+/**
+ * Собирает URL программатик-страницы по шаблону и найденным сущностям.
+ *
+ * Оставлено для совместимости: статус «живая» теперь ставится только цели,
+ * которая включена, поэтому в разметке используется sad_znaniy_seo_build_url_info().
+ *
+ * @param string $template Шаблон (kalendar / kogda-sazhat / uhod).
+ * @param string $region   Ключ региона ('' — нет).
+ * @param int    $month    Месяц (0 — нет).
+ * @param int    $plant_id ID растения (0 — нет).
+ * @return string URL или ''.
+ */
+function sad_znaniy_seo_build_url( $template, $region, $month, $plant_id ) {
+	$info = sad_znaniy_seo_build_url_info( $template, $region, $month, $plant_id );
+	return (string) $info['url'];
 }
 
 /**
@@ -343,6 +463,7 @@ function sad_znaniy_seo_match( $phrase ) {
 		'url'      => '',
 		'template' => '',
 		'related'  => '',
+		'kind'     => '',
 	);
 
 	if ( '' === $phrase_l ) {
@@ -392,12 +513,13 @@ function sad_znaniy_seo_match( $phrase ) {
 			continue;
 		}
 
-		$url = sad_znaniy_seo_build_url( $rule['template'], $region, $month, $plant_id );
-		if ( '' !== $url ) {
+		$info = sad_znaniy_seo_build_url_info( $rule['template'], $region, $month, $plant_id );
+		if ( '' !== $info['url'] ) {
 			return array(
-				'url'      => $url,
+				'url'      => (string) $info['url'],
 				'template' => $rule['template'],
 				'related'  => '',
+				'kind'     => (string) $info['kind'],
 			);
 		}
 
@@ -421,6 +543,7 @@ function sad_znaniy_seo_match( $phrase ) {
 		'url'      => '',
 		'template' => '',
 		'related'  => $related,
+		'kind'     => '',
 	);
 }
 
@@ -435,22 +558,32 @@ function sad_znaniy_seo_weak_threshold() {
 }
 
 /**
- * Статус ключа: weak (частота ниже порога) / live / related / manual.
+ * Статус ключа: junk / weak / live / ready / related / manual.
  *
+ * junk    — фраза содержит стоп-слово (чужая ниша), в счёт «живых» не входит;
+ * weak    — частота ниже порога;
+ * live    — ведёт на ВКЛЮЧЁННУЮ программатик-страницу («живая»);
+ * ready   — ведёт на программатик-страницу, где данные есть, но она выключена;
  * related — программатик-страницы нет, но есть «связанная страница»
- * (календарь с фильтром месяца/региона или карточка растения).
+ *           (календарь с фильтром месяца/региона или карточка растения);
+ * manual  — ничего не нашлось.
  *
  * @param int    $freq    Частота.
  * @param string $url     Размеченный программатик-URL.
  * @param string $related Связанная страница.
+ * @param string $phrase  Фраза (проверка стоп-листа).
+ * @param string $kind    Вид цели из разметки (live/ready/'').
  * @return string
  */
-function sad_znaniy_seo_status_for( $freq, $url, $related = '' ) {
+function sad_znaniy_seo_status_for( $freq, $url, $related = '', $phrase = '', $kind = '' ) {
+	if ( '' !== (string) $phrase && sad_znaniy_seo_is_junk( $phrase ) ) {
+		return 'junk';
+	}
 	if ( (int) $freq < sad_znaniy_seo_weak_threshold() ) {
 		return 'weak';
 	}
-	if ( '' !== $url ) {
-		return 'live';
+	if ( '' !== (string) $url ) {
+		return ( 'ready' === $kind ) ? 'ready' : 'live';
 	}
 	return ( '' !== $related ) ? 'related' : 'manual';
 }
@@ -568,7 +701,8 @@ function sad_znaniy_seo_recalc() {
 	foreach ( (array) $rows as $row ) {
 		$match   = sad_znaniy_seo_match( $row->phrase );
 		$related = isset( $match['related'] ) ? (string) $match['related'] : '';
-		$status  = sad_znaniy_seo_status_for( (int) $row->freq, $match['url'], $related );
+		$kind    = isset( $match['kind'] ) ? (string) $match['kind'] : '';
+		$status  = sad_znaniy_seo_status_for( (int) $row->freq, $match['url'], $related, (string) $row->phrase, $kind );
 		$wpdb->update(
 			$table,
 			array(
@@ -591,8 +725,10 @@ function sad_znaniy_seo_recalc() {
 function sad_znaniy_seo_key_status_labels() {
 	return array(
 		'live'    => __( 'живая', 'sad-znaniy' ),
+		'ready'   => __( 'готовая', 'sad-znaniy' ),
 		'weak'    => __( 'слабая', 'sad-znaniy' ),
 		'related' => __( 'привязана', 'sad-znaniy' ),
+		'junk'    => __( 'junk', 'sad-znaniy' ),
 		'manual'  => __( 'manual', 'sad-znaniy' ),
 	);
 }
@@ -635,7 +771,7 @@ function sad_znaniy_seo_keys_query( $args = array() ) {
 	$where  = '1=1';
 	$params = array();
 
-	if ( in_array( $args['status'], array( 'live', 'weak', 'manual' ), true ) ) {
+	if ( in_array( $args['status'], array( 'live', 'ready', 'weak', 'related', 'junk', 'manual' ), true ) ) {
 		$where    .= ' AND status = %s';
 		$params[] = $args['status'];
 	}
@@ -677,8 +813,10 @@ function sad_znaniy_seo_keys_counts() {
 	$out = array(
 		'all'     => 0,
 		'live'    => 0,
+		'ready'   => 0,
 		'weak'    => 0,
 		'related' => 0,
+		'junk'    => 0,
 		'manual'  => 0,
 	);
 
@@ -992,8 +1130,11 @@ function sad_znaniy_seo_hub_keys_page() {
 		$new_threshold = isset( $_POST['sz_seo_weak_threshold'] ) ? (int) $_POST['sz_seo_weak_threshold'] : 10;
 		update_option( 'sz_seo_weak_threshold', ( $new_threshold > 0 ) ? $new_threshold : 10, false );
 
+		$new_stopwords = isset( $_POST['sz_seo_stopwords'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sz_seo_stopwords'] ) ) : '';
+		update_option( 'sz_seo_stopwords', $new_stopwords, false );
+
 		sad_znaniy_seo_recalc();
-		$notice = '<div class="notice notice-success is-dismissible"><p>Правила и порог сохранены, разметка пересчитана.</p></div>';
+		$notice = '<div class="notice notice-success is-dismissible"><p>Правила, порог и стоп-слова сохранены, разметка пересчитана.</p></div>';
 	}
 
 	// Пересчёт разметки вручную.
@@ -1034,6 +1175,8 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 	$labels = sad_znaniy_seo_key_status_labels();
 	$raw    = get_option( 'sz_seo_rules', '' );
 	$raw    = ( is_string( $raw ) && '' !== trim( $raw ) ) ? $raw : sad_znaniy_seo_rules_default();
+	$raw_st = get_option( 'sz_seo_stopwords', '' );
+	$raw_st = ( is_string( $raw_st ) && '' !== trim( $raw_st ) ) ? $raw_st : sad_znaniy_seo_stopwords_default();
 	$export = admin_url( 'admin-post.php?action=sad_znaniy_seo_export' );
 	$nonce  = wp_create_nonce( 'sz_seo_export' );
 	$base   = admin_url( 'admin.php?page=sad-seo-hub' );
@@ -1147,6 +1290,11 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 				<span class="description">фразы с частотой ниже порога помечаются «слабая» (по умолчанию 10)</span>
 			</p>
 			<p class="description">Формат строки: «слово1, слово2 &gt; шаблон». Шаблоны: kalendar (регион+месяц), kogda-sazhat (культура+регион), uhod (культура+месяц).</p>
+			<p>
+				<label for="sz-seo-stopwords"><b>Стоп-слова (чужие ниши):</b></label><br>
+				<textarea name="sz_seo_stopwords" id="sz-seo-stopwords" rows="4" style="width:100%;max-width:760px;"><?php echo esc_textarea( $raw_st ); ?></textarea>
+			</p>
+			<p class="description">Фраза, содержащая любое из этих слов, получает статус <b>junk</b> (серая строка) и не считается «живой». Разделитель — запятая или новая строка; строки с «#» не читаются.</p>
 			<p class="submit">
 				<button type="submit" name="sz_keys_rules" class="button">Сохранить правила и пересчитать</button>
 			</p>
@@ -1172,15 +1320,17 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		<p>
 			Всего: <b><?php echo (int) $counts['all']; ?></b>
 			· <span style="color:#2e6b4f;">живых: <?php echo (int) $counts['live']; ?></span>
+			· <span style="color:#3a5ba0;">готовых: <?php echo (int) $counts['ready']; ?></span>
 			· <span style="color:#2f6fa8;">привязано: <?php echo (int) $counts['related']; ?></span>
 			· <span style="color:#999;">слабых: <?php echo (int) $counts['weak']; ?></span>
+			· <span style="color:#a24b4b;">junk: <?php echo (int) $counts['junk']; ?></span>
 			· manual: <?php echo (int) $counts['manual']; ?>
 		</p>
 
 		<form method="get" style="margin-bottom:10px;">
 			<input type="hidden" name="page" value="sad-seo-hub">
 			<select name="sz_status">
-				<?php foreach ( array( 'all' => 'все', 'live' => 'живая', 'weak' => 'слабая', 'related' => 'привязана', 'manual' => 'manual' ) as $value => $label ) : ?>
+				<?php foreach ( array_merge( array( 'all' => 'все' ), $labels ) as $value => $label ) : ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $status, $value ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
 			</select>
@@ -1210,7 +1360,8 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 				<tr><td colspan="5">Пока пусто — импортируйте выгрузку Вордстата.</td></tr>
 			<?php else : ?>
 				<?php foreach ( $keys as $key ) : ?>
-					<tr <?php echo ( 'weak' === $key->status ) ? 'style="color:#999;"' : ''; ?>>
+					<?php $sz_grey = in_array( $key->status, array( 'weak', 'junk' ), true ); ?>
+					<tr <?php echo $sz_grey ? 'style="color:#999;"' : ''; ?>>
 						<td><?php echo esc_html( $key->phrase ); ?></td>
 						<td><?php echo (int) $key->freq; ?></td>
 						<td><?php echo ( '' !== (string) $key->matched_url ) ? esc_html( $key->matched_url ) : '—'; ?></td>
@@ -1219,7 +1370,11 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 							<?php if ( '' !== (string) $key->related_url && '' === (string) $key->matched_url ) : ?>
 								<a href="<?php echo esc_url( $key->related_url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( str_replace( home_url(), '', $key->related_url ) ); ?></a>
 							<?php elseif ( '' !== (string) $key->matched_url ) : ?>
-								<a href="<?php echo esc_url( $key->matched_url ); ?>" target="_blank" rel="noopener">открыть</a>
+								<?php if ( 'ready' === $key->status ) : ?>
+									<span class="description">страница выключена — готова к включению</span>
+								<?php else : ?>
+									<a href="<?php echo esc_url( $key->matched_url ); ?>" target="_blank" rel="noopener">открыть</a>
+								<?php endif; ?>
 							<?php else : ?>
 								—
 							<?php endif; ?>
@@ -1231,7 +1386,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		</table>
 		<style>
 			.sz-status{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
-			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-weak{background:#f1f1f1;color:#999}.sz-manual{background:#fdf3e0;color:#a9714b}.sz-related{background:#eaf2fb;color:#2f6fa8}
+			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-ready{background:#eef3ff;color:#3a5ba0}.sz-weak{background:#f1f1f1;color:#999}.sz-manual{background:#fdf3e0;color:#a9714b}.sz-related{background:#eaf2fb;color:#2f6fa8}.sz-junk{background:#f7e6e6;color:#a24b4b}
 			.sz-drop{border:2px dashed #c9ced4;border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer;background:#fafbfc;transition:border-color .15s,background .15s;max-width:760px}
 			.sz-drop.over{border-color:#2e6b4f;background:#e7f0e9}
 			.sz-drop p{margin:4px 0;color:#5c645d}
