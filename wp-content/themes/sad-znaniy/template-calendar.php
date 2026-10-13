@@ -93,6 +93,14 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 <?php if ( $year_book ) : ?>
 	<?php
 	$sz_type_icons = sad_znaniy_work_type_icons();
+	?>
+	<div class="pm-tools">
+		<button type="button" class="btn btn-sm" id="pmAll"><?php esc_html_e( 'Отметить все', 'sad-znaniy' ); ?></button>
+		<button type="button" class="btn btn-sm" id="pmNone"><?php esc_html_e( 'Снять все', 'sad-znaniy' ); ?></button>
+		<span class="pm-count" id="pmCount"></span>
+		<span class="pm-note"><?php esc_html_e( 'На печать идут только отмеченные пункты; снятые не печатаются. Выбор запоминается в этом браузере.', 'sad-znaniy' ); ?></span>
+	</div>
+	<?php
 	for ( $sz_m = 1; $sz_m <= 12; $sz_m++ ) :
 		$sz_month_tasks = array();
 		foreach ( sad_znaniy_get_month_events( $year, $sz_m ) as $sz_one ) {
@@ -122,8 +130,11 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 					$sz_ico  = isset( $sz_type_icons[ $sz_row['type'] ] ) ? $sz_type_icons[ $sz_row['type'] ] : '🌿';
 					$sz_tlbl = sad_znaniy_option_label( sad_znaniy_work_types(), $sz_row['type'] );
 					?>
-					<article class="pm-card">
-						<span class="pm-box" aria-hidden="true">☐</span>
+					<article class="pm-card" data-pm-key="<?php echo esc_attr( $year . '-' . $sz_m . '|' . $sz_row['title'] ); ?>">
+						<label class="pm-check" title="<?php esc_attr_e( 'Печатать этот пункт', 'sad-znaniy' ); ?>">
+							<input type="checkbox" class="pm-cb" checked aria-label="<?php echo esc_attr( 'Печатать: ' . $sz_row['title'] ); ?>">
+							<span class="pm-box" aria-hidden="true">☐</span>
+						</label>
 						<div class="pm-head">
 							<span class="pm-ico" aria-hidden="true"><?php echo esc_html( $sz_ico ); ?></span>
 							<span class="pm-type"><?php echo esc_html( $sz_tlbl ); ?></span>

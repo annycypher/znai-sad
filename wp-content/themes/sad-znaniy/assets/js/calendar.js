@@ -316,6 +316,54 @@
 	}
 	toolsApply();
 
+	/* Книжка на год: галочки «печатать этот пункт». Снятые карточки в печать не идут. */
+	var pmBoxes = document.querySelectorAll( '.pm-cb' );
+	if ( pmBoxes.length ) {
+		var PM_KEY = 'szCalPrintPicks';
+		var pmSaved = {};
+		try { pmSaved = JSON.parse( localStorage.getItem( PM_KEY ) || '{}' ) || {}; } catch ( e ) { pmSaved = {}; }
+
+		function pmSync() {
+			var on = 0;
+			Array.prototype.forEach.call( pmBoxes, function ( cb ) {
+				var card = cb.closest( '.pm-card' );
+				if ( card ) { card.classList.toggle( 'is-off', ! cb.checked ); }
+				if ( cb.checked ) { on++; }
+			} );
+			var info = document.getElementById( 'pmCount' );
+			if ( info ) { info.textContent = 'К печати: ' + on + ' из ' + pmBoxes.length; }
+		}
+
+		Array.prototype.forEach.call( pmBoxes, function ( cb ) {
+			var card = cb.closest( '.pm-card' );
+			var key = card && card.dataset.pmKey ? card.dataset.pmKey : '';
+			if ( key && '0' === String( pmSaved[ key ] ) ) { cb.checked = false; }
+			cb.addEventListener( 'change', function () {
+				if ( key ) { pmSaved[ key ] = cb.checked ? 1 : 0; }
+				try { localStorage.setItem( PM_KEY, JSON.stringify( pmSaved ) ); } catch ( e ) {}
+				pmSync();
+			} );
+		} );
+
+		function pmSet( state ) {
+			Array.prototype.forEach.call( pmBoxes, function ( cb ) {
+				cb.checked = state;
+				var card = cb.closest( '.pm-card' );
+				var key = card && card.dataset.pmKey ? card.dataset.pmKey : '';
+				if ( key ) { pmSaved[ key ] = state ? 1 : 0; }
+			} );
+			try { localStorage.setItem( PM_KEY, JSON.stringify( pmSaved ) ); } catch ( e ) {}
+			pmSync();
+		}
+
+		var pmAll = document.getElementById( 'pmAll' );
+		var pmNone = document.getElementById( 'pmNone' );
+		if ( pmAll ) { pmAll.addEventListener( 'click', function () { pmSet( true ); } ); }
+		if ( pmNone ) { pmNone.addEventListener( 'click', function () { pmSet( false ); } ); }
+
+		pmSync();
+	}
+
 	function regionLabel() {
 		var el = document.querySelector( '.chip.region.on' );
 		return el ? el.textContent.trim() : 'Все регионы';

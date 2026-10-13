@@ -224,3 +224,21 @@
 	.pm-meta{font-size:9pt}
 	.print-month h2{color:#000;border-color:#999}
 }
+/* ---------- Книжка на год: галочки «печатать этот пункт» ---------- */
+.pm-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px;padding:10px 12px;background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r-md)}
+.btn-sm{padding:6px 12px;font-size:13px}
+.pm-count{font-size:13px;font-weight:600;color:var(--accent)}
+.pm-note{font-size:12.5px;color:var(--muted)}
+.pm-check{position:absolute;top:10px;right:12px;display:inline-flex;align-items:center;cursor:pointer}
+.pm-check .pm-box{position:static;display:none}
+.pm-cb{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;margin:0}
+.pm-card.is-off{opacity:.42}
+.pm-card.is-off .pm-check{opacity:1}
+
+@media print{
+	.pm-tools{display:none!important}
+	.pm-card.is-off{display:none!important}
+	.pm-check{position:absolute;top:3mm;right:3mm;cursor:default}
+	.pm-check .pm-cb{display:none!important}
+	.pm-check .pm-box{display:block;color:#666}
+}
