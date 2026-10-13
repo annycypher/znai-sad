@@ -295,25 +295,38 @@
 	var toolsHandle = document.getElementById( 'toolsHandle' );
 	var TOOLS_KEY = 'szCalToolsHidden';
 
+	function toolsMobile() {
+		return !!( window.matchMedia && window.matchMedia( '(max-width: 820px)' ).matches );
+	}
+
 	function toolsApply() {
 		var hidden = false;
 		try { hidden = '1' === localStorage.getItem( TOOLS_KEY ); } catch ( e ) { hidden = false; }
-		if ( toolsFab ) { toolsFab.classList.toggle( 'is-hidden', hidden ); }
-		if ( toolsHandle ) { toolsHandle.hidden = ! hidden; }
+		var mobile = toolsMobile();
+		var open   = mobile ? !!( toolsFab && toolsFab.classList.contains( 'is-open' ) ) : ! hidden;
+
+		if ( toolsFab ) {
+			toolsFab.classList.toggle( 'is-hidden', ! open );
+			if ( ! mobile ) { toolsFab.classList.remove( 'is-open' ); }
+		}
+		if ( toolsHandle ) { toolsHandle.hidden = open; }
 	}
 
 	if ( toolsClose ) {
 		toolsClose.addEventListener( 'click', function () {
+			if ( toolsFab ) { toolsFab.classList.remove( 'is-open' ); }
 			try { localStorage.setItem( TOOLS_KEY, '1' ); } catch ( e ) {}
 			toolsApply();
 		} );
 	}
 	if ( toolsHandle ) {
 		toolsHandle.addEventListener( 'click', function () {
+			if ( toolsFab ) { toolsFab.classList.add( 'is-open' ); }
 			try { localStorage.removeItem( TOOLS_KEY ); } catch ( e ) {}
 			toolsApply();
 		} );
 	}
+	window.addEventListener( 'resize', toolsApply );
 	toolsApply();
 
 	/* Книжка на год: галочки «печатать этот пункт». Снятые карточки в печать не идут. */
