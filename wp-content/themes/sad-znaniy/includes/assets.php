@@ -117,3 +117,48 @@ function sad_znaniy_enqueue_home_calendar() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_home_calendar' );
+
+/**
+ * Подключает стили, скрипты и данные планировщика участка только на его странице.
+ */
+function sad_znaniy_enqueue_planner_assets() {
+	if ( ! sad_znaniy_is_planner_page() ) {
+		return;
+	}
+
+	$uri = get_template_directory_uri();
+
+	wp_enqueue_style(
+		'sad-znaniy-planner',
+		$uri . '/assets/css/planner.css',
+		array( 'sad-znaniy-main' ),
+		sad_znaniy_asset_ver( 'assets/css/planner.css' )
+	);
+
+	wp_enqueue_script(
+		'sad-znaniy-planner-migrations',
+		$uri . '/assets/js/planner-migrations.js',
+		array(),
+		sad_znaniy_asset_ver( 'assets/js/planner-migrations.js' ),
+		true
+	);
+
+	wp_enqueue_script(
+		'sad-znaniy-planner',
+		$uri . '/assets/js/planner.js',
+		array( 'sad-znaniy-planner-migrations' ),
+		sad_znaniy_asset_ver( 'assets/js/planner.js' ),
+		true
+	);
+
+	wp_localize_script(
+		'sad-znaniy-planner',
+		'sadZnaniyPlan',
+		array(
+			'loggedIn' => is_user_logged_in(),
+			'nonce'    => wp_create_nonce( 'wp_rest' ),
+			'data'     => sad_znaniy_planner_contract(),
+		)
+	);
+}
+add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_planner_assets' );

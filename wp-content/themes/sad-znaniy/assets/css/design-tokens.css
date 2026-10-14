@@ -32,3 +32,30 @@
     --fs-h2: clamp(20px, 2.4vw, 27px);
     --fs-body: 17px;
 }
+
+/* ==========================================================
+   ПЛАНИРОВЩИК УЧАСТКА (Этап 6, Партия 1)
+   Цвета 10 типов элементов — перенос из демо _templates/planner-demo.html 1:1.
+   Canvas читает их через getComputedStyle('--pln-{type}') — как календарь --c-{type}.
+   ========================================================== */
+:root{
+    --pln-bed:   #5B8C5A;
+    --pln-tree:  #3E6B3E;
+    --pln-bush:  #6FA05E;
+    --pln-house: #5C6470;
+    --pln-build: #7A828E;
+    --pln-green: #4E9A6B;
+    --pln-comp:  #8A6F55;
+    --pln-path:  #B8A98F;
+    --pln-water: #4A90D9;
+    --pln-rest:  #C98B5F;
+
+    /* уровни подсказок (тосты) */
+    --pln-warn-red:    #C0392B;
+    --pln-warn-yellow: #D4A017;
+    --pln-warn-green:  #27AE60;
+
+    /* зоны захвата на canvas */
+    --pln-handle:     rgba(46,107,79,.35);
+    --pln-handle-ink: #2E6B4F;
+}

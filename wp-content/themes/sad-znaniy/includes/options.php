@@ -61,7 +61,25 @@ function sad_znaniy_sanitize_options( $input ) {
 		$output['sz_calc_sow'] = sad_znaniy_sow_sanitize( $input['sz_calc_sow'] );
 	}
 
+	$output['sz_planner_gate'] = ( isset( $input['sz_planner_gate'] ) && '1' === (string) $input['sz_planner_gate'] ) ? '1' : '0';
+
 	return $output;
+}
+
+/**
+ * Требовать ли вход для печати/PDF и «В календарь телефона» в планировщике.
+ *
+ * По умолчанию включено: если опция ещё не сохранялась, ключа в массиве нет —
+ * тогда возвращаем true (галочка в админке стоит).
+ *
+ * @return bool
+ */
+function sad_znaniy_planner_gate_required() {
+	$options = get_option( 'sad_znaniy_options', array() );
+	if ( ! is_array( $options ) || ! array_key_exists( 'sz_planner_gate', $options ) ) {
+		return true;
+	}
+	return '1' === (string) $options['sz_planner_gate'];
 }
 
 /**
@@ -105,6 +123,13 @@ function sad_znaniy_render_options_page() {
 
 		<form method="post" action="options.php">
 			<?php settings_fields( 'sad_znaniy_settings' ); ?>
+
+			<h2><?php esc_html_e( 'Экспорт планировщика', 'sad-znaniy' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Если галочка стоит, гости при нажатии «Печать/PDF» и «В календарь телефона (.ics)» видят предложение войти или зарегистрироваться. Сохранение картинки JPG остаётся свободным — так план расходится по сети без барьера.', 'sad-znaniy' ); ?></p>
+			<label>
+				<input type="checkbox" name="sad_znaniy_options[sz_planner_gate]" value="1" <?php checked( sad_znaniy_planner_gate_required() ); ?>>
+				<?php esc_html_e( 'Требовать вход для PDF и «В календарь телефона»', 'sad-znaniy' ); ?>
+			</label>
 
 			<h2><?php esc_html_e( 'Популярное на главной', 'sad-znaniy' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Выберите растения, ссылки на которые появятся в чипах «Популярное» на главной странице (Ctrl — выбрать несколько).', 'sad-znaniy' ); ?></p>

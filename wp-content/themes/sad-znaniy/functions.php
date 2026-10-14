@@ -47,6 +47,7 @@ require_once SAD_ZNANIY_DIR . '/includes/calculators.php';
 require_once SAD_ZNANIY_DIR . '/includes/moon.php';
 require_once SAD_ZNANIY_DIR . '/includes/season.php';
 require_once SAD_ZNANIY_DIR . '/includes/region.php';
+require_once SAD_ZNANIY_DIR . '/includes/planner.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/db.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/settings.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/queue.php';
