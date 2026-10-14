@@ -1,4 +1,11 @@
 <?php
+
+// Только CLI: скрипты разработки не исполняются из браузера (Этап 7.3, S2).
+if ( 'cli' !== PHP_SAPI ) {
+	http_response_code( 403 );
+	header( 'Content-Type: text/plain; charset=utf-8' );
+	exit( 'Скрипт запускается только из командной строки.' );
+}
 /**
  * ЭКСПОРТ ДЛЯ ПЕРЕНОСА (Этап 8, партия 8.0): дамп БД + архив wp-content + контрольные суммы.
  *
@@ -80,7 +87,7 @@ return;
 
 // 2. Архив wp-content (тема + вложения), мусор исключаем.
 $sz_root   = rtrim( ABSPATH, "/\\" ) . "/wp-content";
-$sz_skip   = array( "debug.log", "upgrade/", "backups/", "cache/", "ai1wm-backups/", ".DS_Store", "Thumbs.db" );
+$sz_skip   = array( "_tools/", "_docs/", "_design/", "_game-test/", "deploy/", "debug.log", "upgrade/", "backups/", "cache/", "ai1wm-backups/", "node_modules/", ".git/", ".DS_Store", "Thumbs.db", ".log", ".sql", ".zip", ".ps1" );
 $sz_zipobj = new ZipArchive();
 if ( true !== $sz_zipobj->open( $sz_zip, ZipArchive::CREATE | ZipArchive::OVERWRITE ) ) {
 echo "Не удалось создать архив: " . $sz_zip . "\n";

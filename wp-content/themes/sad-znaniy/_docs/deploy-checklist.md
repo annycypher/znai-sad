@@ -168,6 +168,83 @@
 
 **Что мне нужно от вас после подтверждения:** сообщить «права подтверждены» — я отправлю sitemap порциями, проверю заход робота (логи + «Диагностика») и включу внешние статусы в SEO-Хабе.
 
+
+## Приложение В. Безопасность на хостинге после переноса
+
+На локалке часть вещей закрыта кодом (CLI-guard в скриптах, лимитер, заголовки). На боевом сервере это дополняется правилами сервера: папки разработки, дампы, логи, `.git` и служебные файлы не должны быть доступны из web вообще.
+
+### В.1. Apache/`.htaccess` (в корне сайта)
+
+```apache
+# --- Этап 7.3: служебные папки и файлы недоступны из web ---
+RedirectMatch 404 ^/(_tools|_docs|_design|_game-test|deploy|logs)(/|$)
+RedirectMatch 404 /\.(git|svn|hg)(/|$)
+RedirectMatch 404 ^/(wp-config\.php|wp-config-sample\.php|readme\.html|license\.txt|xmlrpc\.php|wp-trackback\.php|wp-links-opml\.php)$
+RedirectMatch 404 \.(sql|zip|log|bak|old|ps1|md)$
+
+# --- wp-cron запускается только с самого сервера (остальное — системный cron) ---
+<Files "wp-cron.php">
+  Require local
+</Files>
+
+# --- Базовые заголовки (страховка, если PHP-заголовки не доедут) ---
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+```
+
+Важно: правило `\.md$` закрывает и `_docs` — документы остаются в репозитории, в web им не место.
+
+### В.2. Nginx (если сервер nginx или nginx+apache — правила в блок `server`)
+
+```nginx
+location ~ ^/(_tools|_docs|_design|_game-test|deploy|logs)/ { deny all; }
+location ~ /\.(git|svn|hg) { deny all; }
+location ~* \.(sql|zip|log|bak|old|ps1|md)$ { deny all; }
+location ~* ^/(wp-config\.php|wp-config-sample\.php|readme\.html|license\.txt|xmlrpc\.php|wp-trackback\.php|wp-links-opml\.php)$ { deny all; }
+location = /wp-cron.php { allow 127.0.0.1; deny all; }
+server_tokens off;
+```
+
+### В.3. Права файлов (сразу после распаковки архива)
+
+```bash
+cd <папка сайта>
+find . -type d -exec chmod 755 {} \;
+find . -type f -exec chmod 644 {} \;
+chmod 600 wp-config.php
+find wp-content/uploads -type d -exec chmod 755 {} \;
+find wp-content/uploads -type f -exec chmod 644 {} \;
+find wp-content/uploads -type f -name '*.php' -delete     # в uploads PHP быть не должно
+find . -perm -o+w -type f | head -20                      # контроль: файлов 777 быть не должно
+```
+
+Проверка после правки прав: сайт открывается, загрузка картинки в медиатеку работает, `debug.log` (в логе вне webroot) пополняется при ошибке.
+
+
+### В.4. Настройки PHP на боевом (`.user.ini` в корне сайта)
+
+```ini
+expose_php = Off
+display_errors = Off
+log_errors = On
+upload_max_filesize = 32M
+post_max_size = 40M
+memory_limit = 256M
+max_execution_time = 120
+```
+
+### В.5. Финальный чек-лист безопасности переноса (7 пунктов)
+
+1. **Пароли и логин:** создать администратора с неочевидным логином (не `admin`), перенести авторство контента, удалить `admin`, сменить пароль → WP перехеширует его в bcrypt. Application Passwords перевыпустить после смены пароля.
+2. **Соли:** сгенерировать свежие (8 ключей по 64 символа) и вписать в `wp-config.php` боевого сайта — все старые сессии и куки станут недействительными.
+3. **Окружение:** в `wp-config.php` боевого сервера поставить `WP_ENVIRONMENT_TYPE = 'production'` — автоматически выключатся `WP_DEBUG`/`WP_DEBUG_LOG`, включатся `FORCE_SSL_ADMIN` и `DISALLOW_FILE_MODS`, лог уйдёт в `../logs/`.
+4. **Правила сервера:** применить В.1 или В.2 и В.3, затем проверить в браузере: `/_tools/nextgen-images.php` → 404, `*.sql` → 404, `/.git/config` → 404, `/xmlrpc.php` → 403.
+5. **Заголовки и CSP:** в DevTools → Network на главной, статье, календаре, планировщике и калькуляторе должны быть `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy`; в консоли — ни одной записи о нарушении CSP.
+6. **Лимитер:** проверить живьём — 6 неверных паролей подряд с одного IP → сообщение о блокировке на 15 минут, запись в «🛡 Безопасность»; после теста нажать «Разблокировать». Письмо о блокировке уходит на `admin_email` (нужна рабочая почта домена).
+7. **Бэкапы:** включить ежедневные бэкапы хостинга (30 дней) и проверить свой ежедневный дамп вне webroot (партия S3) — восстановление из дампа обязательно прогнать один раз (партия S3, `_tools/restore-backup.php`).
+
 ## Правила и риски
 
 - Тяжёлые операции (пересчёт ключей, пересборка матрицы, массовые импорты) — только локально; на хостинг заливаем готовую БД.
