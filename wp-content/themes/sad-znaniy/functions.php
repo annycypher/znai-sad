@@ -17,6 +17,7 @@ define( 'SAD_ZNANIY_DIR', get_template_directory() );
 require_once SAD_ZNANIY_DIR . '/includes/setup.php';
 require_once SAD_ZNANIY_DIR . '/includes/security.php';
 require_once SAD_ZNANIY_DIR . '/includes/backup.php';
+require_once SAD_ZNANIY_DIR . '/includes/integrity.php';
 require_once SAD_ZNANIY_DIR . '/includes/helpers.php';
 require_once SAD_ZNANIY_DIR . '/includes/cache.php';
 require_once SAD_ZNANIY_DIR . '/includes/ical.php';

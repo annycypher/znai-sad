@@ -512,6 +512,11 @@ function sad_znaniy_security_handle_actions() {
 		$message = 'Журнал входов очищен.';
 	} elseif ( 'backup_now' === $action && function_exists( 'sad_znaniy_backup_run' ) ) {
 		$message = 'Бэкап: ' . sad_znaniy_backup_run( true );
+	} elseif ( 'integrity_now' === $action && function_exists( 'sad_znaniy_integrity_run' ) ) {
+		sad_znaniy_integrity_run( true );
+		$message = 'Целостность: ' . sad_znaniy_integrity_summary();
+	} elseif ( 'integrity_baseline' === $action && function_exists( 'sad_znaniy_integrity_theme_baseline' ) ) {
+		$message = 'Базовая линия темы обновлена: ' . sad_znaniy_integrity_theme_baseline() . ' файлов.';
 	}
 
 	return $message;
@@ -660,13 +665,17 @@ function sad_znaniy_security_page_tables() {
 	echo '<h2>Резервные копии и целостность</h2>';
 	echo '<table class="widefat striped"><tbody>';
 	$last = sad_znaniy_security_last_backup();
-	$integrity = (string) get_option( 'sad_znaniy_integrity_status' );
-	echo '<tr><td><strong>Последний бэкап</strong></td><td>' . ( $last ? esc_html( $last ) : '<span style="color:#b32d2e">пока нет (партия S3)</span>' ) . '</td><td><code>' . esc_html( sad_znaniy_security_backup_dir() ) . '</code></td></tr>';
-	echo '<tr><td><strong>Целостность файлов</strong></td><td>' . ( $integrity ? esc_html( $integrity ) : '<span style="color:#b32d2e">проверки пока нет (партия S4)</span>' ) . '</td><td>сверка контрольных сумм ядра и файлов темы</td></tr>';
+	$integrity = function_exists( 'sad_znaniy_integrity_summary' ) ? sad_znaniy_integrity_summary() : '';
+	echo '<tr><td><strong>Последний бэкап</strong></td><td>' . ( $last ? esc_html( $last ) : '<span style="color:#b32d2e">пока нет (нажмите «Сделать бэкап сейчас»)</span>' ) . '</td><td><code>' . esc_html( sad_znaniy_security_backup_dir() ) . '</code></td></tr>';
+	echo '<tr><td><strong>Целостность файлов</strong></td><td>' . ( '' !== $integrity ? esc_html( $integrity ) : '<span style="color:#b32d2e">проверок пока нет</span>' ) . '</td><td>ежедневная сверка контрольных сумм ядра и файлов темы (в 04:30)</td></tr>';
 	echo '</tbody></table>';
 
 	if ( function_exists( 'sad_znaniy_backup_panel' ) ) {
 		sad_znaniy_backup_panel();
+	}
+
+	if ( function_exists( 'sad_znaniy_integrity_panel' ) ) {
+		sad_znaniy_integrity_panel();
 	}
 
 	echo '<h2>Заблокированные IP</h2>';
