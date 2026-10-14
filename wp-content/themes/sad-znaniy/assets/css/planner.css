@@ -165,6 +165,11 @@
 #plnRoot .sum-card{background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.9);border-radius:var(--r-tile);box-shadow:0 8px 22px rgba(90,102,114,.16);padding:14px;margin-top:10px}
 #plnRoot .sum-row{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0}
 #plnRoot .crop-line{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px dashed rgba(32,36,31,.08)}
+#plnRoot .hint-row{display:block;width:100%;text-align:left;font-size:12.5px;line-height:1.35;padding:7px 9px;border-radius:10px;margin-top:6px;background:rgba(255,255,255,.75);border:1px solid rgba(32,36,31,.08)}
+#plnRoot .hint-row:hover{border-color:var(--accent)}
+#plnRoot .hint-row.is-bad{border-left:3px solid var(--pln-warn-red)}
+#plnRoot .hint-row.is-warn{border-left:3px solid var(--pln-warn-yellow)}
+#plnRoot .hint-row.is-good{border-left:3px solid var(--pln-warn-green)}
 #plnRoot .conflict{background:#FDECEA;border:1px solid rgba(192,57,43,.25);border-radius:12px;padding:10px 12px;font-size:12.5px;margin-top:10px}
 #plnRoot .conflict b{color:var(--pln-warn-red)}
 

@@ -1022,6 +1022,25 @@
 			html += '<div class="conflict"><b>⚠ Конфликты соседства</b><div style="margin-top:6px">' +
 				st.conf.map( function ( c ) { return '• ' + esc( c ); } ).join( '<br>' ) + '</div></div>';
 		}
+		var hints = planHints();
+		if ( hints.length ) {
+			html += '<div class="sum-card"><div class="pane-title" style="margin-bottom:6px">Подсказки</div>';
+			hints.slice( 0, 8 ).forEach( function ( h, idx ) {
+				html += '<button type="button" class="hint-row ' +
+					( h.sev === 0 ? 'is-bad' : ( h.sev === 1 ? 'is-warn' : 'is-good' ) ) +
+					'" data-hint="' + idx + '">' + esc( h.title ) + '</button>';
+			} );
+			html += '</div>';
+		}
+		if ( items.length ) {
+			var present = Object.keys( TYPES ).filter( function ( t ) {
+				return items.some( function ( i ) { return i.type === t; } );
+			} );
+			html += '<div class="sum-card"><div class="pane-title" style="margin-bottom:6px">Легенда</div>' +
+				present.map( function ( t ) {
+					return '<div class="crop-line"><span style="width:11px;height:11px;border-radius:4px;background:' + typeColor( t ) + ';flex-shrink:0"></span>' + TYPES[ t ].name + '</div>';
+				} ).join( '' ) + '</div>';
+		}
 		$( 'summary' ).innerHTML = html;
 
 		var bl = $( 'bottomline' );
@@ -1063,6 +1082,22 @@
 	} );
 	document.addEventListener( 'click', function ( e ) {
 		if ( ! e.target.closest( '.crop-pick' ) ) { $( 'cropList' ).hidden = true; }
+	} );
+	/* клик по подсказке в «Сводке» — подсветить элемент (выбрать и показать в центре) */
+	$( 'summary' ).addEventListener( 'click', function ( e ) {
+		var b = e.target.closest( '.hint-row' );
+		if ( ! b ) { return; }
+		var h = planHints()[ parseInt( b.getAttribute( 'data-hint' ), 10 ) ];
+		if ( ! h ) { return; }
+		selId = h.ids[ 0 ];
+		var it = selItem();
+		if ( it ) {
+			view.x = VW / 2 - ( it.x + it.w / 2 ) * view.s;
+			view.y = VH / 2 - ( it.y + it.h / 2 ) * view.s;
+			clampView();
+		}
+		refreshPanels();
+		draw();
 	} );
 
 	/* ===== тосты и подсказки (совместимость и тень) ===== */
@@ -1123,37 +1158,79 @@
 		if ( nameInList( a.good, an, bn ) || nameInList( b.good, an, bn ) ) { return 'good'; }
 		return false;
 	}
+	/**
+	 * Все подсказки плана, отсортированные по приоритету bad(0) → warn(1) → good(2).
+	 * Уровень 3 (ph) — заготовка Партии 4.
+	 */
+	function planHints() {
+		var out = [];
+		var muted = hintsMuted();
+		var i, j;
+		for ( i = 0; i < items.length; i++ ) {
+			var A = items[ i ];
+			if ( ! A.crop ) { continue; }
+			var ca = cropById( A.crop );
+			if ( ! ca ) { continue; }
+			for ( j = i + 1; j < items.length; j++ ) {
+				var B = items[ j ];
+				if ( ! B.crop || gapBetween( A, B ) > 1 ) { continue; }
+				var cb = cropById( B.crop );
+				if ( ! cb ) { continue; }
+				var rule = pairRule( ca, cb );
+				if ( ! rule ) { continue; }
+				var key = [ ca.id, cb.id ].sort().join( '+' );
+				if ( muted.indexOf( key ) >= 0 ) { continue; }
+				out.push( {
+					sev: rule === 'bad' ? 0 : 2,
+					pair: true,
+					key: key,
+					ids: [ A.id, B.id ],
+					title: rule === 'bad'
+						? ( 'Не дружат: ' + ca.name + ' × ' + cb.name )
+						: ( 'Отличная пара: ' + ca.name + ' × ' + cb.name ),
+					text: rule === 'bad'
+						? 'Общие болезни или угнетение: разнесите минимум на 2 м или разделите дорожкой.'
+						: 'Взаимно помогают — так и оставьте.'
+				} );
+			}
+			if ( ca.light === 'sun' ) {
+				for ( j = 0; j < items.length; j++ ) {
+					var S = items[ j ];
+					if ( S.id === A.id ) { continue; }
+					var sh = TYPES[ S.type ].shadow;
+					if ( ! sh ) { continue; }
+					var dt = Math.max( Math.abs( ( A.x + A.w / 2 ) - ( S.x + S.w / 2 ) ) - ( A.w + S.w ) / 2, 0 );
+					if ( dt < sh ) {
+						out.push( {
+							sev: 1,
+							pair: false,
+							key: 'shade_' + A.id + '_' + S.id,
+							ids: [ A.id ],
+							title: ca.name + ' может не хватать света',
+							text: TYPES[ S.type ].name + ' отбрасывает тень на ' + sh + ' м. Выберите солнечное место.'
+						} );
+						break;
+					}
+				}
+			}
+		}
+		out.sort( function ( a, b ) { return a.sev - b.sev; } );
+		return out;
+	}
 	function checkNew( it ) {
 		if ( it.type === 'house' ) {
 			toast( 'yellow', 'Тень учтена', 'Дом отбрасывает тень ~3 м на север. Светолюбивые — не вплотную к северной стене.' );
 		}
 	}
+	/* подсказки по элементу: не больше двух карточек, приоритет bad → warn → good */
 	function checkNeighbors( it ) {
-		if ( ! it || ! it.crop ) { return; }
-		var c = cropById( it.crop );
-		if ( ! c ) { return; }
-		items.forEach( function ( o ) {
-			if ( o.id === it.id || ! o.crop || gapBetween( it, o ) > 1 ) { return; }
-			var oc = cropById( o.crop );
-			if ( ! oc ) { return; }
-			var key = [ c.id, oc.id ].sort().join( '+' );
-			if ( hintsMuted().indexOf( key ) >= 0 ) { return; }
-			var rule = pairRule( c, oc );
-			if ( rule === 'bad' ) {
-				toast( 'red', 'Не дружат: ' + c.name + ' × ' + oc.name, 'Общие болезни или угнетение. Разнесите минимум на 2 м или разделите дорожкой.', key );
-			} else if ( rule === 'good' ) {
-				toast( 'green', 'Отличная пара: ' + c.name + ' × ' + oc.name, 'Взаимно помогают — так и оставьте.', key );
-			}
+		if ( ! it ) { return; }
+		planHints().filter( function ( h ) {
+			return h.ids.indexOf( it.id ) >= 0;
+		} ).slice( 0, 2 ).forEach( function ( h ) {
+			var kind = h.sev === 0 ? 'red' : ( h.sev === 1 ? 'yellow' : 'green' );
+			toast( kind, h.title, h.text, h.pair ? h.key : '' );
 		} );
-		for ( var i = 0; i < items.length; i++ ) {
-			var sh = items[ i ];
-			if ( sh.id === it.id || ! TYPES[ sh.type ].shadow ) { continue; }
-			var dt = Math.max( Math.abs( ( it.x + it.w / 2 ) - ( sh.x + sh.w / 2 ) ) - ( it.w + sh.w ) / 2, 0 );
-			if ( c.light === 'sun' && dt < TYPES[ sh.type ].shadow ) {
-				toast( 'yellow', c.name + ' может не хватать света', TYPES[ sh.type ].name + ' отбрасывает тень на ' + TYPES[ sh.type ].shadow + ' м. Выберите солнечное место.' );
-			}
-			break;
-		}
 	}
 
 	/* ===== мастер первого шага ===== */
