@@ -517,6 +517,8 @@ function sad_znaniy_security_handle_actions() {
 		$message = 'Целостность: ' . sad_znaniy_integrity_summary();
 	} elseif ( 'integrity_baseline' === $action && function_exists( 'sad_znaniy_integrity_theme_baseline' ) ) {
 		$message = 'Базовая линия темы обновлена: ' . sad_znaniy_integrity_theme_baseline() . ' файлов.';
+	} elseif ( 'mail_test' === $action && function_exists( 'sad_znaniy_mail_test' ) ) {
+		$message = 'Почта: ' . sad_znaniy_mail_test();
 	}
 
 	return $message;
@@ -676,6 +678,10 @@ function sad_znaniy_security_page_tables() {
 
 	if ( function_exists( 'sad_znaniy_integrity_panel' ) ) {
 		sad_znaniy_integrity_panel();
+	}
+
+	if ( function_exists( 'sad_znaniy_mail_panel' ) ) {
+		sad_znaniy_mail_panel();
 	}
 
 	echo '<h2>Заблокированные IP</h2>';
