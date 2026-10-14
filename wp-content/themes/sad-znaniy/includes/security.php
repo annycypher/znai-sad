@@ -510,6 +510,8 @@ function sad_znaniy_security_handle_actions() {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "TRUNCATE TABLE {$log}" );
 		$message = 'Журнал входов очищен.';
+	} elseif ( 'backup_now' === $action && function_exists( 'sad_znaniy_backup_run' ) ) {
+		$message = 'Бэкап: ' . sad_znaniy_backup_run( true );
 	}
 
 	return $message;
@@ -662,6 +664,10 @@ function sad_znaniy_security_page_tables() {
 	echo '<tr><td><strong>Последний бэкап</strong></td><td>' . ( $last ? esc_html( $last ) : '<span style="color:#b32d2e">пока нет (партия S3)</span>' ) . '</td><td><code>' . esc_html( sad_znaniy_security_backup_dir() ) . '</code></td></tr>';
 	echo '<tr><td><strong>Целостность файлов</strong></td><td>' . ( $integrity ? esc_html( $integrity ) : '<span style="color:#b32d2e">проверки пока нет (партия S4)</span>' ) . '</td><td>сверка контрольных сумм ядра и файлов темы</td></tr>';
 	echo '</tbody></table>';
+
+	if ( function_exists( 'sad_znaniy_backup_panel' ) ) {
+		sad_znaniy_backup_panel();
+	}
 
 	echo '<h2>Заблокированные IP</h2>';
 	if ( empty( $locked ) ) {
