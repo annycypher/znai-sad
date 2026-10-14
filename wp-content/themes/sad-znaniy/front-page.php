@@ -31,7 +31,7 @@ $section_links = array(
 				<h1>Ваш идеальный сад.<br>Знания. Инструменты. Урожай.</h1>
 				<p class="hero-sub">Калькуляторы полива и удобрений, планировщик участка и календарь работ — всё в одном месте, для новичков и опытных дачников.</p>
 				<div class="hero-buttons">
-					<a href="#tools" class="btn btn-dark">Планировщик <span class="arr">→</span></a>
+					<a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>" class="btn btn-dark">Планировщик <span class="arr">→</span></a>
 					<a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>" class="btn btn-light"><?php esc_html_e( 'Календарь работ', 'sad-znaniy' ); ?></a>
 				</div>
 				<?php $popular_plants = sad_znaniy_get_popular_plants(); ?>
@@ -52,7 +52,7 @@ $section_links = array(
 					<img src="<?php echo esc_url( $img . '/hero-flowers.jpg' ); ?>" alt="Цветник у дома" loading="lazy" width="480" height="360">
 					<img src="<?php echo esc_url( $img . '/hero-harvest.jpg' ); ?>" alt="Урожай овощей" loading="lazy" width="480" height="360">
 				</div>
-				<a href="#tools" class="glass-cta">
+				<a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>" class="glass-cta">
 					<span class="tile-ico" aria-hidden="true">
 						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>
 					</span>
@@ -69,7 +69,7 @@ $section_links = array(
 		<div class="section-head"><h2 class="h-cap">Инструменты садовода</h2></div>
 		<div class="tools-grid">
 
-			<a href="http://sadznaniy.local/kalkulyatory/" class="tool-card">
+			<a href="<?php echo esc_url( home_url( '/kalkulyatory/' ) ); ?>" class="tool-card">
 				<span class="tile-ico" aria-hidden="true">
 					<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01"/></svg>
 				</span>
@@ -78,7 +78,7 @@ $section_links = array(
 				<span class="circle-go" aria-hidden="true">→</span>
 			</a>
 
-			<a href="#tools" class="tool-card">
+			<a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>" class="tool-card">
 				<span class="tile-ico" aria-hidden="true">
 					<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>
 				</span>
@@ -168,35 +168,35 @@ $section_links = array(
 			<div>
 				<div class="section-head"><h2 class="h-sub" style="font-size:15px;">Полезные калькуляторы</h2></div>
 				<div class="calc-tiles">
-					<a href="http://sadznaniy.local/kalkulyator-poliva/" class="tile">
+					<a href="<?php echo esc_url( home_url( '/kalkulyator-poliva/' ) ); ?>" class="tile">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4 6 7.2 6 10.5a6 6 0 0 1-12 0C6 10.2 8.5 7 12 3Z"/></svg>
 						</span>
 						<strong>Расчёт полива</strong>
 						<span class="circle-go" aria-hidden="true">→</span>
 					</a>
-					<a href="http://sadznaniy.local/kalkulyator-udobreniy/" class="tile">
+					<a href="<?php echo esc_url( home_url( '/kalkulyator-udobreniy/' ) ); ?>" class="tile">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 4H9L8 3Z"/><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M8 12h8M8 16h5"/></svg>
 						</span>
 						<strong>Удобрения</strong>
 						<span class="circle-go" aria-hidden="true">→</span>
 					</a>
-					<a href="http://sadznaniy.local/kalkulyator-grunta-i-ph/" class="tile">
+					<a href="<?php echo esc_url( home_url( '/kalkulyator-grunta-i-ph/' ) ); ?>" class="tile">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-3 7-7 0-4.5-4-8-7-13-3 5-7 8.5-7 13 0 4 3 7 7 7Z"/></svg>
 						</span>
 						<strong>Грунт и pH</strong>
 						<span class="circle-go" aria-hidden="true">→</span>
 					</a>
-					<a href="http://sadznaniy.local/kalkulyator-poseva/" class="tile">
+					<a href="<?php echo esc_url( home_url( '/kalkulyator-poseva/' ) ); ?>" class="tile">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V10"/><path d="M12 10C12 6 9 4 5 4c0 4 3 6 7 6Z"/><path d="M12 13c0-3.5 2.5-5 6-5 0 3.5-2.5 5-6 5Z"/><path d="M6 22h12"/></svg>
 						</span>
 						<strong>Посев семян</strong>
 						<span class="circle-go" aria-hidden="true">→</span>
 					</a>
-					<a href="#tools" class="tile tile-wide">
+					<a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>" class="tile tile-wide">
 						<span class="tile-ico" aria-hidden="true">
 							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>
 						</span>
@@ -352,7 +352,7 @@ $section_links = array(
 					<text x="42" y="152" font-size="10" fill="#41544A" font-family="sans-serif">Теплица</text>
 				</svg>
 				<p style="text-align:center; font-size:13px; margin:9px 0 13px;">Схема участка в планировщике</p>
-				<div style="text-align:center;"><a href="#tools" class="btn btn-dark" style="padding:10px 22px; min-height:42px; font-size:12.5px;">Попробовать</a></div>
+				<div style="text-align:center;"><a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>" class="btn btn-dark" style="padding:10px 22px; min-height:42px; font-size:12.5px;">Попробовать</a></div>
 			</div>
 			<div>
 				<h2>Контакты</h2>
