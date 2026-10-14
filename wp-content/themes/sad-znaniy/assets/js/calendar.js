@@ -329,6 +329,17 @@
 	window.addEventListener( 'resize', toolsApply );
 	toolsApply();
 
+	/* «Сбросить отметки» рядом с прогрессом: чистит localStorage и user_meta (через saveDone). */
+	var resetBtn = document.getElementById( 'resetDone' );
+	if ( resetBtn ) {
+		resetBtn.addEventListener( 'click', function () {
+			if ( ! window.confirm( 'Снять все отметки выполнения? Список работ не изменится — сбросятся только галочки.' ) ) { return; }
+			doneSet.clear();
+			saveDone();
+			apply();
+		} );
+	}
+
 	/* Книжка на год: галочки «печатать этот пункт». Снятые карточки в печать не идут. */
 	var pmBoxes = document.querySelectorAll( '.pm-cb' );
 	if ( pmBoxes.length ) {

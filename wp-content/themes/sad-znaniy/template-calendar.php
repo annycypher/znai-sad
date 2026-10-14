@@ -190,6 +190,7 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 	<div class="progress-row">
 		<div class="progress-track"><div class="progress-fill" id="pFill"></div></div>
 		<span class="progress-num" id="pNum"><?php printf( '%d из %d', 0, count( $tasks ) ); ?></span>
+		<button type="button" class="btn btn-sm" id="resetDone" title="<?php esc_attr_e( 'Снять все отметки выполнения', 'sad-znaniy' ); ?>">↺ <?php esc_html_e( 'Сбросить отметки', 'sad-znaniy' ); ?></button>
 	</div>
 
 	<section id="gridView" class="cal-grid-card">
@@ -304,6 +305,21 @@ $priority_label   = array( 'must' => 'Обязательно', 'opt' => 'Жел�
 		<button class="btn" id="btnPdf" title="<?php esc_attr_e( 'В диалоге печати выберите «Сохранить как PDF»', 'sad-znaniy' ); ?>">📄 <?php esc_html_e( 'Сохранить в PDF', 'sad-znaniy' ); ?></button>
 		<button class="btn" id="btnJpg">🖼 <?php esc_html_e( 'Сохранить в JPG', 'sad-znaniy' ); ?></button>
 		<a class="btn" href="<?php echo esc_url( add_query_arg( array( 'print' => '1', 'all' => '1' ) ) ); ?>">📅 <?php esc_html_e( 'Календарь на год', 'sad-znaniy' ); ?></a>
+		<?php
+		$sz_ics_args = array();
+		if ( '' !== $region ) {
+			$sz_ics_args['region'] = $region;
+		}
+		if ( '' !== $exp ) {
+			$sz_ics_args['exp'] = $exp;
+		}
+		if ( ! $year_book ) {
+			$sz_ics_args['month'] = (int) $month;
+			$sz_ics_args['year']  = (int) $year;
+		}
+		$sz_ics_url = add_query_arg( $sz_ics_args, home_url( '/kalendar/ical/' ) );
+		?>
+		<a class="btn" href="<?php echo esc_url( $sz_ics_url ); ?>">🗓 <?php esc_html_e( 'В календарь телефона', 'sad-znaniy' ); ?></a>
 		<button class="btn btn-dark" id="btnShare">🔗 <?php esc_html_e( 'Поделиться', 'sad-znaniy' ); ?></button>
 		<p class="btn-hint"><?php esc_html_e( 'PDF: в диалоге печати выберите «Сохранить как PDF» — получится лист А4 с чек-листом. «Календарь на год» открывает 12 месяцев подряд для печати одним файлом.', 'sad-znaniy' ); ?></p>
 		<p class="max-link"><?php esc_html_e( 'Ведём блог и короткие напоминания в MAX —', 'sad-znaniy' ); ?> <a href="https://web.max.ru/-76163835891728" target="_blank" rel="noopener"><?php esc_html_e( 'мы есть в MAX →', 'sad-znaniy' ); ?></a></p>

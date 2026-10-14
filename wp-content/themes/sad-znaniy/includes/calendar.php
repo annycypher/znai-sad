@@ -143,12 +143,27 @@ function sad_znaniy_calendar_tools_fab() {
 		}
 	}
 	$sz_year_url = add_query_arg( $args, home_url( "/kalendar/" ) );
+
+	$sz_ics_args = array();
+	foreach ( array( "region", "exp" ) as $sz_k ) {
+		if ( isset( $_GET[ $sz_k ] ) && "" !== (string) $_GET[ $sz_k ] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- ссылки календаря.
+			$sz_ics_args[ $sz_k ] = sanitize_key( wp_unslash( (string) $_GET[ $sz_k ] ) );
+		}
+	}
+	if ( isset( $_GET["month"] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$sz_ics_args["month"] = (int) $_GET["month"];
+	}
+	if ( isset( $_GET["year"] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$sz_ics_args["year"] = (int) $_GET["year"];
+	}
+	$sz_ics_url = add_query_arg( $sz_ics_args, home_url( "/kalendar/ical/" ) );
 		?>
 	<div class="tools-fab" id="toolsFab">
 		<button type="button" class="fab-close" id="toolsClose" title="<?php esc_attr_e( "Скрыть панель", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Скрыть панель инструментов", "sad-znaniy" ); ?>">✕</button>
 		<button type="button" class="fab-btn" id="fabPrint" title="<?php esc_attr_e( "Печать", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Печать", "sad-znaniy" ); ?>">🖨</button>
 		<button type="button" class="fab-btn" id="fabPdf" title="<?php esc_attr_e( "Сохранить в PDF — в диалоге выберите «Сохранить как PDF»", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Сохранить в PDF", "sad-znaniy" ); ?>">📄</button>
 		<button type="button" class="fab-btn" id="fabJpg" title="<?php esc_attr_e( "Сохранить в JPG", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Сохранить в JPG", "sad-znaniy" ); ?>">🖼</button>
+		<a class="fab-btn" href="<?php echo esc_url( $sz_ics_url ); ?>" title="<?php esc_attr_e( "В календарь телефона (.ics)", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "В календарь телефона", "sad-znaniy" ); ?>">🗓</a>
 		<a class="fab-btn" href="<?php echo esc_url( $sz_year_url ); ?>" title="<?php esc_attr_e( "Календарь на год (печать/PDF)", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Календарь на год", "sad-znaniy" ); ?>">📅</a>
 		<button type="button" class="fab-btn" id="fabShare" title="<?php esc_attr_e( "Поделиться", "sad-znaniy" ); ?>" aria-label="<?php esc_attr_e( "Поделиться", "sad-znaniy" ); ?>">🔗</button>
 	</div>

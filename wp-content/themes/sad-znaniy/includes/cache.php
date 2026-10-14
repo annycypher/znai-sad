@@ -118,7 +118,7 @@ function sad_znaniy_cache_can() {
 		return false;
 	}
 	$uri = isset( $_SERVER["REQUEST_URI"] ) ? (string) $_SERVER["REQUEST_URI"] : ""; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-	if ( preg_match( "#(wp-sitemap|sitemap\.xml|robots\.txt|/feed|\.xml|wp-json|/wp-admin|admin-ajax)#i", $uri ) ) {
+	if ( preg_match( "#(wp-sitemap|sitemap\.xml|robots\.txt|/feed|\.xml|wp-json|/wp-admin|admin-ajax|/kalendar/ical|sz_ical)#i", $uri ) ) {
 		return false;
 	}
 	return true;
