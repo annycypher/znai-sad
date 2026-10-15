@@ -40,14 +40,18 @@ $pln_edit  = sad_znaniy_planner_page_url();
 
 		<?php elseif ( empty( $pln_plans ) ) : ?>
 
-				<p class="pln-plans-empty">Планов пока нет. <a href="<?php echo esc_url( $pln_edit ); ?>">Создайте первый</a> — он появится здесь.</p>
+				<div class="pln-plans-invite">
+<b>Планов пока нет</b>
+<p>Начертите участок, поставьте грядки и постройки — план сохранится в кабинете и будет доступен с телефона.</p>
+<a class="pln-btn" href="<?php echo esc_url( $pln_edit ); ?>">Создайте первый план →</a>
+</div>
 
 		<?php else : ?>				<div class="pln-plans">
 						<?php foreach ( $pln_plans as $pln_p ) : ?>
 								<article class="pln-plan">
 										<div class="pln-plan-head">
 												<h2><?php echo esc_html( $pln_p['title'] ); ?></h2>
-												<span class="pln-plan-date"><?php echo esc_html( $pln_p['updated'] ? mysql2date( 'd.m.Y H:i', $pln_p['updated'] ) : '' ); ?></span>
+												<span class="pln-plan-date">создан <?php echo esc_html( $pln_p['created'] ? mysql2date( 'd.m.Y', $pln_p['created'] ) : '—' ); ?> · обновлён <?php echo esc_html( $pln_p['updated'] ? mysql2date( 'd.m.Y H:i', $pln_p['updated'] ) : '' ); ?></span>
 										</div>
 										<p class="pln-plan-info">Участок <b><?php echo esc_html( (float) $pln_p['plot']['w'] ); ?> × <?php echo esc_html( (float) $pln_p['plot']['h'] ); ?> м</b> · элементов <b><?php echo (int) $pln_p['elements']; ?></b><?php if ( '' !== $pln_p['region'] ) : ?> · <?php echo esc_html( sad_znaniy_planner_region_label( $pln_p['region'] ) ); ?><?php endif; ?></p>
 										<div class="pln-plan-actions">

@@ -298,11 +298,21 @@ function sad_znaniy_planner_save( $raw, $user_id ) {
 	}
 	update_user_meta( $user_id, sad_znaniy_planner_meta_key( $id ), $json );
 
+	$prev    = null;
+	foreach ( sad_znaniy_planner_index( $user_id ) as $r ) {
+		if ( isset( $r['id'] ) && (string) $r['id'] === $id ) {
+			$prev = $r;
+			break;
+		}
+	}
+	$created = ( $prev && ! empty( $prev['created'] ) ) ? (string) $prev['created'] : current_time( 'mysql' );
+
 	$row   = array(
 	'id'       => $id,
 	'title'    => $plan['meta']['title'],
 	'region'   => $plan['meta']['region'],
 	'updated'  => $plan['meta']['updated'],
+		'created'  => $created,
 	'elements' => count( $plan['elements'] ),
 	'plot'     => array(
 	'w' => $plan['plot']['width'],
@@ -440,6 +450,7 @@ function sad_znaniy_planner_my_plans( $user_id ) {
 		'title'    => isset( $row['title'] ) ? (string) $row['title'] : 'Мой участок',
 		'region'   => isset( $row['region'] ) ? (string) $row['region'] : '',
 		'updated'  => isset( $row['updated'] ) ? (string) $row['updated'] : '',
+		'created'  => isset( $row['created'] ) ? (string) $row['created'] : '',
 		'elements' => isset( $row['elements'] ) ? (int) $row['elements'] : 0,
 		'plot'     => ( isset( $row['plot'] ) && is_array( $row['plot'] ) ) ? $row['plot'] : array( 'w' => 0, 'h' => 0 ),
 		'edit'     => add_query_arg( 'plan', $row['id'], sad_znaniy_planner_page_url() ),

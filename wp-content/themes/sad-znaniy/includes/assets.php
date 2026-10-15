@@ -122,7 +122,7 @@ add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_home_calendar' );
  * Подключает стили, скрипты и данные планировщика участка только на его странице.
  */
 function sad_znaniy_enqueue_planner_assets() {
-	if ( ! sad_znaniy_is_planner_page() ) {
+	if ( ! sad_znaniy_is_planner_page() && ! is_page( 'moi-plany' ) ) {
 		return;
 	}
 

@@ -340,3 +340,25 @@
 
 
 
+
+/* ===== «Мои планы» (кабинет планировщика, Партия 4) ===================== */
+.pln-plans-lead{max-width:70ch;color:var(--muted)}
+.pln-plans-flash{background:var(--accent-soft);border:1px solid rgba(46,107,79,.2);border-radius:var(--r-tile);padding:10px 14px;margin:0 0 14px}
+.pln-plans-invite,.pln-gate{border:1px solid var(--glass-border);border-radius:var(--r-md);box-shadow:var(--neu-sm);background:var(--glass);padding:18px 20px;margin:0 0 18px}
+.pln-plans-invite b,.pln-gate b{display:block;font-size:17px;margin-bottom:6px}
+.pln-plans{display:grid;gap:14px;margin:0 0 18px}
+.pln-plan{border:1px solid var(--glass-border);border-radius:var(--r-md);box-shadow:var(--neu-sm);background:var(--glass);padding:16px 18px}
+.pln-plan-head{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.pln-plan-head h2{margin:0;font-size:18px}
+.pln-plan-date{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.pln-plan-info{margin:8px 0 12px;font-size:14px}
+.pln-plan-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pln-plan-form{display:inline}
+.pln-btn{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;font-weight:600;font-size:14px;background:var(--emerald);color:var(--on-emerald);border:1px solid transparent;box-shadow:var(--emerald-shadow);text-decoration:none}
+.pln-btn:hover{background:var(--emerald-dark);color:var(--on-emerald)}
+.pln-btn-light{background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(245,247,248,.65));color:var(--ink);border-color:var(--glass-border);box-shadow:var(--neu-sm)}
+.pln-btn-light:hover{background:var(--accent-soft);color:var(--accent)}
+.pln-btn-danger{background:#FDECEA;color:var(--warn-red);border-color:rgba(192,57,43,.25);box-shadow:none}
+.pln-plan-share{margin:12px 0 0;font-size:12.5px;color:var(--muted)}
+.pln-plan-share code{font-size:12px;word-break:break-all}
+.pln-plans-new{display:flex;gap:10px;flex-wrap:wrap;margin:0}

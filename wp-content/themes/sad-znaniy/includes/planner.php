@@ -246,8 +246,17 @@ function sad_znaniy_planner_contract() {
 		$region = 'mid';
 	}
 
+	$sz_req_plan = isset( $_GET['plan'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['plan'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$sz_public   = '' !== $sz_req_plan ? sad_znaniy_planner_get_public( $sz_req_plan ) : null;
+
 	return array(
 		'version'       => 1,
+		'readonly'      => (bool) $sz_public,
+		'plan'          => $sz_public,
+		'myPlansUrl'    => sad_znaniy_planner_my_plans_url(),
+		'restPlans'     => esc_url_raw( rest_url( 'sad-znaniy/v1/plans' ) ),
+		'nonce'         => wp_create_nonce( 'wp_rest' ),
+		'limits'        => sad_znaniy_planner_limits(),
 		'regions'       => sad_znaniy_planner_regions(),
 		'currentRegion' => $region,
 		'plants'        => sad_znaniy_planner_plants(),
