@@ -1505,6 +1505,134 @@
 		}
 		window.addEventListener( 'beforeunload', function () { doSave( true ); } );
 	}() );
+/* ===== Кабинет планов (Партия 4): 32-hex id, автосохранение, CSRF ===== */
+var PLN = { saved: 'local' };
+function hex32() {
+var a = new Uint8Array( 16 );
+if ( window.crypto && window.crypto.getRandomValues ) { window.crypto.getRandomValues( a ); }
+else { for ( var i = 0; i < 16; i++ ) { a[ i ] = Math.floor( Math.random() * 256 ); } }
+return Array.prototype.map.call( a, function ( b ) { return ( '0' + b.toString( 16 ) ).slice( -2 ); } ).join( '' );
+}
+function isHex32( v ) { return /^[a-f0-9]{32}$/.test( String( v || '' ) ); }
+function badge( text ) { var el = $('savedMark'); if ( el ) { el.textContent = text; } }
+function loggedIn() { return !!( CFG.user && CFG.user.loggedIn ) && !! CFG.restPlans && !! CFG.nonce; }
+function api( method, path, body ) {
+if ( ! loggedIn() ) { return Promise.reject( 'anon' ); }
+return fetch( CFG.restPlans + ( path || '' ), {
+method: method,
+credentials: 'same-origin',
+headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': CFG.nonce },
+body: body ? JSON.stringify( body ) : undefined
+} ).then( function ( r ) { return r.ok ? r.json() : Promise.reject( r.status ); } );
+}
+function serverSave( silent ) {
+if ( CFG.readonly || ! loggedIn() ) { return Promise.resolve( false ); }
+return api( 'POST', '', { plan: planSnapshot() } ).then( function ( res ) {
+if ( res && res.id ) {
+planId = res.id; PLN.saved = 'server';
+lsSet( 'sz_plan_' + res.id, planSnapshot() );
+}
+if ( ! silent ) { badge( 'сохранено на сервере ✓' ); setTimeout( function () { badge( 'сохранено' ); }, 1600 ); }
+return true;
+} ).catch( function () {
+PLN.saved = 'local';
+if ( ! silent ) { badge( 'только в браузере' ); }
+return false;
+} );
+}
+if ( ! CFG.readonly && ! isHex32( planId ) ) {
+planId = hex32();
+lsSet( 'sz_plan_' + planId, planSnapshot() );
+}
+window.setInterval( function () { if ( ! CFG.readonly ) { serverSave( true ); } }, 30000 );
+window.addEventListener( 'beforeunload', function () { if ( ! CFG.readonly && loggedIn() ) { serverSave( true ); } } );
+/* --- просмотр чужого плана (?plan=<uuid>): только чтение + копия себе --- */
+if ( CFG.readonly && CFG.plan ) {
+lsSet( 'sz_plan_' + CFG.plan.id, CFG.plan );
+planLoad( CFG.plan.id );
+planId = CFG.plan.id;
+root.classList.add( 'pln-ro' );
+[ 'btnUndo', 'btnRedo', 'btnSave', 'btnDims' ].forEach( function ( id ) { var el = $( id ); if ( el ) { el.style.display = 'none'; } } );
+var pal = $( 'paneLeft' );
+if ( pal ) { pal.style.display = 'none'; }
+root.querySelectorAll( '.pal-item' ).forEach( function ( el ) { el.style.opacity = '.4'; el.style.pointerEvents = 'none'; } );
+var bar = document.createElement( 'div' );
+bar.className = 'pln-ro-bar';
+bar.innerHTML = '<b>👀 Просмотр плана</b><span>Ссылкой поделился автор: изменения не сохраняются.</span>';
+var cbtn = document.createElement( 'button' );
+cbtn.type = 'button'; cbtn.className = 'pln-btn'; cbtn.textContent = 'Создать копию себе';
+cbtn.addEventListener( 'click', function () {
+var snap = planSnapshot();
+snap.id = '';
+snap.meta.title = ( snap.meta.title || 'План' ) + ' (копия)';
+if ( loggedIn() ) {
+api( 'POST', '', { plan: snap } ).then( function () { window.location.href = CFG.myPlansUrl || '/moi-plany/'; } )
+.catch( function () { toast( 'red', 'Не удалось сохранить копию', 'Обновите страницу и попробуйте снова.' ); } );
+} else {
+lsSet( 'sz_plan_current', snap );
+lsSet( 'sz_plan_' + hex32(), snap );
+toast( 'green', 'Копия — в этом браузере', 'Войдите — план сохранится навсегда в личном кабинете.' );
+}
+} );
+bar.appendChild( cbtn );
+root.insertBefore( bar, root.firstChild );
+refreshPanels(); draw();
+}
+
+/* --- «Поделиться»: постоянная ссылка после сохранения в кабинет --- */
+var plnShareOrig = doShare;
+doShare = function () {
+if ( CFG.readonly ) { return plnShareOrig.apply( null, arguments ); }
+if ( ! loggedIn() ) {
+toast( 'yellow', 'Ссылка — после входа', 'Войдите: план сохранится в кабинете и появится постоянная ссылка. Пока можно сохранить картинку (JPG).' );
+return;
+}
+serverSave( true ).then( function ( ok ) { if ( ok ) { plnShareOrig.apply( null, arguments ); } } );
+};
+
+/* --- pH и почва: жёлтая подсказка + счётчик несовпадений --- */
+function soilGap( a, b ) {
+return Math.max( Math.abs( ( a.x + a.w / 2 ) - ( b.x + b.w / 2 ) ) - ( ( a.w + b.w ) / 2 ),
+Math.abs( ( a.y + a.h / 2 ) - ( b.y + b.h / 2 ) ) - ( ( a.h + b.h ) / 2 ) );
+}
+function soilPairs() {
+var out = [];
+for ( var i = 0; i < items.length; i++ ) {
+for ( var j = i + 1; j < items.length; j++ ) {
+var A = items[ i ], B = items[ j ];
+if ( ! A.crop || ! B.crop || soilGap( A, B ) > 1 ) { continue; }
+var ca = cropById( A.crop ), cb = cropById( B.crop );
+if ( ! ca || ! cb ) { continue; }
+var pa = ca.ph || [ 0, 0 ], pb = cb.ph || [ 0, 0 ];
+var lo = Math.max( Number( pa[ 0 ] ) || 0, Number( pb[ 0 ] ) || 0 ), hi = Math.min( Number( pa[ 1 ] ) || 0, Number( pb[ 1 ] ) || 0 );
+if ( hi - lo >= 0.5 ) { continue; }
+out.push( { a: ca, b: cb } );
+}
+}
+return out;
+}
+var plnNeighborsOrig = checkNeighbors;
+checkNeighbors = function () {
+plnNeighborsOrig.apply( null, arguments );
+soilPairs().forEach( function ( p ) {
+var key = 'soil_' + [ String( p.a.id ), String( p.b.id ) ].sort().join( '+' );
+toast( 'yellow', 'Разные требования к почве', 'У ' + p.a.name + ' и ' + p.b.name + ' разные требования к почве — проверьте карточки.', key );
+} );
+};
+var plnStatsOrig = renderStats;
+renderStats = function () {
+plnStatsOrig.apply( null, arguments );
+var box = $( 'summary' );
+if ( ! box ) { return; }
+var n = soilPairs().length;
+var row = box.querySelector( '.pln-soil-row' );
+if ( ! row ) {
+row = document.createElement( 'div' );
+row.className = 'sum-row pln-soil-row';
+( box.querySelector( '.sum-card' ) || box ).appendChild( row );
+}
+row.innerHTML = '<span>Несовпадений почвы</span><b style="color:' + ( n ? 'var(--warn-yellow)' : 'var(--accent)' ) + '">' + n + '</b>';
+};
 }() );
 
 
