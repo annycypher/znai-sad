@@ -49,7 +49,7 @@ ul{ list-style:none; }
 .topbar{
     position:sticky; top:12px; z-index:100;
     display:flex; align-items:center; gap:var(--sp-2);
-    margin:16px auto 0; max-width:1320px;
+    margin:16px auto 0; max-width:1520px;
     padding:10px var(--sp-2);
     border-radius:var(--r-pill);
     /* фон плотнее — контент под шапкой не просвечивает текстом */
@@ -63,7 +63,9 @@ ul{ list-style:none; }
 .logo-mark{ color:var(--ink); display:flex; transition:color .25s, transform .25s; }
 .logo:hover .logo-mark{ color:var(--accent); transform:scale(1.05); }
 .logo-name{ font-weight:700; font-size:16px; letter-spacing:.1em; text-transform:uppercase; line-height:1.2; white-space:nowrap; }
-.logo-tag{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); line-height:1.4; white-space:nowrap; }
+.logo-tag{ display:none; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); line-height:1.4; white-space:nowrap; }
+/* Слоган логотипа показываем только там, где меню точно помещается с запасом (замер) */
+@media(min-width:1608px){ .logo-tag{ display:block; } }
 
 .nav{ display:flex; margin-left:auto; flex:0 0 auto; overflow:visible; }
 .nav a{
@@ -77,6 +79,8 @@ ul{ list-style:none; }
     content:""; position:absolute; right:0; top:50%; transform:translateY(-50%);
     width:1px; height:13px; background:rgba(32,36,31,.18);
 }
+/* Двойная подпись пункта: короткая — на десктопе, полная — в бургере */
+.nav a .nav-lbl-short{ display:none; }
 
 .topbar-actions{ display:flex; align-items:center; gap:9px; flex-shrink:0; }
 .icon-btn{
@@ -181,7 +185,7 @@ a:hover > .circle-go, .tile:hover .circle-go, .tool-card:hover .circle-go{ trans
     border:1px solid rgba(255,255,255,.9);
 }
 /* Лёгкие сдвиги — только на широких экранах */
-@media(min-width:1361px){
+@media(min-width:1401px){
     .collage-grid img:nth-child(2){ transform:translateY(12px); }
     .collage-grid img:nth-child(3){ transform:translateY(-6px); }
 }
@@ -424,8 +428,8 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
    АДАПТИВ
    ========================================================== */
 
-/* --- 1360: компактная шапка; меню ниже сворачивается в бургер --- */
-@media(max-width:1360px){
+/* --- 1400: компактная шапка; меню ниже сворачивается в бургер --- */
+@media(max-width:1400px){
     .logo-tag{ display:none; }
     .nav a{ padding:9px 10px; font-size:13px; }
     .btn-cab{ padding:10px 14px 10px 12px; font-size:12px; }
@@ -433,8 +437,8 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
     .inner{ padding:0 32px; }
 }
 
-/* --- 1360: меню → бургер (иначе «Рецепты» обрезается; замер: нужно 1168px, пилюля 1320) --- */
-@media(max-width:1360px){
+/* --- 1400: меню → бургер (замер: с 8 пунктами нужно 1168px вместо прежних 893) --- */
+@media(max-width:1400px){
     .nav{
         display:none; position:absolute; top:calc(100% + 8px); left:0; right:0;
         flex-direction:column; gap:2px;
@@ -444,7 +448,7 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
         box-shadow:0 20px 50px rgba(90,102,114,.3);
         padding:var(--sp-2);
     }
-    .nav a{ padding:12px 14px; font-size:15px; border-radius:var(--r-md); }
+    .nav a{ padding:12px 14px; font-size:15px; border-radius:var(--r-md); min-height:44px; display:flex; align-items:center; }
     .nav a:hover{ background:var(--accent-soft); }
     .nav a:not(:last-child)::after{ display:none; }
     .nav-toggle-input:checked ~ .nav{ display:flex; }
@@ -459,6 +463,13 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
     .btn-cab span:last-child{ display:none; }
     .btn-cab{ padding:9px; }
     .btn-cab .cab-ava{ width:24px; height:24px; }
+}
+
+/* --- 1401+: полное меню (8 пунктов), компактная типографика; замер 1278,7px при пилюле 1520 --- */
+@media(min-width:1401px){
+    .nav a{ padding:9px 8px; font-size:13px; letter-spacing:0; }
+    .nav a .nav-lbl-full{ display:none; }
+    .nav a .nav-lbl-short{ display:inline; }
 }
 
 /* --- 1020: одна колонка, компактные отступы --- */
