@@ -266,7 +266,7 @@ function sad_znaniy_planner_contract() {
 		'gate'          => sad_znaniy_planner_gate(),
 		'tools'         => sad_znaniy_planner_tools(),
 		'qr'            => get_template_directory_uri() . '/assets/img/qr-site.svg',
-		'icsReady'      => false,
+		'icsReady'      => true,
 	);
 }
 

@@ -53,6 +53,7 @@ require_once SAD_ZNANIY_DIR . '/includes/planner-ics.php';
 require_once SAD_ZNANIY_DIR . '/includes/tool-icons.php';
 require_once SAD_ZNANIY_DIR . '/includes/site-rail.php';
 require_once SAD_ZNANIY_DIR . '/includes/related-tools.php';
+require_once SAD_ZNANIY_DIR . '/includes/planner-mail.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/db.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/settings.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/queue.php';

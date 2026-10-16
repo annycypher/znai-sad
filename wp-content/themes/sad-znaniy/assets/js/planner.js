@@ -1419,10 +1419,41 @@
 		if ( needsGate() ) { openGate(); return; }
 		doPrint();
 	}
-	/* .ics: до Партии 4 фид по плану не собирается — честная заготовка */
+	/* .ics: скачиваем файл календаря по ссылке плана (гейт — как у PDF) */
 	function icsAction() {
 		if ( needsGate() ) { openGate(); return; }
-		toast( 'yellow', 'Свой .ics по плану — в следующем обновлении', 'Пока напоминания о работах месяца можно подписать в календаре дачника: znai-sad.ru/kalendar/.' );
+		if ( ! isHex32( planId ) ) {
+			toast( 'yellow', 'Сначала сохраните план', 'Файл календаря собирается для сохранённых планов.' );
+			return;
+		}
+		$( 'exportSheet' ).classList.remove( 'on' );
+		window.location.href = location.origin + location.pathname + '?plan=' + planId + '&ics=1';
+	}
+
+	/* «Отправить план»: письмо со ссылкой и .ics; адрес и лимит проверяет сервер */
+	function mailAction() {
+		if ( needsGate() ) { openGate(); return; }
+		if ( ! isHex32( planId ) ) {
+			toast( 'yellow', 'Сначала сохраните план', 'Отправить можно только сохранённый план.' );
+			return;
+		}
+		$( 'exportSheet' ).classList.remove( 'on' );
+		var to = window.prompt( 'E-mail получателя:', ( CFG.user && CFG.user.email ) || '' );
+		if ( ! to ) { return; }
+		var btn = $( 'btnMail' );
+		if ( btn ) { btn.disabled = true; }
+		api( 'POST', '/' + planId + '/mail', { to: to } ).then( function ( res ) {
+			if ( btn ) { btn.disabled = false; }
+			var left = ( res && typeof res.left === 'number' ) ? ' Осталось отправок в час: ' + res.left + '.' : '';
+			toast( 'green', 'Письмо отправлено', 'Получатель: ' + esc( ( res && res.sent_to ) || to ) + '.' + left );
+		} ).catch( function ( err ) {
+			if ( btn ) { btn.disabled = false; }
+			var text = 'Проверьте адрес и попробуйте ещё раз.';
+			if ( err === 429 ) { text = 'Лимит писем в час исчерпан — попробуйте позже.'; }
+			if ( err === 400 ) { text = 'Адрес не принят: опечатка или служебный адрес сайта.'; }
+			if ( err === 404 ) { text = 'План не найден на сервере.'; }
+			toast( 'red', 'Письмо не отправлено', text );
+		} );
 	}
 
 	/* ===== старт ===== */
@@ -1478,6 +1509,8 @@
 		$( 'sPrint' ).addEventListener( 'click', printAction );
 		$( 'btnIcs' ).addEventListener( 'click', icsAction );
 		$( 'sIcs' ).addEventListener( 'click', icsAction );
+		$( 'btnMail' ).addEventListener( 'click', mailAction );
+		$( 'sMail' ).addEventListener( 'click', mailAction );
 		$( 'btnShare' ).addEventListener( 'click', doShare );
 		$( 'sShare' ).addEventListener( 'click', doShare );
 

@@ -48,6 +48,7 @@ get_header();
 			<button type="button" class="tb hide-m" id="btnJpg" title="Сохранить как JPG" aria-label="Сохранить как JPG"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg><span>JPG</span></button>
 			<button type="button" class="tb hide-m" id="btnPrint" title="Печать / PDF" aria-label="Печать или PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="8"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg><span>Печать/PDF</span></button>
 			<button type="button" class="tb hide-m" id="btnIcs" title="В календарь телефона (.ics)" aria-label="В календарь телефона">🗓 <span>Календарь</span></button>
+			<button type="button" class="tb hide-m" id="btnMail" title="Отправить план на e-mail" aria-label="Отправить план">✉ <span>Отправить</span></button>
 			<button type="button" class="tb dark" id="btnSave" title="Сохранить" aria-label="Сохранить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span>Сохранить</span></button>
 		</div>
 	</header>
@@ -154,6 +155,7 @@ get_header();
 		<button type="button" class="tb" id="sJpg">🖼 JPG</button>
 		<button type="button" class="tb" id="sPrint">🖨 Печать / PDF</button>
 		<button type="button" class="tb" id="sIcs">🗓 Календарь (.ics)</button>
+		<button type="button" class="tb" id="sMail">✉ Отправить план</button>
 		<button type="button" class="tb" id="sClose">✕ Закрыть</button>
 	</div>
 	<div class="pln-gate" id="plnGate" hidden>
