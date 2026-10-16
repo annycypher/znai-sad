@@ -48,13 +48,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</span>
 		</a>
 
+<div class="nav-wrap">
 		<input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-label="<?php esc_attr_e( 'Открыть меню', 'sad-znaniy' ); ?>">
 		<label for="nav-toggle" class="nav-burger" aria-hidden="true">☰</label>
 
 		<nav class="nav" aria-label="<?php esc_attr_e( 'Основное меню', 'sad-znaniy' ); ?>">
 			<?php sad_znaniy_main_menu(); ?>
 		</nav>
-
+		</div>
 		<div class="topbar-actions">
 			<?php sad_znaniy_region_indicator(); ?>
 			<button class="icon-btn" aria-label="<?php esc_attr_e( 'Поиск по сайту', 'sad-znaniy' ); ?>">
