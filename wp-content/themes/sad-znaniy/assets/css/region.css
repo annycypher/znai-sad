@@ -4,14 +4,14 @@
 
 /* Индикатор в шапке */
 .region-chip{position:relative;display:inline-block}
-.region-chip__btn{display:inline-flex;align-items:center;gap:6px;list-style:none;cursor:pointer;padding:8px 12px;border-radius:999px;border:1px solid var(--glass-border);background:var(--glass-strong);box-shadow:var(--neu-sm);font-size:13.5px;white-space:nowrap;transition:border-color .2s}
+.region-chip__btn{display:inline-flex;align-items:center;gap:6px;list-style:none;cursor:pointer;padding:8px 12px;border-radius:var(--r-pill);border:1px solid var(--glass-border);background:var(--glass-strong);box-shadow:var(--neu-sm);font-size:13.5px;white-space:nowrap;transition:border-color .2s}
 .region-chip__btn::-webkit-details-marker{display:none}
 .region-chip__btn::marker{content:""}
 .region-chip__btn:hover{border-color:var(--accent)}
 .region-chip[open] .region-chip__btn{border-color:var(--accent)}
 .region-chip__caret{font-size:11px;opacity:.7}
 .region-menu{position:absolute;z-index:60;top:calc(100% + 8px);right:0;min-width:220px;padding:8px;border-radius:var(--r-md);border:1px solid var(--glass-border);background:#fff;box-shadow:var(--sh-glass)}
-.region-menu__item{display:block;padding:8px 10px;border-radius:10px;text-decoration:none;color:inherit;font-size:14px}
+.region-menu__item{display:block;padding:8px 10px;border-radius:var(--r-sm);text-decoration:none;color:inherit;font-size:14px}
 .region-menu__item:hover{background:var(--accent-soft)}
 .region-menu__item.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
 
@@ -22,7 +22,7 @@
 .region-ask__txt strong{display:block;margin-bottom:2px}
 .region-ask__txt span{color:var(--muted);font-size:13.5px}
 .region-ask__chips{display:flex;flex-wrap:wrap;gap:6px}
-.region-ask__chips button{cursor:pointer;padding:6px 12px;border-radius:999px;border:1px solid var(--glass-border);background:#fff;font-size:13px;transition:border-color .2s,color .2s}
+.region-ask__chips button{cursor:pointer;padding:6px 12px;border-radius:var(--r-pill);border:1px solid var(--glass-border);background:#fff;font-size:13px;transition:border-color .2s,color .2s}
 .region-ask__chips button:hover{border-color:var(--accent);color:var(--accent)}
 .region-ask__later{align-self:flex-start;border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
 
