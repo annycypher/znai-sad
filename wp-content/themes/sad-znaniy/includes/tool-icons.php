@@ -54,10 +54,10 @@ return '<svg width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fi
  */
 function sad_znaniy_tool_tiles() {
 return array(
-array( 'title' => 'Расчёт полива', 'desc' => 'Сколько и как часто поливать с учётом культуры, почвы и погоды', 'url' => home_url( '/kalkulyator-poliva/' ), 'icon' => 'i-drop' ),
-array( 'title' => 'Удобрения', 'desc' => 'Дозы и сроки подкормок по культуре и площади грядки', 'url' => home_url( '/kalkulyator-udobreniy/' ), 'icon' => 'i-bag' ),
-array( 'title' => 'Посев семян', 'desc' => 'Дата посева на рассаду и в грунт по вашему региону', 'url' => home_url( '/kalkulyator-poseva/' ), 'icon' => 'i-calc' ),
-array( 'title' => 'Грунт и pH', 'desc' => 'Раскисление, состав и норма внесения на сотку', 'url' => home_url( '/kalkulyator-grunta-i-ph/' ), 'icon' => 'i-flask' ),
+array( 'title' => 'Расчёт полива', 'desc' => 'Сколько и как часто поливать с учётом культуры, почвы и погоды', 'url' => home_url( '/kalkulyator-poliva/' ), 'icon' => 'i-drop', 'img' => 'calc-water.jpg', 'alt' => 'Полив грядки лейкой' ),
+array( 'title' => 'Удобрения', 'desc' => 'Дозы и сроки подкормок по культуре и площади грядки', 'url' => home_url( '/kalkulyator-udobreniy/' ), 'icon' => 'i-bag', 'img' => 'calc-feed.jpg', 'alt' => 'Внесение удобрения' ),
+array( 'title' => 'Посев семян', 'desc' => 'Дата посева на рассаду и в грунт по вашему региону', 'url' => home_url( '/kalkulyator-poseva/' ), 'icon' => 'i-calc', 'img' => 'calc-seeds.jpg', 'alt' => 'Посев семян в лоток' ),
+array( 'title' => 'Грунт и pH', 'desc' => 'Раскисление, состав и норма внесения на сотку', 'url' => home_url( '/kalkulyator-grunta-i-ph/' ), 'icon' => 'i-flask', 'img' => 'calc-soil.jpg', 'alt' => 'Проверка почвы руками' ),
 );
 }
 
@@ -94,3 +94,18 @@ return $own;
 return $template;
 }
 add_filter( 'template_include', 'sad_znaniy_calculators_template' );
+/**
+ * Ссылки блока «Считайте точнее — прочитайте перед расчётом».
+ *
+ * Накрывают темы трёх калькуляторов из четырёх: грунт/pH — статья о грунте,
+ * полив — статья об ошибках полива, посев — календарь дачника.
+ *
+ * @return array Массив [подпись, URL, ключ иконки].
+ */
+function sad_znaniy_calc_read_links() {
+return array(
+array( 'Грунт для рассады: 4 рецепта', home_url( '/grunt-dlya-rassady/' ), 'i-flask' ),
+array( 'Ошибки полива: почему трескаются помидоры', home_url( '/treskayutsya-pomidory/' ), 'i-drop' ),
+array( 'Календарь дачника: сезонные окна', home_url( '/kalendar/' ), 'i-cal' ),
+);
+}
