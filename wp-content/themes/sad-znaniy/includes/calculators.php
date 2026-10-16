@@ -1605,7 +1605,7 @@ function sad_znaniy_ph_shortcode( $atts ) {
 
 				<label class="calc-field">
 					<span><?php esc_html_e( 'Площадь, м²', 'sad-znaniy' ); ?></span>
-					<input type="number" name="szp_qty" min="1" max="10000" step="1" value="<?php echo esc_attr( (int) $calc['qty'] ); ?>">
+					<input type="number" name="szp_qty" min="1" max="10000" step="1" value="<?php echo esc_attr( (int) ( $calc['qty'] ?? 10 ) ); ?>">
 				</label>
 			</div>
 

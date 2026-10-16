@@ -68,7 +68,7 @@ $plants_list = static function ( $rows ) {
 			esc_html( $soils[ $calc['soil'] ] ),
 			esc_html( $fmt( $calc['current'], 1 ) ),
 			esc_html( $fmt( $calc['target'], 1 ) ),
-			esc_html( $fmt( $calc['qty'], 0 ) )
+			esc_html( $fmt( ( $calc['qty'] ?? 0 ), 0 ) )
 		);
 		?>
 	</p>
