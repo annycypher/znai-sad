@@ -123,6 +123,7 @@ while ( have_posts() ) :
 				echo $sz_moon_html; // phpcs:ignore WordPress.Security.EscapeOutput -- HTML собран с экранированием.
 			}
 			?>
+			<?php sad_znaniy_related_tools( 'plant' ); ?>
 		</section>
 	</article>
 	<?php

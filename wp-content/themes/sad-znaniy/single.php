@@ -44,6 +44,8 @@ while ( have_posts() ) :
 
 		<?php the_tags( '<div class="article-tags">', '', '</div>' ); ?>
 
+		<?php sad_znaniy_related_tools( 'article' ); ?>
+
 		<?php echo sad_znaniy_moon_article_cta(); // phpcs:ignore WordPress.Security.EscapeOutput -- HTML собран с экранированием. ?>
 	</article>
 	<?php
