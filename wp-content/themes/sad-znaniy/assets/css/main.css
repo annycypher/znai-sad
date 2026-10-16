@@ -651,3 +651,19 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
 .also-link:hover{color:var(--accent);background:var(--accent-soft)}
 .also-ico{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--emerald);color:var(--on-emerald)}
 @media (max-width:640px){.calc-grid{grid-template-columns:1fr}}
+/* ===== Постоянная панель инструментов слева (Этап 6/7) ===== */
+.site-rail{position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:45;display:flex;flex-direction:row;align-items:center}
+.site-rail .rail-handle{width:26px;height:64px;border:1px solid var(--glass-border);border-right:none;border-radius:12px 0 0 12px;background:var(--emerald);color:var(--on-emerald);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:var(--neu-sm)}
+.site-rail .rail-list{display:flex;flex-direction:column;gap:8px;max-width:0;opacity:0;overflow:hidden;padding:0;border:1px solid var(--glass-border);border-radius:0 14px 14px 0;background:var(--glass);box-shadow:var(--sh-glass);backdrop-filter:blur(14px);transition:max-width .22s ease,opacity .18s ease,padding .22s ease}
+.site-rail:hover .rail-list,.site-rail:focus-within .rail-list,.site-rail.is-open .rail-list{max-width:270px;opacity:1;padding:10px}
+.rail-btn{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass);color:inherit;font:inherit;font-weight:600;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.rail-btn:hover{background:var(--accent-soft);color:var(--accent)}
+.rail-btn svg{flex:0 0 auto}
+.site-rail:not(.is-scrolled) #railTop{opacity:.45;pointer-events:none}
+.rail-toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,10px);z-index:46;background:var(--emerald);color:var(--on-emerald);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}
+.rail-toast.is-on{opacity:1;transform:translate(-50%,0)}
+@media (max-width:720px){.site-rail{left:auto;right:10px;top:auto;bottom:84px;transform:none;flex-direction:column-reverse;align-items:flex-end}}
+@media (max-width:720px){.site-rail .rail-list{max-width:none;max-height:0;margin:0 0 8px;border-radius:14px;transition:max-height .22s ease,opacity .18s ease,padding .22s ease}}
+@media (max-width:720px){.site-rail.is-open .rail-list,.site-rail:hover .rail-list,.site-rail:focus-within .rail-list{max-width:none;max-height:320px;opacity:1;padding:10px}}
+@media (max-width:720px){.site-rail .rail-handle{width:44px;height:52px;border-radius:12px;border-right:1px solid var(--glass-border)}}
+@media print{.site-rail,.rail-toast{display:none !important}}
