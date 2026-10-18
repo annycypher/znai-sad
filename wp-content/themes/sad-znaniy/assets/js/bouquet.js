@@ -70,7 +70,18 @@
         cardAdd: $('bkCardAdd'),
         cardPlant: $('bkCardPlant'),
         mobileToggle: $('bkMobileToggle'),
-        side: document.querySelector('.bk-side')
+        side: document.querySelector('.bk-side'),
+        gate: $('bkGate'),
+        mail: $('bkMail'),
+        copy: $('bkCopy'),
+        printDoc: $('bkPrint'),
+        printUser: $('bkPrintUser'),
+        printTitle: $('bkPrintTitle'),
+        printSub: $('bkPrintSub'),
+        printImg: $('bkPrintImg'),
+        printLegend: $('bkPrintLegend'),
+        printFlowers: $('bkPrintFlowers'),
+        printLinks: $('bkPrintLinks')
     };
 
     function totalStems() {
@@ -608,6 +619,7 @@
                     return;
                 }
                 state.savedId = result.body && result.body.bouquet ? result.body.bouquet.id : '';
+                updateActionState();
                 setStatus('Сохранено на сервере.');
                 if (state.savedId) {
                     var url = new URL(window.location.href);
@@ -648,6 +660,7 @@
             if (els.titleNote) els.titleNote.textContent = 'Просмотр букета. Действия недоступны.';
         }
         renderComposition();
+        updateActionState();
         scheduleRefresh(true);
     }
 
@@ -663,6 +676,402 @@
         } catch (error) {
             return false;
         }
+    }
+
+    function openGate() {
+        if (!els.gate) return;
+        els.gate.hidden = false;
+        document.body.classList.add('bk-gate-open');
+        var close = els.gate.querySelector('.bk-gate__x');
+        if (close) close.focus();
+        document.addEventListener('keydown', gateKey);
+    }
+
+    function closeGate() {
+        if (!els.gate) return;
+        els.gate.hidden = true;
+        document.body.classList.remove('bk-gate-open');
+        document.removeEventListener('keydown', gateKey);
+    }
+
+    function gateKey(event) {
+        if (event.key === 'Escape') closeGate();
+    }
+
+    function printAction() {
+        if (!data.loggedIn && data.gate && data.gate.required) {
+            openGate();
+            return;
+        }
+        doPrint();
+    }
+
+    function renderPrintDoc() {
+        var title = (els.title && els.title.value.trim()) || state.title || 'Мой букет';
+        var stems = totalStems();
+        var occasion = state.occasion && data.occasions[state.occasion] ? data.occasions[state.occasion] : 'без повода';
+        var recipient = state.to && data.recipients[state.to] ? data.recipients[state.to] : 'без адресата';
+        var date = new Date().toLocaleDateString('ru');
+        var slugs = Object.keys(state.items);
+
+        if (els.printTitle) els.printTitle.textContent = title;
+        if (els.printSub) els.printSub.textContent = occasion + ' · ' + recipient + ' · ' + stems + ' ' + plural(stems, 'стебель', 'стебля', 'стеблей') + ' · ' + date;
+
+        if (els.printUser) {
+            els.printUser.textContent = '';
+            var line1 = document.createElement('div');
+            var line2 = document.createElement('div');
+            line1.textContent = data.loggedIn && data.userName ? ('Букет подготовил: ' + data.userName) : 'Создано в конструкторе «Сад знаний»';
+            line2.textContent = date;
+            els.printUser.appendChild(line1);
+            els.printUser.appendChild(line2);
+        }
+
+        if (els.printLegend) {
+            els.printLegend.textContent = '';
+            if (!slugs.length) {
+                var empty = document.createElement('span');
+                empty.textContent = 'Букет пока не собран.';
+                els.printLegend.appendChild(empty);
+            }
+            slugs.slice(0, 10).forEach(function (slug) {
+                var flower = flowers[slug];
+                if (!flower) return;
+                var span = document.createElement('span');
+                var initial = document.createElement('i');
+                initial.textContent = flower.initial || '';
+                span.appendChild(initial);
+                span.appendChild(document.createTextNode(flower.title + ' — ' + flower.meaning + (1 < state.items[slug] ? ' ×' + state.items[slug] : '')));
+                els.printLegend.appendChild(span);
+            });
+        }
+
+        if (els.printFlowers) {
+            els.printFlowers.textContent = '';
+            slugs.slice(0, 12).forEach(function (slug) {
+                var flower = flowers[slug];
+                if (!flower) return;
+                var box = document.createElement('div');
+                box.className = 'bk-print__flower';
+                var head = document.createElement('div');
+                var name = document.createElement('b');
+                name.textContent = flower.title;
+                var meaning = document.createElement('em');
+                meaning.textContent = ' · ' + flower.meaning;
+                head.appendChild(name);
+                head.appendChild(meaning);
+                box.appendChild(head);
+                var desc = document.createElement('p');
+                desc.textContent = flower.desc || '';
+                box.appendChild(desc);
+                if (flower.plant_url) {
+                    var link = document.createElement('a');
+                    link.href = flower.plant_url;
+                    link.textContent = 'Уход за ' + flower.title.toLowerCase() + ' →';
+                    box.appendChild(link);
+                }
+                els.printFlowers.appendChild(box);
+            });
+            if (!slugs.length) {
+                var note = document.createElement('p');
+                note.textContent = 'Добавьте цветы на странице конструктора — и здесь появятся их значения.';
+                els.printFlowers.appendChild(note);
+            }
+        }
+
+        if (els.printLinks) {
+            els.printLinks.textContent = '';
+            var links = [
+                ['Статьи о цветах', '/stati/'],
+                ['Уход за растениями', '/uhod/'],
+                ['Календарь дачника', '/kalendar/'],
+                ['Лунный календарь', '/lunnyj-kalendar/']
+            ];
+            links.forEach(function (item) {
+                var li = document.createElement('li');
+                var a = document.createElement('a');
+                a.href = window.location.origin + item[1];
+                a.textContent = item[0];
+                li.appendChild(a);
+                els.printLinks.appendChild(li);
+            });
+        }
+    }
+
+    function loadImage(src) {
+        return new Promise(function (resolve) {
+            if (!src) {
+                resolve(null);
+                return;
+            }
+            var img = new Image();
+            img.onload = function () { resolve(img); };
+            img.onerror = function () { resolve(null); };
+            img.src = src;
+        });
+    }
+
+    function renderCompositionCanvas() {
+        var width = 1200;
+        var height = 520;
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+
+        var slugs = Object.keys(state.items);
+        if (!slugs.length) {
+            ctx.fillStyle = '#5C645D';
+            ctx.font = '600 28px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Букет пока не собран', width / 2, height / 2);
+            return Promise.resolve(canvas);
+        }
+
+        return Promise.all(slugs.map(function (slug) {
+            return loadImage(flowers[slug] ? flowers[slug].photo : '');
+        })).then(function (images) {
+            var n = slugs.length;
+            var maxSpread = 900;
+            var step = 1 < n ? maxSpread / (n - 1) : 0;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            slugs.forEach(function (slug, index) {
+                var flower = flowers[slug];
+                var radius = n === 1 ? 100 : 64;
+                var x = n === 1 ? width / 2 : width / 2 - maxSpread / 2 + index * step;
+                var y = height / 2 + Math.abs(x - width / 2) * 0.12;
+                var image = images[index];
+                var count = state.items[slug];
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                if (image) {
+                    var size = Math.min(image.width, image.height);
+                    var sx = (image.width - size) / 2;
+                    var sy = (image.height - size) / 2;
+                    ctx.drawImage(image, sx, sy, size, size, x - radius, y - radius, radius * 2, radius * 2);
+                } else {
+                    ctx.fillStyle = '#E7F0E9';
+                    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+                    ctx.fillStyle = '#2E6B4F';
+                    ctx.font = '700 ' + Math.round(radius * 0.8) + 'px sans-serif';
+                    ctx.fillText(flower ? flower.initial : '', x, y + 2);
+                }
+                ctx.restore();
+
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#2E6B4F';
+                ctx.stroke();
+
+                if (count) {
+                    var bx = x + radius * 0.62;
+                    var by = y + radius * 0.62;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, 18, 0, Math.PI * 2);
+                    ctx.fillStyle = '#2E6B4F';
+                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '700 16px sans-serif';
+                    ctx.fillText(String(count), bx, by + 1);
+                }
+            });
+
+            return canvas;
+        });
+    }
+
+    function doPrint() {
+        closeGate();
+        renderPrintDoc();
+        renderCompositionCanvas().then(function (canvas) {
+            if (els.printImg) {
+                els.printImg.src = canvas.toDataURL('image/png');
+                els.printImg.width = canvas.width;
+                els.printImg.height = canvas.height;
+            }
+            requestAnimationFrame(function () {
+                setTimeout(function () { window.print(); }, 120);
+            });
+        });
+    }
+
+    function shareAction() {
+        if (!state.savedId) {
+            setStatus('Сохраните букет после входа — появится ссылка.', true);
+            return;
+        }
+        var url = data.pageUrl + (data.pageUrl.indexOf('?') === -1 ? '?' : '&') + 'bouquet=' + encodeURIComponent(state.savedId);
+        if (navigator.share) {
+            navigator.share({
+                title: 'Букет — Сад знаний',
+                text: 'Мой букет: ' + ((els.title && els.title.value.trim()) || state.title),
+                url: url
+            }).catch(function () { copyLink(url); });
+            return;
+        }
+        copyLink(url);
+    }
+
+    function copyLink(url) {
+        var done = function () { setStatus('Ссылка скопирована: ' + url); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done).catch(function () { window.prompt('Скопируйте ссылку:', url); });
+        } else {
+            window.prompt('Скопируйте ссылку:', url);
+        }
+    }
+
+    function mailAction() {
+        if (!data.loggedIn) {
+            setStatus('Войдите, чтобы отправить письмо.', true);
+            return;
+        }
+        if (!state.savedId) {
+            setStatus('Сначала сохраните букет.', true);
+            return;
+        }
+        var to = window.prompt('E-mail получателя', '');
+        if (!to || !to.trim()) return;
+        to = to.trim();
+        els.mail.disabled = true;
+        fetch(data.mailUrl + '?id=' + encodeURIComponent(state.savedId), {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': data.nonce || ''
+            },
+            body: JSON.stringify({ to: to })
+        })
+            .then(function (response) {
+                return response.json().then(function (body) {
+                    return { ok: response.ok, body: body };
+                });
+            })
+            .then(function (result) {
+                els.mail.disabled = false;
+                if (!result.ok) {
+                    var msg = result.body && result.body.message ? result.body.message : 'Письмо не ушло.';
+                    setStatus(msg, true);
+                    return;
+                }
+                setStatus('Письмо отправлено на ' + (result.body.sent_to || to) + '.');
+            })
+            .catch(function () {
+                els.mail.disabled = false;
+                setStatus('Письмо не ушло: проверьте соединение.', true);
+            });
+    }
+
+    function updateActionState() {
+        if (!state.readonly) {
+            if (els.save) els.save.hidden = false;
+            if (els.share) {
+                els.share.hidden = false;
+                els.share.disabled = !state.savedId;
+            }
+            if (els.mail) {
+                els.mail.hidden = false;
+                els.mail.disabled = !state.savedId;
+            }
+            if (els.copy) els.copy.hidden = true;
+        } else {
+            if (els.save) els.save.hidden = true;
+            if (els.share) els.share.hidden = true;
+            if (els.mail) els.mail.hidden = true;
+            if (els.copy) els.copy.hidden = false;
+        }
+        if (els.pdf) els.pdf.disabled = false;
+    }
+
+    function applyEditable() {
+        state.readonly = false;
+        if (els.title) els.title.readOnly = false;
+        if (els.reroll) els.reroll.disabled = false;
+        if (els.cardAdd) els.cardAdd.disabled = false;
+        updateActionState();
+    }
+
+    function copyAction() {
+        var payload = {
+            version: 1,
+            title: els.title ? els.title.value.trim() : state.title,
+            generated: state.generated,
+            occasion: state.occasion,
+            to: state.to,
+            solo: totalStems() === 1,
+            items: Object.keys(state.items).map(function (slug) {
+                return { slug: slug, count: state.items[slug] };
+            }),
+            reroll: state.reroll
+        };
+
+        if (!data.loggedIn) {
+            try {
+                window.localStorage.setItem('sz_bouquet_v1', JSON.stringify(payload));
+            } catch (error) {}
+            state.savedId = '';
+            applyEditable();
+            window.history.replaceState({}, '', window.location.pathname);
+            setStatus('Копия создана в браузере.');
+            return;
+        }
+
+        if (!data.saveUrl) {
+            setStatus('Сохранение недоступно.', true);
+            return;
+        }
+        if (els.copy) els.copy.disabled = true;
+        fetch(data.saveUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': data.nonce || ''
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(function (response) {
+                return response.json().then(function (body) {
+                    return { ok: response.ok, body: body };
+                });
+            })
+            .then(function (result) {
+                if (els.copy) els.copy.disabled = false;
+                if (!result.ok) {
+                    var msg = result.body && result.body.message ? result.body.message : 'Не удалось создать копию.';
+                    setStatus(msg, true);
+                    return;
+                }
+                state.savedId = result.body && result.body.bouquet ? result.body.bouquet.id : '';
+                applyEditable();
+                if (state.savedId) {
+                    var url = new URL(window.location.href);
+                    url.searchParams.set('bouquet', state.savedId);
+                    window.history.replaceState({}, '', url.toString());
+                }
+                updateActionState();
+                setStatus('Копия сохранена в кабинете.');
+            })
+            .catch(function () {
+                if (els.copy) els.copy.disabled = false;
+                setStatus('Не удалось создать копию.', true);
+            });
     }
 
     function init() {
@@ -700,6 +1109,14 @@
 
         if (els.save) els.save.addEventListener('click', save);
 
+        Array.prototype.forEach.call(document.querySelectorAll('[data-gate-close]'), function (el) {
+            el.addEventListener('click', closeGate);
+        });
+        if (els.pdf) els.pdf.addEventListener('click', printAction);
+        if (els.share) els.share.addEventListener('click', shareAction);
+        if (els.mail) els.mail.addEventListener('click', mailAction);
+        if (els.copy) els.copy.addEventListener('click', copyAction);
+
         renderComposition();
         renderOddness(null);
 
@@ -713,6 +1130,11 @@
         }
 
         applyFilter();
+        updateActionState();
+
+        if (/[?&]print=1/.test(window.location.search) && (data.loggedIn || !data.gate || !data.gate.required)) {
+            setTimeout(printAction, 400);
+        }
     }
 
     init();

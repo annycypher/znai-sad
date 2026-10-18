@@ -107,6 +107,22 @@ function sad_znaniy_bouquet_render_flower_card( $flower, $current_month ) {
  *
  * @return array
  */
+/**
+ * Настройки гейта регистрации на PDF.
+ *
+ * @return array
+ */
+function sad_znaniy_bouquet_gate() {
+    $after = add_query_arg( 'print', '1', sad_znaniy_bouquet_page_url() );
+    return array(
+        'required'    => function_exists( 'sad_znaniy_bouquet_gate_required' ) ? sad_znaniy_bouquet_gate_required() : (bool) get_option( 'sad_znaniy_bouquet_gate', 1 ),
+        'canRegister' => (bool) get_option( 'users_can_register' ),
+        'loginUrl'    => wp_login_url(),
+        'registerUrl' => add_query_arg( 'redirect_to', $after, wp_registration_url() ),
+        'afterUrl'    => $after,
+    );
+}
+
 function sad_znaniy_bouquet_contract() {
     $saved    = null;
     $readonly = false;
@@ -142,11 +158,12 @@ function sad_znaniy_bouquet_contract() {
         'recommendUrl' => esc_url_raw( rest_url( 'sad-znaniy/v1/bouquets/recommend' ) ),
         'saveUrl'      => esc_url_raw( rest_url( 'sad-znaniy/v1/bouquets' ) ),
         'viewUrl'      => esc_url_raw( rest_url( 'sad-znaniy/v1/bouquets/view' ) ),
+        'mailUrl'      => esc_url_raw( rest_url( 'sad-znaniy/v1/bouquets/mail' ) ),
         'nonce'        => wp_create_nonce( 'wp_rest' ),
         'loggedIn'     => is_user_logged_in(),
         'userName'     => is_user_logged_in() ? (string) $user->display_name : '',
         'pageUrl'      => sad_znaniy_bouquet_page_url(),
-        'gate'         => (bool) get_option( 'sad_znaniy_bouquet_gate', 1 ),
+        'gate'         => sad_znaniy_bouquet_gate(),
         'currentMonth' => (int) current_time( 'n' ),
         'readonly'     => $readonly,
         'saved'        => $saved,

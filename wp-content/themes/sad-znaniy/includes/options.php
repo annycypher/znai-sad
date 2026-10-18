@@ -63,6 +63,8 @@ function sad_znaniy_sanitize_options( $input ) {
 
 	$output['sz_planner_gate'] = ( isset( $input['sz_planner_gate'] ) && '1' === (string) $input['sz_planner_gate'] ) ? '1' : '0';
 
+    $output['sz_bouquet_gate'] = ( isset( $input['sz_bouquet_gate'] ) && '1' === (string) $input['sz_bouquet_gate'] ) ? '1' : '0';
+
 	return $output;
 }
 
@@ -85,6 +87,19 @@ function sad_znaniy_planner_gate_required() {
 /**
  * Добавляет страницу настроек в раздел «Внешний вид».
  */
+/**
+ * Требовать ли вход для PDF конструктора букета.
+ *
+ * @return bool
+ */
+function sad_znaniy_bouquet_gate_required() {
+    $options = get_option( 'sad_znaniy_options', array() );
+    if ( ! is_array( $options ) || ! array_key_exists( 'sz_bouquet_gate', $options ) ) {
+        return true;
+    }
+    return '1' === (string) $options['sz_bouquet_gate'];
+}
+
 function sad_znaniy_add_options_page() {
 	add_theme_page(
 		__( 'Настройки «Сад знаний»', 'sad-znaniy' ),
@@ -131,7 +146,14 @@ function sad_znaniy_render_options_page() {
 				<?php esc_html_e( 'Требовать вход для PDF и «В календарь телефона»', 'sad-znaniy' ); ?>
 			</label>
 
-			<h2><?php esc_html_e( 'Популярное на главной', 'sad-znaniy' ); ?></h2>
+			<h2>Экспорт конструктора букета</h2>
+            <p class="description">Если галочка стоит, гости при нажатии «Скачать PDF» видят предложение войти или зарегистрироваться. Сборка букета и сохранение в браузере остаются свободными.</p>
+            <label>
+                <input type="checkbox" name="sad_znaniy_options[sz_bouquet_gate]" value="1" <?php checked( sad_znaniy_bouquet_gate_required() ); ?>>
+                Требовать вход для PDF конструктора букета
+            </label>
+
+            <h2><?php esc_html_e( 'Популярное на главной', 'sad-znaniy' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Выберите растения, ссылки на которые появятся в чипах «Популярное» на главной странице (Ctrl — выбрать несколько).', 'sad-znaniy' ); ?></p>
 
 			<?php if ( $plants ) : ?>

@@ -67,3 +67,5 @@ require_once SAD_ZNANIY_DIR . '/includes/bouquet.php';
 require_once SAD_ZNANIY_DIR . '/includes/cpt-flower.php';
 
 require_once SAD_ZNANIY_DIR . '/includes/bouquet-page.php';
+
+require_once SAD_ZNANIY_DIR . '/includes/bouquet-mail.php';

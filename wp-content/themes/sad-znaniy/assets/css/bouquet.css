@@ -730,3 +730,210 @@
 @media (max-width: 860px){
     .bk-layout{ padding-bottom: 72px; }
 }
+/* ===== Гейт PDF ===== */
+.bk-gate{
+    position: fixed;
+    inset: 0;
+    z-index: 10030;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+.bk-gate[hidden]{ display: none !important; }
+.bk-gate__back{
+    position: absolute;
+    inset: 0;
+    background: rgba(32,36,31,.42);
+    backdrop-filter: blur(4px);
+}
+.bk-gate__card{
+    position: relative;
+    z-index: 1;
+    width: min(440px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    padding: 22px;
+    border-radius: var(--r-lg);
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 28px 70px rgba(32,36,31,.32);
+}
+.bk-gate__x{
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    font-size: 22px;
+    cursor: pointer;
+}
+.bk-gate__card h2{ margin: 0 40px 8px 0; font-size: 20px; }
+.bk-gate__text{ margin: 0 0 14px; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+.bk-gate__card form{ margin: 0; }
+.bk-gate__card form label{ display: block; margin-bottom: 10px; color: var(--muted); font-size: 12px; }
+.bk-gate__card form input[type='text'],
+.bk-gate__card form input[type='password']{
+    width: 100%;
+    min-height: 44px;
+    margin-top: 4px;
+    padding: 0 12px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--glass-border);
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+}
+.bk-gate__card form .button,
+.bk-gate__card form input[type='submit']{
+    min-height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--accent);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.bk-gate__reg{ margin: 12px 0 0; font-size: 12.5px; }
+.bk-gate__reg a{ color: var(--accent); font-weight: 600; }
+.bk-gate__note{ color: var(--muted); }
+body.bk-gate-open{ overflow: hidden; }
+/* ===== Печать: 2 страницы A4 ===== */
+.bk-print{ display: none; }
+@media print{
+    @page{ size: A4; margin: 14mm; }
+    html, body{ background: #fff !important; }
+    body{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .topbar, .footer, .ambient, .leaf, .skip-link, .site-rail,
+    .bk-hero, .bk-layout, .bk-card, .bk-gate{ display: none !important; }
+    .frame, .inner{
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none !important;
+        background: none !important;
+        box-shadow: none !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+    .bk-print{ display: block !important; color: #000; font-size: 10.5pt; }
+    .bk-print__page{
+        position: relative;
+        min-height: 260mm;
+        padding: 0;
+        break-after: page;
+        page-break-after: always;
+    }
+    .bk-print__page:last-child{ break-after: auto; page-break-after: auto; }
+    .bk-print__head{
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 8mm;
+        border-bottom: 1.5px solid #888;
+        padding-bottom: 3mm;
+        margin-bottom: 5mm;
+    }
+    .bk-print__brand{ display: flex; align-items: center; gap: 3mm; }
+    .bk-print__logo{ width: 11mm; height: 12.8mm; color: #2E6B4F; }
+    .bk-print__brand-txt{ font-size: 11pt; font-weight: 700; }
+    .bk-print__user{ text-align: right; font-size: 9pt; color: #444; line-height: 1.35; }
+    .bk-print__title{ font-size: 22pt; line-height: 1.15; margin: 0 0 2mm; }
+    .bk-print__sub{ font-size: 10.5pt; color: #444; margin: 0 0 5mm; }
+    .bk-print__composition{
+        margin: 0 0 5mm;
+        padding: 4mm;
+        border: 1px solid #ddd;
+        border-radius: 3mm;
+        background: #fff;
+    }
+    .bk-print__img{ display: block; width: 100%; max-height: 10cm; object-fit: contain; }
+    .bk-print__legend{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2mm 6mm;
+        font-size: 10pt;
+        color: #222;
+        margin-bottom: 6mm;
+    }
+    .bk-print__legend span{ display: inline-flex; align-items: center; gap: 1.5mm; }
+    .bk-print__legend i{
+        width: 5mm;
+        height: 5mm;
+        border-radius: 50%;
+        background: #E7F0E9;
+        color: #2E6B4F;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-style: normal;
+        font-size: 8pt;
+        font-weight: 700;
+    }
+    .bk-print__foot{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6mm;
+        margin-top: 6mm;
+        padding-top: 4mm;
+        border-top: 1px solid #ddd;
+    }
+    .bk-print__qr-wrap{ display: flex; align-items: center; gap: 3mm; font-size: 8.5pt; color: #444; }
+    .bk-print__qr{ width: 28mm; height: 28mm; display: block; }
+    .bk-print__ad{
+        flex: 1;
+        min-height: 18mm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed #bbb;
+        border-radius: 2mm;
+        color: #888;
+        font-size: 9pt;
+        text-align: center;
+    }
+    .bk-print__decor{
+        position: absolute;
+        bottom: 0;
+        width: 22mm;
+        opacity: .3;
+        pointer-events: none;
+    }
+    .bk-print__decor--left{ left: 0; }
+    .bk-print__decor--right{ right: 0; transform: scaleX(-1); }
+    .bk-print__decor img{ width: 100%; height: auto; display: block; }
+    .bk-print__h2{ font-size: 14pt; margin: 0 0 3mm; border-bottom: 1px solid #ddd; padding-bottom: 1.5mm; }
+    .bk-print__flowers{ column-count: 2; column-gap: 8mm; }
+    .bk-print__flower{
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 3mm;
+        padding-bottom: 2mm;
+        border-bottom: 1px dotted #ddd;
+    }
+    .bk-print__flower b{ font-size: 10pt; }
+    .bk-print__flower em{ color: #2E6B4F; font-style: normal; font-size: 8.5pt; }
+    .bk-print__flower p{ margin: 1mm 0 0; font-size: 9pt; color: #333; line-height: 1.35; }
+    .bk-print__flower a{ color: #2E6B4F; font-size: 8.5pt; text-decoration: none; }
+    .bk-print__links{ margin: 0 0 5mm; padding-left: 5mm; font-size: 9.5pt; }
+    .bk-print__links li{ margin-bottom: 1.5mm; }
+    .bk-print__links a{ color: #2E6B4F; }
+    .bk-print__tools{
+        margin-top: 6mm;
+        padding: 3mm 4mm;
+        border: 1px solid #ddd;
+        border-radius: 2mm;
+        font-size: 9pt;
+        color: #444;
+    }
+    .bk-print__tools strong{ display: block; margin-bottom: 1mm; color: #2E6B4F; }
+    .bk-print__footer{ margin-top: 6mm; color: #777; font-size: 8.5pt; }
+}

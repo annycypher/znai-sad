@@ -125,8 +125,10 @@ $sz_readonly = ! empty( $sz_contract['readonly'] );
 
             <div class="bk-actions">
                 <button type="button" class="btn" id="bkSave">Сохранить</button>
-                <button type="button" class="btn btn-light" id="bkShare" disabled title="Появится в Партии 3">Поделиться</button>
-                <button type="button" class="btn btn-light" id="bkPdf" disabled title="Появится в Партии 3">PDF</button>
+                <button type="button" class="btn btn-light" id="bkShare" disabled title="Сохраните букет после входа">Поделиться</button>
+                <button type="button" class="btn btn-light" id="bkPdf">PDF</button>
+                <button type="button" class="btn btn-light" id="bkMail" disabled title="Сохраните букет после входа">✉ Отправить</button>
+                <button type="button" class="btn btn-light" id="bkCopy" hidden>Создать копию себе</button>
             </div>
             <div class="bk-status" id="bkStatus" role="status"></div>
         </div>
@@ -150,5 +152,69 @@ $sz_readonly = ! empty( $sz_contract['readonly'] );
     </div>
 </div>
 
+<div class="bk-gate" id="bkGate" hidden>
+    <div class="bk-gate__back" data-gate-close></div>
+    <div class="bk-gate__card" role="dialog" aria-modal="true" aria-labelledby="bkGateTitle">
+        <button type="button" class="bk-gate__x" data-gate-close aria-label="Закрыть">✕</button>
+        <h2 id="bkGateTitle">Сохраните букет и скачайте PDF</h2>
+        <p class="bk-gate__text">Войдите или создайте бесплатный аккаунт — букет сохранится в кабинете, а PDF будет с легендой, QR и уходом за цветами. Собрать букет можно и без входа.</p>
+        <?php if ( ! is_user_logged_in() ) : ?>
+            <?php
+            wp_login_form(
+                array(
+                    'redirect'       => esc_url( add_query_arg( 'print', '1', get_permalink() ) ),
+                    'label_username' => __( 'Логин или e-mail', 'sad-znaniy' ),
+                    'label_password' => __( 'Пароль', 'sad-znaniy' ),
+                    'label_remember' => __( 'Запомнить меня', 'sad-znaniy' ),
+                    'label_log_in'   => __( 'Войти и скачать PDF', 'sad-znaniy' ),
+                    'remember'       => true,
+                )
+            );
+            ?>
+        <?php endif; ?>
+        <?php if ( get_option( 'users_can_register' ) ) : ?>
+            <p class="bk-gate__reg">Нет аккаунта? <a href="<?php echo esc_url( add_query_arg( 'redirect_to', add_query_arg( 'print', '1', get_permalink() ), wp_registration_url() ) ); ?>">Создать аккаунт</a></p>
+        <?php else : ?>
+            <p class="bk-gate__reg bk-gate__note">Регистрация новых пользователей на сайте пока выключена. Владелец включает её в «Настройки → Общие → Членство: регистрация разрешена».</p>
+        <?php endif; ?>
+    </div>
+</div>
+<div class="bk-print" id="bkPrint" aria-hidden="true">
+    <section class="bk-print__page">
+        <header class="bk-print__head">
+            <div class="bk-print__brand">
+                <svg class="bk-print__logo" viewBox="0 0 44.17 51.39" aria-hidden="true"><use href="#logo-sad"/></svg>
+                <span class="bk-print__brand-txt"><?php echo esc_html( get_bloginfo( 'name' ) ); ?> · znai-sad.ru</span>
+            </div>
+            <div class="bk-print__user" id="bkPrintUser"></div>
+        </header>
+        <h1 class="bk-print__title" id="bkPrintTitle"></h1>
+        <p class="bk-print__sub" id="bkPrintSub"></p>
+        <div class="bk-print__composition">
+            <img class="bk-print__img" id="bkPrintImg" alt="Композиция букета">
+        </div>
+        <div class="bk-print__legend" id="bkPrintLegend"></div>
+        <div class="bk-print__foot">
+            <div class="bk-print__qr-wrap">
+                <img class="bk-print__qr" src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/qr-site.svg' ); ?>" alt="QR-код: znai-sad.ru" width="300" height="300">
+                <span>Наведите камеру — откроется сайт</span>
+            </div>
+            <div class="bk-print__ad">Рекламный блок · место под баннер</div>
+        </div>
+        <div class="bk-print__decor bk-print__decor--left" aria-hidden="true"><img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/decor/branch-left.svg' ); ?>" alt=""></div>
+        <div class="bk-print__decor bk-print__decor--right" aria-hidden="true"><img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/decor/branch-right.svg' ); ?>" alt=""></div>
+    </section>
+    <section class="bk-print__page">
+        <h2 class="bk-print__h2">Значения цветов</h2>
+        <div class="bk-print__flowers" id="bkPrintFlowers"></div>
+        <h2 class="bk-print__h2">Уход и полезное</h2>
+        <ul class="bk-print__links" id="bkPrintLinks"></ul>
+        <div class="bk-print__tools">
+            <strong>Больше инструментов — на znai-sad.ru</strong>
+            <span>База растений · Календарь дачника · Лунный календарь · Калькуляторы</span>
+        </div>
+        <footer class="bk-print__footer">Собрано в конструкторе букета «Сад знаний» · znai-sad.ru · интерактивная версия — на сайте</footer>
+    </section>
+</div>
 <?php
 get_footer();
