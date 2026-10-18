@@ -125,3 +125,37 @@ function sad_znaniy_maybe_install_work_types() {
 	update_option( 'sad_znaniy_work_types_ready', 1, false );
 }
 add_action( 'wp_loaded', 'sad_znaniy_maybe_install_work_types' );
+
+/**
+ * Одноразово добавляет в правила SEO-Хаба шаблоны конструктора букета.
+ *
+ * Сохраняет пользовательские правила и добавляет три строки, если их нет.
+ */
+function sad_znaniy_maybe_install_bouquet_seo_rules() {
+    if ( get_option( 'sad_znaniy_bouquet_seo_rules_ready' ) ) {
+        return;
+    }
+    if ( ! function_exists( 'sad_znaniy_seo_rules_default' ) ) {
+        return;
+    }
+
+    $raw = (string) get_option( 'sz_seo_rules', '' );
+    $add = implode(
+        "\n",
+        array(
+            'значение цветов, значение цветка, что означает, язык цветов > znachenie-cvetka',
+            'какие цветы подарить, цветы для, подарить цветы, цветы в подарок > cvety-k-povodu',
+            'букет на, букет к, букет для, собрать букет > buket-na-povod',
+        )
+    );
+
+    if ( '' === trim( $raw ) ) {
+        $raw = sad_znaniy_seo_rules_default();
+    } elseif ( false === strpos( $raw, 'znachenie-cvetka' ) ) {
+        $raw = rtrim( $raw ) . "\n" . $add;
+    }
+
+    update_option( 'sz_seo_rules', $raw );
+    update_option( 'sad_znaniy_bouquet_seo_rules_ready', 1, false );
+}
+add_action( 'wp_loaded', 'sad_znaniy_maybe_install_bouquet_seo_rules' );

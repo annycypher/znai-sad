@@ -158,7 +158,10 @@ function sad_znaniy_seo_rules_default() {
 	return implode(
 		"\n",
 		array(
-			'работы, работа, работах, что делать, календарь, календаря, посевные, посевной > kalendar',
+			'значение цветов, значение цветка, что означает, язык цветов > znachenie-cvetka
+            какие цветы, какие цветы подарить, цветы для, подарить цветы, цветы в подарок > cvety-k-povodu
+            букет на, букет к, букет для, собрать букет > buket-na-povod
+            работы, работа, работах, что делать, календарь, календаря, посевные, посевной > kalendar',
 			'когда сажать, когда сеять, сажать, сажают, сеять, сеют, посадить, высаживать, высаживают, высадить, высадка, высадки, высадку, посадка, посадки, посадку, посадке, сроки посадки, сроки посева > kogda-sazhat',
 			'подкормка, подкормки, подкормку, подкормить, подкармливать, полив, полива, поливать, обрезка, обрезки, обрезку, обрезке, обрезать, обработка, обработки, обработать, обрабатывать, уход за, ухода за, удобрение, удобрения, удобрить, укрытие, укрытия, укрыть, укрывать > uhod',
 		)
@@ -179,7 +182,7 @@ function sad_znaniy_seo_rules() {
 		$raw = sad_znaniy_seo_rules_default();
 	}
 
-	$allowed = array( 'kalendar', 'kogda-sazhat', 'uhod', 'lunnyj' );
+	$allowed = array( 'kalendar', 'kogda-sazhat', 'uhod', 'lunnyj', 'znachenie-cvetka', 'cvety-k-povodu', 'buket-na-povod' );
 	$rules   = array();
 
 	foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
@@ -313,7 +316,7 @@ function sad_znaniy_seo_pages_index() {
 /**
  * Собирает URL программатик-страницы по шаблону и найденным сущностям.
  *
- * @param string $template Шаблон (kalendar / kogda-sazhat / uhod).
+ * @param string $template Шаблон (kalendar / kogda-sazhat / uhod / znachenie-cvetka / cvety-k-povodu / buket-na-povod).
  * @param string $region   Ключ региона ('' — нет).
  * @param int    $month    Месяц (0 — нет).
  * @param int    $plant_id ID растения (0 — нет).
@@ -322,7 +325,7 @@ function sad_znaniy_seo_pages_index() {
  *               kind = 'ready' — данные есть, но страница не включена («готовая»);
  *               kind = ''      — страницы нет (пустая или вне матрицы).
  */
-function sad_znaniy_seo_build_url_info( $template, $region, $month, $plant_id ) {
+function sad_znaniy_seo_build_url_info( $template, $region, $month, $plant_id, $flower_slug = '', $recipient = '', $occasion = '' ) {
 	$months = sad_znaniy_month_slugs();
 	$url    = '';
 
@@ -348,7 +351,27 @@ function sad_znaniy_seo_build_url_info( $template, $region, $month, $plant_id ) 
 		}
 	}
 
-	$index = sad_znaniy_seo_pages_index();
+	if ( 'znachenie-cvetka' === $template ) {
+    if ( '' === (string) $flower_slug ) {
+        return array( 'url' => '', 'kind' => '' );
+    }
+    $flower = get_page_by_path( (string) $flower_slug, OBJECT, 'flower' );
+    return $flower
+        ? array( 'url' => (string) get_permalink( $flower ), 'kind' => 'live' )
+        : array( 'url' => '', 'kind' => '' );
+}
+if ( 'cvety-k-povodu' === $template ) {
+    return '' !== (string) $recipient
+        ? array( 'url' => add_query_arg( 'to', (string) $recipient, sad_znaniy_bouquet_page_url() ), 'kind' => 'live' )
+        : array( 'url' => '', 'kind' => '' );
+}
+if ( 'buket-na-povod' === $template ) {
+    return '' !== (string) $occasion
+        ? array( 'url' => add_query_arg( 'occasion', (string) $occasion, sad_znaniy_bouquet_page_url() ), 'kind' => 'live' )
+        : array( 'url' => '', 'kind' => '' );
+}
+
+$index = sad_znaniy_seo_pages_index();
 
 	// Страницы нет в матрице — фраза уйдёт в «привязана» или «manual».
 	if ( '' === $url || ! isset( $index[ $url ] ) ) {
@@ -380,7 +403,7 @@ function sad_znaniy_seo_build_url_info( $template, $region, $month, $plant_id ) 
  * Оставлено для совместимости: статус «живая» теперь ставится только цели,
  * которая включена, поэтому в разметке используется sad_znaniy_seo_build_url_info().
  *
- * @param string $template Шаблон (kalendar / kogda-sazhat / uhod).
+ * @param string $template Шаблон (kalendar / kogda-sazhat / uhod / znachenie-cvetka / cvety-k-povodu / buket-na-povod).
  * @param string $region   Ключ региона ('' — нет).
  * @param int    $month    Месяц (0 — нет).
  * @param int    $plant_id ID растения (0 — нет).
@@ -501,7 +524,37 @@ function sad_znaniy_seo_match( $phrase ) {
 		}
 	}
 
-	$related = '';
+	$flower_slug = '';
+foreach ( sad_znaniy_seo_flower_forms() as $slug => $forms ) {
+    foreach ( $forms as $form ) {
+        if ( sad_znaniy_seo_phrase_has( $phrase_l, $form ) ) {
+            $flower_slug = (string) $slug;
+            break 2;
+        }
+    }
+}
+
+$recipient = '';
+foreach ( sad_znaniy_seo_recipient_forms() as $key => $forms ) {
+    foreach ( $forms as $form ) {
+        if ( sad_znaniy_seo_phrase_has( $phrase_l, $form ) ) {
+            $recipient = (string) $key;
+            break 2;
+        }
+    }
+}
+
+$occasion = '';
+foreach ( sad_znaniy_seo_occasion_forms() as $key => $forms ) {
+    foreach ( $forms as $form ) {
+        if ( sad_znaniy_seo_phrase_has( $phrase_l, $form ) ) {
+            $occasion = (string) $key;
+            break 2;
+        }
+    }
+}
+
+$related = '';
 	foreach ( sad_znaniy_seo_rules() as $rule ) {
 		$hit = false;
 		foreach ( $rule['keywords'] as $kw ) {
@@ -514,7 +567,7 @@ function sad_znaniy_seo_match( $phrase ) {
 			continue;
 		}
 
-		$info = sad_znaniy_seo_build_url_info( $rule['template'], $region, $month, $plant_id );
+		$info = sad_znaniy_seo_build_url_info( $rule['template'], $region, $month, $plant_id, $flower_slug, $recipient, $occasion );
 		if ( '' !== $info['url'] ) {
 			return array(
 				'url'      => (string) $info['url'],
@@ -744,6 +797,9 @@ function sad_znaniy_seo_family_labels() {
 		'region-month' => __( 'Работы по региону', 'sad-znaniy' ),
 		'plant-region' => __( 'Когда сажать', 'sad-znaniy' ),
 		'plant-month'  => __( 'Уход', 'sad-znaniy' ),
+        'flower-meaning' => __( 'Значение цветка', 'sad-znaniy' ),
+        'occasion-to'    => __( 'Цветы к поводу', 'sad-znaniy' ),
+        'occasion'       => __( 'Букет на повод', 'sad-znaniy' ),
 	);
 }
 
@@ -1197,7 +1253,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 				'<b>Импорт:</b> приложите файл или вставьте строки «фраза;показы» в поле вставки → «Импортировать». Дубли по фразе обновляются, не дублируются.',
 				'<b>Порог слабости:</b> частота меньше <b>10</b> — фраза серая («слабая»), включать такие страницы не спешите.',
 				'<b>Авторазметка:</b> фразы со словом месяца/региона/культуры получают готовый URL программатик-страницы. Если совпадений нет — статус «manual».',
-				'<b>Правила:</b> строки вида «слово1, слово2 &gt; шаблон» (kalendar / kogda-sazhat / uhod). Меняются здесь, после сохранения разметка пересчитывается.',
+				'<b>Правила:</b> строки вида «слово1, слово2 &gt; шаблон» (kalendar / kogda-sazhat / uhod / znachenie-cvetka / cvety-k-povodu / buket-na-povod). Меняются здесь, после сохранения разметка пересчитывается.',
 				'<b>Экспорт:</b> «Карта (Markdown)» — файл programmatic-map для сверки и хранения в проекте.',
 			),
 			'«13. SEO-Хаб»'
@@ -1290,7 +1346,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 				</label>
 				<span class="description">фразы с частотой ниже порога помечаются «слабая» (по умолчанию 10)</span>
 			</p>
-			<p class="description">Формат строки: «слово1, слово2 &gt; шаблон». Шаблоны: kalendar (регион+месяц), kogda-sazhat (культура+регион), uhod (культура+месяц).</p>
+			<p class="description">Формат строки: «слово1, слово2 &gt; шаблон». Шаблоны: kalendar (регион+месяц), kogda-sazhat (культура+регион), uhod (культура+месяц), znachenie-cvetka (значение цветка), cvety-k-povodu (кому), buket-na-povod (повод).</p>
 			<p>
 				<label for="sz-seo-stopwords"><b>Стоп-слова (чужие ниши):</b></label><br>
 				<textarea name="sz_seo_stopwords" id="sz-seo-stopwords" rows="4" style="width:100%;max-width:760px;"><?php echo esc_textarea( $raw_st ); ?></textarea>
@@ -1400,3 +1456,73 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 	<?php
 }
 
+
+/**
+ * Словоформы цветов для шаблона «значение цветов {цветок}».
+ *
+ * @return array slug => string[]
+ */
+function sad_znaniy_seo_flower_forms() {
+    static $forms = null;
+    if ( null !== $forms ) {
+        return $forms;
+    }
+    $forms = array();
+    if ( ! function_exists( 'sad_znaniy_bouquet_get_flowers' ) ) {
+        return $forms;
+    }
+    foreach ( sad_znaniy_bouquet_get_flowers() as $slug => $flower ) {
+        if ( '' !== (string) $flower['variant'] ) {
+            continue;
+        }
+        $title = mb_strtolower( (string) $flower['title'], 'UTF-8' );
+        $parts = preg_split( '/\s+/u', $title );
+        $list  = array( $title );
+        if ( is_array( $parts ) && isset( $parts[0] ) ) {
+            $list[] = (string) $parts[0];
+        }
+        if ( ! empty( $flower['genitive'] ) ) {
+            $list[] = mb_strtolower( (string) $flower['genitive'], 'UTF-8' );
+        }
+        $list = array_values( array_unique( array_filter( array_map( 'trim', $list ) ) ) );
+        $forms[ (string) $slug ] = $list;
+    }
+    return $forms;
+}
+
+/**
+ * Словоформы адресатов для шаблона «какие цветы подарить {кому}».
+ *
+ * @return array
+ */
+function sad_znaniy_seo_recipient_forms() {
+    return array(
+        'mama'      => array( 'маме', 'мама', 'мамой', 'маму', 'мать' ),
+        'beloved'   => array( 'любимой', 'любимая', 'жене', 'девушке' ),
+        'friend'    => array( 'подруге', 'подруга', 'другу', 'друг' ),
+        'colleague' => array( 'коллеге', 'коллега', 'сотруднику' ),
+        'teacher'   => array( 'учителю', 'учитель', 'учительнице', 'воспитателю' ),
+        'man'       => array( 'мужчине', 'мужу', 'папе', 'папа' ),
+    );
+}
+
+/**
+ * Словоформы поводов для шаблона «букет на {повод}».
+ *
+ * @return array
+ */
+function sad_znaniy_seo_occasion_forms() {
+    return array(
+        'birthday'     => array( 'день рождения', 'дню рождения', 'днем рождения' ),
+        'wedding'      => array( 'свадьбу', 'свадьба', 'свадьбе', 'годовщину' ),
+        'march8'       => array( '8 марта', 'восьмое марта' ),
+        'teacher_day'  => array( 'день учителя', '1 сентября', 'первое сентября' ),
+        'love'         => array( 'признание в любви', 'признаться в любви' ),
+        'thanks'       => array( 'спасибо', 'благодарность' ),
+        'jubilee'      => array( 'юбилей', 'юбилею' ),
+        'housewarming' => array( 'новоселье' ),
+        'baby'         => array( 'рождение ребенка', 'рождение ребёнка' ),
+        'condolence'   => array( 'соболезнования', 'память' ),
+        'just_because' => array( 'просто так' ),
+    );
+}

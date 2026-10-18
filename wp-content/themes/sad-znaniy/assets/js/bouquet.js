@@ -1120,12 +1120,39 @@
         renderComposition();
         renderOddness(null);
 
+        var params = new URLSearchParams(window.location.search);
+        var hasQuery = false;
+        var toParam = params.get('to');
+        if (toParam && data.recipients[toParam]) {
+            setChip('to', toParam);
+            hasQuery = true;
+        }
+        var occasionParam = params.get('occasion');
+        if (occasionParam && data.occasions[occasionParam]) {
+            setChip('occasion', occasionParam);
+            hasQuery = true;
+        }
+
         if (data.saved) {
             applySaved(data.saved, data.readonly);
             if (data.readonly) setStatus('Просмотр букета по ссылке.');
         } else if (!restoreLocal()) {
             if (window.location.search.indexOf('bouquet=') !== -1) {
                 setStatus('Букет не найден или ссылка устарела.', true);
+            }
+        }
+
+        if (!data.saved && hasQuery) {
+            scheduleRefresh(true);
+        }
+
+        var flowerParam = params.get('flower');
+        if (!data.saved && flowerParam && flowers[flowerParam] && !state.readonly) {
+            add(flowerParam);
+            var flowerCard = document.querySelector('.bk-flower[data-slug="' + flowerParam + '"]');
+            if (flowerCard) {
+                if (flowerCard.scrollIntoView) flowerCard.scrollIntoView({ block: 'center' });
+                openCard(flowerParam, flowerCard);
             }
         }
 

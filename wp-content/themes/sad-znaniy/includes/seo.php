@@ -20,7 +20,7 @@ function sad_znaniy_seo_add_meta_box() {
 		'sad-znaniy-seo',
 		__( 'SEO (заголовок и описание)', 'sad-znaniy' ),
 		'sad_znaniy_seo_meta_box_html',
-		array( 'post', 'plant', 'page' ),
+		array( 'post', 'plant', 'page', 'flower' ),
 		'normal',
 		'low'
 	);
@@ -82,7 +82,7 @@ add_action( 'save_post', 'sad_znaniy_seo_save_meta' );
  * @return array
  */
 function sad_znaniy_seo_title_parts( $parts ) {
-	if ( is_singular( array( 'post', 'plant', 'page' ) ) ) {
+	if ( is_singular( array( 'post', 'plant', 'page', 'flower' ) ) ) {
 		$t = get_post_meta( get_queried_object_id(), '_sz_seo_title', true );
 		if ( $t ) {
 			$parts['title'] = $t;
@@ -98,7 +98,7 @@ add_filter( 'document_title_parts', 'sad_znaniy_seo_title_parts' );
  * Выводит <meta name="description"> на одиночных записях.
  */
 function sad_znaniy_seo_meta_description() {
-	if ( is_singular( array( 'post', 'plant', 'page' ) ) ) {
+	if ( is_singular( array( 'post', 'plant', 'page', 'flower' ) ) ) {
 		$d = get_post_meta( get_queried_object_id(), '_sz_seo_description', true );
 		if ( $d ) {
 			echo '<meta name="description" content="' . esc_attr( $d ) . '" />' . "\n";

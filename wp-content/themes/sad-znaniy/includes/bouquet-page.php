@@ -171,3 +171,84 @@ function sad_znaniy_bouquet_contract() {
         'decorRight'   => get_template_directory_uri() . '/assets/img/decor/branch-right.svg',
     );
 }
+/**
+ * SEO-заголовок страницы конструктора и страниц цветов.
+ *
+ * @param string $title Текущий заголовок.
+ * @return string
+ */
+function sad_znaniy_bouquet_document_title( $title ) {
+    if ( sad_znaniy_is_bouquet_page() ) {
+        $custom = get_post_meta( get_queried_object_id(), '_sz_seo_title', true );
+        if ( $custom ) {
+            return (string) $custom;
+        }
+        return 'Конструктор букета онлайн — собрать букет по смыслу и значению цветов | Сад знаний';
+    }
+
+    if ( is_singular( 'flower' ) ) {
+        $custom = get_post_meta( get_queried_object_id(), '_sz_seo_title', true );
+        if ( $custom ) {
+            return (string) $custom;
+        }
+        $flower = sad_znaniy_bouquet_flower_data( get_queried_object() );
+        return 'Значение цветка ' . $flower['title'] . ' — ' . $flower['meaning'] . ' | Сад знаний';
+    }
+
+    return $title;
+}
+add_filter( 'pre_get_document_title', 'sad_znaniy_bouquet_document_title', 20 );
+
+/**
+ * Мета-описание конструктора и страниц цветов.
+ */
+function sad_znaniy_bouquet_meta_description() {
+    if ( sad_znaniy_is_bouquet_page() ) {
+        $custom = get_post_meta( get_queried_object_id(), '_sz_seo_description', true );
+        if ( $custom ) {
+            return;
+        }
+        $desc = 'Соберите букет по поводу и адресату: подбор по значению цветов, проверка сочетаемости, нечётное число, готовый PDF с легендой и QR. Бесплатно, без регистрации для сборки.';
+        echo '<meta name="description" content="' . esc_attr( $desc ) . '" />' . "\n";
+        return;
+    }
+
+    if ( is_singular( 'flower' ) ) {
+        $custom = get_post_meta( get_queried_object_id(), '_sz_seo_description', true );
+        if ( $custom ) {
+            return;
+        }
+        $flower = sad_znaniy_bouquet_flower_data( get_queried_object() );
+        $desc   = mb_substr( (string) $flower['desc'], 0, 160, 'UTF-8' );
+        echo '<meta name="description" content="' . esc_attr( $desc ) . '" />' . "\n";
+    }
+}
+add_action( 'wp_head', 'sad_znaniy_bouquet_meta_description', 2 );
+
+/**
+ * Schema.org WebApplication для страницы конструктора.
+ */
+function sad_znaniy_bouquet_schema() {
+    if ( ! sad_znaniy_is_bouquet_page() ) {
+        return;
+    }
+
+    $schema = array(
+        '@context'            => 'https://schema.org',
+        '@type'               => 'WebApplication',
+        'name'                => 'Конструктор букета',
+        'url'                 => sad_znaniy_bouquet_page_url(),
+        'description'         => 'Собрать букет по поводу и значению цветов: подбор, сочетаемость, нечётное число, PDF с легендой и QR.',
+        'applicationCategory' => 'DesignApplication',
+        'operatingSystem'     => 'Web',
+        'inLanguage'          => 'ru-RU',
+        'offers'              => array(
+            '@type'         => 'Offer',
+            'price'         => '0',
+            'priceCurrency' => 'RUB',
+        ),
+    );
+
+    echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'sad_znaniy_bouquet_schema', 20 );

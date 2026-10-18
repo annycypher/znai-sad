@@ -118,7 +118,11 @@ while ( have_posts() ) :
 			<?php endif; ?>
 
 			<?php
-			$sz_moon_html = sad_znaniy_plant_moon_render( $plant_id, sad_znaniy_current_region() );
+			if ( function_exists( 'sad_znaniy_bouquet_plant_block' ) ) {
+    sad_znaniy_bouquet_plant_block( $plant_id );
+}
+
+$sz_moon_html = sad_znaniy_plant_moon_render( $plant_id, sad_znaniy_current_region() );
 			if ( $sz_moon_html ) {
 				echo $sz_moon_html; // phpcs:ignore WordPress.Security.EscapeOutput -- HTML собран с экранированием.
 			}
