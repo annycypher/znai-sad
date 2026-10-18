@@ -336,17 +336,24 @@
         applyFilter();
     }
 
+    function updateMobileToggle() {
+        if (!els.mobileToggle) return;
+        if (els.side && els.side.classList.contains('is-open')) {
+            els.mobileToggle.textContent = 'Свернуть';
+            return;
+        }
+        var total = totalStems();
+        els.mobileToggle.textContent = 0 < total
+            ? ('Ваш букет · ' + total + ' ' + plural(total, 'стебель', 'стебля', 'стеблей'))
+            : 'Ваш букет · начнём с трёх';
+    }
+
     function syncAdded() {
         var cards = document.querySelectorAll('.bk-flower');
         for (var i = 0; i < cards.length; i++) {
             cards[i].classList.toggle('is-added', !!state.items[cards[i].getAttribute('data-slug')]);
         }
-        if (els.mobileToggle) {
-            var total = totalStems();
-            if (!(els.side && els.side.classList.contains('is-open'))) {
-                els.mobileToggle.textContent = 0 < total ? ('Собрать букет (' + total + ')') : 'Собрать букет';
-            }
-        }
+        updateMobileToggle();
     }
 
     function renderComposition() {
@@ -1084,8 +1091,7 @@
             els.mobileToggle.addEventListener('click', function () {
                 var open = els.side.classList.toggle('is-open');
                 els.mobileToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-                var total = totalStems();
-                els.mobileToggle.textContent = open ? 'Свернуть' : (0 < total ? ('Собрать букет (' + total + ')') : 'Собрать букет');
+                updateMobileToggle();
             });
         }
 
@@ -1119,6 +1125,7 @@
 
         renderComposition();
         renderOddness(null);
+        updateMobileToggle();
 
         var params = new URLSearchParams(window.location.search);
         var hasQuery = false;

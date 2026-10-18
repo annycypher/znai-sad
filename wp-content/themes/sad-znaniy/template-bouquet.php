@@ -28,12 +28,10 @@ $sz_readonly = ! empty( $sz_contract['readonly'] );
         <p class="bk-kicker">Язык цветов</p>
         <h1 class="h-cap">Конструктор букета</h1>
         <p class="hero-sub">Соберите букет, который говорит за вас: по поводу, адресату и значению цветов.</p>
-        <p class="bk-hero__text">Каждый цветок в европейской и русской традиции имеет значение: роза говорит о любви, гербера — о дружбе, хризантема — об уважении и памяти. Конструктор помогает не угадывать, а выбирать осознанно: он учитывает повод, кому предназначен букет и сочетаемость растений.</p>
-        <p class="bk-hero__text">Подбор идёт по матрице «повод × кому», конфликты проверяются по флористике и этикету, а число стеблей — по правилу нечётности. В конце вы получите название букета и сможете сохранить композицию.</p>
         <div class="bk-hero__meta">
             <span><?php echo esc_html( (string) count( $sz_base ) ); ?> цветов и <?php echo esc_html( (string) ( count( $sz_flowers ) - count( $sz_base ) ) ); ?> оттенков</span>
             <span>3–9 стеблей — норма</span>
-            <span>PDF с легендой — в Партии 3</span>
+            <span>PDF с легендой и QR</span>
         </div>
     </div>
 </section>
@@ -129,6 +127,74 @@ $sz_readonly = ! empty( $sz_contract['readonly'] );
         </div>
     </aside>
 </div>
+
+<section class="section bk-seo" aria-labelledby="bkSeoTitle">
+    <h2 class="bk-seo__title" id="bkSeoTitle">Язык цветов: как собрать букет, который говорит за вас</h2>
+    <p class="bk-seo__lead">Каждый цветок в европейской и русской традиции имеет значение: роза говорит о любви, гербера — о дружбе, хризантема — об уважении и памяти. Конструктор помогает не угадывать, а выбирать осознанно: он учитывает повод, кому предназначен букет и сочетаемость растений.</p>
+    <p class="bk-seo__lead">Подбор идёт по матрице «повод × кому», конфликты проверяются по флористике и этикету, а число стеблей — по правилу нечётности. В конце вы получите название букета и сможете сохранить композицию.</p>
+    <p>Конструктор не продаёт цветы — он помогает собрать композицию и объяснить её смысл. Готовый букет можно сохранить в кабинете, открыть по ссылке, отправить на e-mail или скачать PDF с легендой и QR-кодом.</p>
+
+    <h3>Что означает цветок: шпаргалка по значениям</h3>
+    <p>Ниже — двенадцать базовых цветов, на которых построен подбор. Полное описание с оттенками и сезонностью — на странице каждого цветка.</p>
+    <ul class="bk-seo__meanings">
+        <?php $sz_seo_i = 0; ?>
+        <?php foreach ( $sz_base as $sz_flower ) : ?>
+            <?php if ( $sz_seo_i >= 12 ) { break; } ?>
+            <?php $sz_seo_i++; ?>
+            <li>
+                <?php if ( ! empty( $sz_flower['url'] ) ) : ?>
+                    <a href="<?php echo esc_url( (string) $sz_flower['url'] ); ?>"><?php echo esc_html( (string) $sz_flower['title'] ); ?></a>
+                <?php else : ?>
+                    <strong><?php echo esc_html( (string) $sz_flower['title'] ); ?></strong>
+                <?php endif; ?>
+                — <?php echo esc_html( (string) $sz_flower['meaning'] ); ?>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+
+    <h3>Три правила, которые соблюдает конструктор</h3>
+    <ol class="bk-seo__rules">
+        <li><strong>Нечётное число стеблей.</strong> Букет из 3–9 стеблей выглядит живым; чётное число традиционно связывают с ритуальными букетами, поэтому конструктор подсказывает добавить третий цветок. Минимум — один стебель, максимум — 25.</li>
+        <li><strong>Сочетаемость.</strong> Проверяются флористические конфликты: ландыш не стоит в одном букете с розами, тюльпанами и нарциссами — он быстро вянет и токсичен для соседей; гвоздика спорит с романтическими поводами и 8 Марта; белые лилии и хризантемы несут траурный подтекст и не подходят для свадьбы и признания.</li>
+        <li><strong>Уместность повода и адресата.</strong> Маме, учителю, коллеге и любимой подходят разные цветы — матрица «повод × кому» подсказывает уместные варианты и выносит их в «Рекомендуемые».</li>
+    </ol>
+
+    <h3>Букет по поводу и адресату</h3>
+    <p>Если не хочется начинать с чистого листа, откройте готовый сценарий — повод и адресат подставятся в конструктор автоматически:</p>
+    <ul class="bk-seo__links">
+        <li><a href="<?php echo esc_url( add_query_arg( 'to', 'mama', sad_znaniy_bouquet_page_url() ) ); ?>">какие цветы подарить маме</a></li>
+        <li><a href="<?php echo esc_url( add_query_arg( 'occasion', 'wedding', sad_znaniy_bouquet_page_url() ) ); ?>">букет на свадьбу или годовщину</a></li>
+        <li><a href="<?php echo esc_url( add_query_arg( array( 'to' => 'teacher', 'occasion' => 'teacher_day' ), sad_znaniy_bouquet_page_url() ) ); ?>">цветы учителю на 1 сентября и День учителя</a></li>
+        <li><a href="<?php echo esc_url( add_query_arg( array( 'to' => 'beloved', 'occasion' => 'march8' ), sad_znaniy_bouquet_page_url() ) ); ?>">букет любимой на 8 Марта</a></li>
+        <li><a href="<?php echo esc_url( add_query_arg( array( 'to' => 'colleague', 'occasion' => 'birthday' ), sad_znaniy_bouquet_page_url() ) ); ?>">цветы коллеге на день рождения</a></li>
+        <li><a href="<?php echo esc_url( add_query_arg( 'occasion', 'housewarming', sad_znaniy_bouquet_page_url() ) ); ?>">композиция на новоселье</a></li>
+    </ul>
+
+    <h3>Как сохранить букет и скачать PDF</h3>
+    <p>Сборка бесплатна и не требует регистрации: вход нужен только для сохранения. Букет появится в личном кабинете, получит ссылку для просмотра и PDF на две страницы A4 — композиция с легендой значений, QR-код на интерактивную версию и памятка по уходу: как подрезать стебли, менять воду и держать букет в прохладе.</p>
+
+    <h3>Частые вопросы</h3>
+    <dl class="bk-seo__faq">
+        <dt>Нужна ли регистрация, чтобы собрать букет?</dt>
+        <dd>Нет. Собирать и экспериментировать можно без входа; регистрация нужна для сохранения букета, ссылки для просмотра и PDF.</dd>
+        <dt>Сколько цветов можно добавить?</dt>
+        <dd>От одного до 25 стеблей. Норма — 3–9, а число стеблей лучше делать нечётным.</dd>
+        <dt>Что делать, если появился конфликт?</dt>
+        <dd>Нажмите «Убрать конфликтный цветок» — конструктор предложит замену с близким значением.</dd>
+        <dt>Можно ли начать с конкретного цветка?</dt>
+        <dd>Да. На странице цветка нажмите «Собрать букет» — он откроется в конструкторе с уже добавленным цветком.</dd>
+    </dl>
+
+    <h3>Куда идти дальше</h3>
+    <ul class="bk-seo__links">
+        <li><a href="<?php echo esc_url( home_url( '/rasteniya/' ) ); ?>">база растений с агротехникой</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/stati/' ) ); ?>">статьи о цветах и уходе</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>">календарь работ дачника</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/lunnyj-kalendar/' ) ); ?>">лунный календарь садовода</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>">планировщик участка</a></li>
+    </ul>
+</section>
+
 <div class="bk-card" id="bkCard" role="dialog" aria-modal="false" aria-labelledby="bkCardTitle" hidden>
     <button type="button" class="bk-card__close" id="bkCardClose" aria-label="Закрыть">×</button>
     <div class="bk-card__head">
@@ -183,7 +249,7 @@ $sz_readonly = ! empty( $sz_contract['readonly'] );
             </div>
             <div class="bk-print__user" id="bkPrintUser"></div>
         </header>
-        <h1 class="bk-print__title" id="bkPrintTitle"></h1>
+        <h2 class="bk-print__title" id="bkPrintTitle"></h2>
         <p class="bk-print__sub" id="bkPrintSub"></p>
         <div class="bk-print__composition">
             <img class="bk-print__img" id="bkPrintImg" alt="Композиция букета">
