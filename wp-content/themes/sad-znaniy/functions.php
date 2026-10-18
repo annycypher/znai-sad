@@ -61,3 +61,7 @@ require_once SAD_ZNANIY_DIR . '/includes/social/queue.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/sender.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/aff.php';
 require_once SAD_ZNANIY_DIR . '/includes/social/admin.php';
+
+require_once SAD_ZNANIY_DIR . '/includes/bouquet-data.php';
+require_once SAD_ZNANIY_DIR . '/includes/bouquet.php';
+require_once SAD_ZNANIY_DIR . '/includes/cpt-flower.php';

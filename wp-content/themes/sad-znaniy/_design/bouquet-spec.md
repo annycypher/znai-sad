@@ -517,11 +517,13 @@
 | Метод | Маршрут | Доступ |
 |---|---|---|
 | `POST` | `/sad-znaniy/v1/bouquets` | залогиненный (создание/сохранение) |
-| `GET` | `/sad-znaniy/v1/bouquets/<id>` | публично (read-only просмотр) |
-| `DELETE` | `/sad-znaniy/v1/bouquets/<id>` | владелец |
-| `POST` | `/sad-znaniy/v1/bouquets/<id>/mail` | владелец (письмо) |
+| `GET` | `/sad-znaniy/v1/bouquets/view?id=<uuid>` | публично (read-only просмотр) |
+| `DELETE` | `/sad-znaniy/v1/bouquets/delete?id=<uuid>` | владелец |
+| `POST` | `/sad-znaniy/v1/bouquets/mail?id=<uuid>` | владелец (письмо, Партия 3) |
 | `GET` | `/sad-znaniy/v1/bouquets/recommend?occasion=<key>&to=<key>` | публично (подбор) |
-| `GET` | `/sad-znaniy/v1/bouquets/<id>/pdf` | залогиненный (данные для PDF) |
+| `GET` | `/sad-znaniy/v1/bouquets/pdf?id=<uuid>` | залогиненный (данные для PDF) |
+
+ID передаётся параметром запроса, а не сегментом пути: шаблон маршрута не содержит символа «больше» и не срабатывает защита транспорта на перенаправление.
 
 Лимит писем — общий с планировщиком (`sad_znaniy_planner_mail_limit`, 10/час).
 
@@ -794,7 +796,7 @@ description, JSON-LD `WebApplication`.
 ## 15. Отметка о статусе
 
 - [ ] Спека утверждена владельцем
-- [ ] Партия 1
+- [x] Партия 1
 - [ ] Партия 2
 - [ ] Партия 3
 - [ ] Партия 4
