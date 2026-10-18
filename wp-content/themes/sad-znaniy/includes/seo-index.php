@@ -158,6 +158,7 @@ function sad_znaniy_seo_hub_index_page() {
 	$bots     = sad_znaniy_seo_bot_rows();
 	$log      = get_option( 'sz_seo_log', array() );
 	$next     = wp_next_scheduled( 'sz_seo_daily_sync' );
+	$last     = get_option( 'sz_seo_last_sync', '' );
 	?>
 	<div class="wrap">
 		<h1>SEO-Хаб → Индексация</h1>
@@ -240,6 +241,7 @@ function sad_znaniy_seo_hub_index_page() {
 		<p>
 			Состояние внешних сервисов: <b><?php echo $external ? 'включены' : 'выключены (SZ_EXTERNAL_ON не задана)'; ?></b>.
 			Следующий запуск: <b><?php echo esc_html( $next ? get_date_from_gmt( gmdate( 'Y-m-d H:i:s', (int) $next ), 'Y-m-d H:i' ) : '—' ); ?></b>.
+			Последняя синхронизация: <b><?php echo esc_html( '' !== (string) $last ? (string) $last : '—' ); ?></b>.
 		</p>
 		<form method="post" style="margin-bottom:10px;">
 			<?php wp_nonce_field( 'sz_idx_cron', 'sz_idx_cron_nonce' ); ?>

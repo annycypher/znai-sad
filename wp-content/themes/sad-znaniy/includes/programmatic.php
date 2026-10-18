@@ -476,6 +476,132 @@ function sad_znaniy_programmatic_robots( $output ) {
 add_filter( 'robots_txt', 'sad_znaniy_programmatic_robots' );
 
 /**
+ * Параметры растения для блока на программатик-странице.
+ *
+ * @param int $plant_id ID растения.
+ * @return array[] [подпись, значение]
+ */
+function sad_znaniy_plant_params( $plant_id ) {
+	$plant_id = (int) $plant_id;
+	$light    = (string) get_post_meta( $plant_id, '_sz_plant_light', true );
+	$water    = (string) get_post_meta( $plant_id, '_sz_plant_water', true );
+	$ph_from  = (string) get_post_meta( $plant_id, '_sz_plant_ph_from', true );
+	$ph_to    = (string) get_post_meta( $plant_id, '_sz_plant_ph_to', true );
+
+	$light_label = sad_znaniy_option_label( sad_znaniy_light_options(), $light );
+	$water_label = sad_znaniy_option_label( sad_znaniy_water_options(), $water );
+
+	$ph_parts = array();
+	if ( '' !== $ph_from ) {
+		$ph_parts[] = number_format_i18n( (float) $ph_from, 1 );
+	}
+	if ( '' !== $ph_to ) {
+		$ph_parts[] = number_format_i18n( (float) $ph_to, 1 );
+	}
+	$ph_label = $ph_parts ? implode( '–', $ph_parts ) : '';
+
+	$params = array();
+	if ( $light_label ) {
+		$params[] = array( __( 'Свет', 'sad-znaniy' ), $light_label );
+	}
+	if ( $water_label ) {
+		$params[] = array( __( 'Полив', 'sad-znaniy' ), $water_label );
+	}
+	if ( $ph_label ) {
+		$params[] = array( __( 'Кислотность (pH)', 'sad-znaniy' ), $ph_label );
+	}
+
+	return $params;
+}
+
+/**
+ * Склоняет название растения для H1.
+ *
+ * Словарь покрывает растения, которые уже есть в матрице; для остальных
+ * работает общее правило (женский род на -а/-я, мужской на согласный).
+ *
+ * @param string $title Название растения.
+ * @param string $case  'acc' — винительный, 'ins' — творительный.
+ * @return string
+ */
+function sad_znaniy_plant_case( $title, $case = 'acc' ) {
+	$title = mb_strtolower( trim( (string) $title ), 'UTF-8' );
+	$case  = ( 'ins' === $case ) ? 'ins' : 'acc';
+
+	$map = array(
+		'томат'                  => array( 'acc' => 'томат', 'ins' => 'томатом' ),
+		'огурец'                 => array( 'acc' => 'огурец', 'ins' => 'огурцом' ),
+		'клубника садовая'       => array( 'acc' => 'клубнику садовую', 'ins' => 'клубникой садовой' ),
+		'роза садовая'           => array( 'acc' => 'розу садовую', 'ins' => 'розой садовой' ),
+		'гортензия метельчатая'  => array( 'acc' => 'гортензию метельчатую', 'ins' => 'гортензией метельчатой' ),
+		'гортензия древовидная'  => array( 'acc' => 'гортензию древовидную', 'ins' => 'гортензией древовидной' ),
+		'голубика садовая'       => array( 'acc' => 'голубику садовую', 'ins' => 'голубикой садовой' ),
+		'смородина'              => array( 'acc' => 'смородину', 'ins' => 'смородиной' ),
+		'жимолость съедобная'    => array( 'acc' => 'жимолость съедобную', 'ins' => 'жимолостью съедобной' ),
+		'яблоня'                 => array( 'acc' => 'яблоню', 'ins' => 'яблоней' ),
+		'морковь'                => array( 'acc' => 'морковь', 'ins' => 'морковью' ),
+		'тюльпан'                => array( 'acc' => 'тюльпан', 'ins' => 'тюльпаном' ),
+		'вишня'                  => array( 'acc' => 'вишню', 'ins' => 'вишней' ),
+		'слива'                  => array( 'acc' => 'сливу', 'ins' => 'сливой' ),
+		'груша'                  => array( 'acc' => 'грушу', 'ins' => 'грушей' ),
+		'абрикос'                => array( 'acc' => 'абрикос', 'ins' => 'абрикосом' ),
+		'черешня'                => array( 'acc' => 'черешню', 'ins' => 'черешней' ),
+		'малина'                 => array( 'acc' => 'малину', 'ins' => 'малиной' ),
+		'крыжовник'              => array( 'acc' => 'крыжовник', 'ins' => 'крыжовником' ),
+		'ежевика'                => array( 'acc' => 'ежевику', 'ins' => 'ежевикой' ),
+		'клематис'               => array( 'acc' => 'клематис', 'ins' => 'клематисом' ),
+		'пион'                   => array( 'acc' => 'пион', 'ins' => 'пионом' ),
+		'кабачок'                => array( 'acc' => 'кабачок', 'ins' => 'кабачком' ),
+		'баклажан'               => array( 'acc' => 'баклажан', 'ins' => 'баклажаном' ),
+		'перец сладкий'          => array( 'acc' => 'перец сладкий', 'ins' => 'перцем сладким' ),
+		'картофель'              => array( 'acc' => 'картофель', 'ins' => 'картофелем' ),
+		'чеснок'                 => array( 'acc' => 'чеснок', 'ins' => 'чесноком' ),
+		'лук репчатый'           => array( 'acc' => 'лук репчатый', 'ins' => 'луком репчатым' ),
+		'горох'                  => array( 'acc' => 'горох', 'ins' => 'горохом' ),
+		'цветная капуста'        => array( 'acc' => 'цветную капусту', 'ins' => 'цветной капустой' ),
+		'грецкий орех'           => array( 'acc' => 'грецкий орех', 'ins' => 'грецким орехом' ),
+		'сельдерей'              => array( 'acc' => 'сельдерей', 'ins' => 'сельдереем' ),
+		'лук-порей'              => array( 'acc' => 'лук-порей', 'ins' => 'луком-пореем' ),
+	);
+
+	if ( isset( $map[ $title ][ $case ] ) ) {
+		return $map[ $title ][ $case ];
+	}
+
+	$words = explode( ' ', $title );
+	$first = $words[0];
+	$fem   = (bool) preg_match( '/[ая]$/u', $first ) || (bool) preg_match( '/ь$/u', $first );
+
+	if ( 'acc' === $case ) {
+		if ( preg_match( '/а$/u', $first ) ) {
+			$words[0] = mb_substr( $first, 0, -1, 'UTF-8' ) . 'у';
+		} elseif ( preg_match( '/я$/u', $first ) ) {
+			$words[0] = mb_substr( $first, 0, -1, 'UTF-8' ) . 'ю';
+		}
+		if ( $fem && isset( $words[1] ) ) {
+			$words[1] = preg_replace( '/ая$/u', 'ую', $words[1] );
+			$words[1] = preg_replace( '/яя$/u', 'юю', $words[1] );
+		}
+	} else {
+		if ( preg_match( '/а$/u', $first ) ) {
+			$words[0] = mb_substr( $first, 0, -1, 'UTF-8' ) . 'ой';
+		} elseif ( preg_match( '/я$/u', $first ) ) {
+			$words[0] = mb_substr( $first, 0, -1, 'UTF-8' ) . 'ей';
+		} elseif ( preg_match( '/ь$/u', $first ) ) {
+			$words[0] = mb_substr( $first, 0, -1, 'UTF-8' ) . 'ью';
+		} elseif ( preg_match( '/[бвгджзклмнпрстфхцчшщ]$/u', $first ) ) {
+			$words[0] = $first . 'ом';
+		}
+		if ( $fem && isset( $words[1] ) ) {
+			$words[1] = preg_replace( '/ая$/u', 'ой', $words[1] );
+			$words[1] = preg_replace( '/яя$/u', 'ей', $words[1] );
+		}
+	}
+
+	return implode( ' ', $words );
+}
+
+/**
  * Строит фразу (H1) программатик-страницы.
  *
  * @param string     $family Семейство.
@@ -490,11 +616,10 @@ function sad_znaniy_programmatic_phrase( $family, $region, $month, $plant = null
 		return 'Работы дачника: ' . sad_znaniy_option_label( sad_znaniy_region_keys(), $region ) . ', ' . mb_strtolower( $wp_locale->month[ zeroise( $month, 2 ) ], 'UTF-8' );
 	}
 	if ( $plant ) {
-		$pn = mb_strtolower( $plant->post_title, 'UTF-8' );
 		if ( 'plant-region' === $family ) {
-			return 'Когда сажать ' . $pn . ' (' . sad_znaniy_option_label( sad_znaniy_region_keys(), $region ) . ')';
+			return 'Когда сажать ' . sad_znaniy_plant_case( $plant->post_title, 'acc' ) . ' (' . sad_znaniy_option_label( sad_znaniy_region_keys(), $region ) . ')';
 		}
-		return 'Уход за ' . $pn . ': ' . mb_strtolower( $wp_locale->month[ zeroise( $month, 2 ) ], 'UTF-8' );
+		return 'Уход за ' . sad_znaniy_plant_case( $plant->post_title, 'ins' ) . ': ' . mb_strtolower( $wp_locale->month[ zeroise( $month, 2 ) ], 'UTF-8' );
 	}
 	return '';
 }
@@ -815,12 +940,12 @@ add_action( 'wp_head', 'sad_znaniy_programmatic_head', 1 );
  * @return array[] Строки таблицы.
  */
 function sad_znaniy_programmatic_region_table( $ctx ) {
-	$month = isset( $ctx['month'] ) ? (int) $ctx['month'] : 0;
-	if ( ! $month ) {
+	$month    = isset( $ctx['month'] ) ? (int) $ctx['month'] : 0;
+	$plant    = ( isset( $ctx['plant'] ) && $ctx['plant'] ) ? $ctx['plant'] : null;
+	$plant_id = $plant ? (int) $plant->ID : 0;
+	if ( ! $month && ! $plant_id ) {
 		return array();
 	}
-
-	$plant_id = ( isset( $ctx['plant'] ) && $ctx['plant'] ) ? (int) $ctx['plant']->ID : 0;
 	$months   = sad_znaniy_month_slugs();
 	$types    = sad_znaniy_work_types();
 	$rows     = array();
@@ -849,10 +974,22 @@ function sad_znaniy_programmatic_region_table( $ctx ) {
 		$first = $dates ? sad_znaniy_format_event_date( $dates[0] ) : array( 'label' => '' );
 		$last  = $dates ? sad_znaniy_format_event_date( $dates[ count( $dates ) - 1 ] ) : array( 'label' => '' );
 
+		if ( $month ) {
+			$target = sad_znaniy_programmatic_get_page( 'rm:' . $region_key . ':' . $month );
+			$url    = ( $target && 'live' === sad_znaniy_programmatic_status( $target ) )
+				? home_url( '/kalendar/' . sad_znaniy_region_key_to_slug( $region_key ) . '/' . $months[ $month ] . '/' )
+				: sad_znaniy_calendar_url( gmdate( 'Y' ), $month, $region_key );
+		} else {
+			$target = sad_znaniy_programmatic_get_page( 'pr:' . $plant_id . ':' . $region_key );
+			$url    = ( $target && 'live' === sad_znaniy_programmatic_status( $target ) )
+				? home_url( '/kogda-sazhat/' . $plant->post_name . '/' . sad_znaniy_region_key_to_slug( $region_key ) . '/' )
+				: get_permalink( $plant );
+		}
+
 		$rows[] = array(
 			'key'    => $region_key,
 			'region' => $label,
-			'url'    => home_url( '/kalendar/' . sad_znaniy_region_key_to_slug( $region_key ) . '/' . $months[ $month ] . '/' ),
+			'url'    => $url,
 			'count'  => count( $events ),
 			'first'  => $first['label'],
 			'last'   => $last['label'],
@@ -905,6 +1042,36 @@ function sad_znaniy_programmatic_page_links( $ctx ) {
 
 	if ( 'region-month' === $ctx['template'] ) {
 		$links[] = array( 'Календарь: ' . sad_znaniy_option_label( sad_znaniy_region_keys(), $ctx['region'] ) . ', ' . sad_znaniy_month_slugs()[ $ctx['month'] ], sad_znaniy_calendar_url( gmdate( 'Y' ), $ctx['month'], $ctx['region'] ) );
+
+		$month_articles = array(
+			1  => array( 'rassada-tomatov', 'grunt-dlya-rassady' ),
+			2  => array( 'rassada-tomatov', 'rassada-perca' ),
+			3  => array( 'rassada-tomatov', 'podgotovka-teplicy' ),
+			4  => array( 'rassada-tomatov', 'rassada-perca' ),
+			5  => array( 'posadka-v-mae', 'podgotovka-teplicy' ),
+			6  => array( 'mulchirovanie', 'ogurcy-ne-plodonosyat' ),
+			7  => array( 'podkormka-tomatov-iyul', 'klubnika-posle-urozhaya' ),
+			8  => array( 'klubnika-posle-urozhaya', 'gryadki-osenyu' ),
+			9  => array( 'gryadki-osenyu', 'sideraty' ),
+			10 => array( 'gryadki-osenyu', 'ukrytie-roz' ),
+			11 => array( 'pozimnye-posevy', 'luk-chesnok-pod-zimu' ),
+			12 => array( 'ukrytie-roz', 'luk-chesnok-pod-zimu' ),
+		);
+		$slugs = isset( $month_articles[ (int) $ctx['month'] ] ) ? $month_articles[ (int) $ctx['month'] ] : array();
+		foreach ( $slugs as $slug ) {
+			$found = get_posts(
+				array(
+					'post_type'      => 'post',
+					'post_status'    => 'publish',
+					'name'           => $slug,
+					'posts_per_page' => 1,
+					'no_found_rows'  => true,
+				)
+			);
+			if ( $found ) {
+				$links[] = array( get_the_title( $found[0] ), get_permalink( $found[0] ) );
+			}
+		}
 	}
 
 	if ( $ctx['plant'] ) {

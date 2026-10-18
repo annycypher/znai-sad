@@ -62,7 +62,7 @@ $sz_related = sad_znaniy_programmatic_related( $sz_ctx );
 if ( $sz_related ) :
 	?>
 	<div class="pg-related">
-		<h2><?php esc_html_e( 'Другие регионы', 'sad-znaniy' ); ?></h2>
+		<h2><?php echo esc_html( ( 'plant-month' === $sz_ctx['template'] ) ? __( 'Другие месяцы', 'sad-znaniy' ) : __( 'Другие регионы', 'sad-znaniy' ) ); ?></h2>
 		<ul>
 			<?php foreach ( $sz_related as $sz_r ) : ?>
 				<li><a href="<?php echo esc_url( $sz_r['url'] ); ?>"><?php echo esc_html( $sz_r['phrase'] ); ?></a></li>

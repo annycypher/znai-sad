@@ -182,11 +182,15 @@ function sad_znaniy_seo_db_write( $table, $data, $increment = '' ) {
  */
 function sad_znaniy_seo_daily_sync() {
 	if ( ! sad_znaniy_seo_external_on() ) {
-		sad_znaniy_seo_log( 'Суточная синхронизация: внешние сервисы выключены (SZ_EXTERNAL_ON). Пропуск.' );
+		$message = 'пропуск: внешние сервисы выключены (SZ_EXTERNAL_ON)';
+		sad_znaniy_seo_log( 'Суточная синхронизация: ' . $message . '.' );
+		update_option( 'sz_seo_last_sync', current_time( 'mysql' ) . ' — ' . $message, false );
 		return;
 	}
 
-	sad_znaniy_seo_log( 'Суточная синхронизация: внешние сервисы включены. Позиции и статусы обновляются (Этап 8).' );
+	$message = 'внешние сервисы включены; синхронизация Этапа 8';
+	sad_znaniy_seo_log( 'Суточная синхронизация: ' . $message . '.' );
+	update_option( 'sz_seo_last_sync', current_time( 'mysql' ) . ' — ' . $message, false );
 }
 add_action( 'sz_seo_daily_sync', 'sad_znaniy_seo_daily_sync' );
 

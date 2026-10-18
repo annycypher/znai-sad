@@ -105,6 +105,12 @@ function sad_znaniy_cache_can() {
 	if ( "GET" !== strtoupper( isset( $_SERVER["REQUEST_METHOD"] ) ? (string) $_SERVER["REQUEST_METHOD"] : "GET" ) ) {
 		return false;
 	}
+	// Поисковые боты не получают кэш: визит должен попасть в лог ботов
+	// (wp_loaded), а бот — увидеть свежую разметку.
+	$ua = isset( $_SERVER["HTTP_USER_AGENT"] ) ? (string) $_SERVER["HTTP_USER_AGENT"] : "";
+	if ( preg_match( "/(yandexbot|googlebot|yandeximages)/i", $ua ) ) {
+		return false;
+	}
 	if ( is_user_logged_in() && empty( $set["logged_in"] ) ) {
 		return false;
 	}

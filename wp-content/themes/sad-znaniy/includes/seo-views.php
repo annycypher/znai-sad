@@ -244,6 +244,33 @@ function sad_znaniy_seo_hub_eff_page() {
 		);
 	}
 
+	// Добавляем живые страницы без единого визита: иначе витрина
+	// «без визитов 30 дней» показывает только уже отслеженные URL.
+	$tracked = array();
+	foreach ( $items as $item ) {
+		$tracked[ $item['url'] ] = true;
+	}
+
+	$live_pages = get_option( 'sad_znaniy_programmatic_pages', array() );
+	foreach ( (array) $live_pages as $page ) {
+		if ( 'live' !== sad_znaniy_programmatic_status( $page ) ) {
+			continue;
+		}
+		$path = (string) wp_parse_url( (string) $page['url'], PHP_URL_PATH );
+		if ( '' === $path || isset( $tracked[ $path ] ) ) {
+			continue;
+		}
+		$items[] = array(
+			'url'    => $path,
+			'v7'     => 0,
+			'v30'    => 0,
+			'all'    => 0,
+			'clicks' => 0,
+			'trend'  => 0,
+			'phrase' => isset( $phrases[ home_url( $path ) ] ) ? (string) $phrases[ home_url( $path ) ] : '',
+		);
+	}
+
 	$growing = array_values(
 		array_filter(
 			$items,
