@@ -371,13 +371,32 @@ function sad_znaniy_programmatic_matrix() {
 		);
 	}
 
+	$posts = get_posts(
+		array(
+			'post_type'      => 'post',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'no_found_rows'  => true,
+		)
+	);
+
 	foreach ( $pages as $key => $page ) {
-		$prev                      = isset( $existing[ $key ] ) ? $existing[ $key ] : array();
-		$page['intro']             = isset( $prev['intro'] ) ? $prev['intro'] : '';
-		$page['enabled']           = isset( $prev['enabled'] ) ? (int) $prev['enabled'] : 0;
-		$page['seo_title']         = isset( $prev['seo_title'] ) ? $prev['seo_title'] : '';
-		$page['seo_description']   = isset( $prev['seo_description'] ) ? $prev['seo_description'] : '';
-		$pages[ $key ]             = $page;
+		$prev                       = isset( $existing[ $key ] ) ? $existing[ $key ] : array();
+		$page['intro']              = isset( $prev['intro'] ) ? $prev['intro'] : '';
+		$page['enabled']            = isset( $prev['enabled'] ) ? (int) $prev['enabled'] : 0;
+		$page['seo_title']          = isset( $prev['seo_title'] ) ? $prev['seo_title'] : '';
+		$page['seo_description']    = isset( $prev['seo_description'] ) ? $prev['seo_description'] : '';
+		$page['enabled_at']         = isset( $prev['enabled_at'] ) ? (string) $prev['enabled_at'] : '';
+		$page['cannibal_dismissed'] = isset( $prev['cannibal_dismissed'] ) ? (int) $prev['cannibal_dismissed'] : 0;
+		$page['cannibal']           = array();
+
+		// Пересечения ищем только у жизнеспособных страниц (>=5 событий)
+		// и только если владелец ещё не снял метку.
+		if ( (int) $page['count'] >= 5 && empty( $page['cannibal_dismissed'] ) ) {
+			$page['cannibal'] = sad_znaniy_programmatic_cannibal_matches( $page, $posts );
+		}
+
+		$pages[ $key ] = $page;
 	}
 
 	update_option( 'sad_znaniy_programmatic_pages', $pages, false );
@@ -396,6 +415,19 @@ function sad_znaniy_programmatic_matrix_on_save( $post_id ) {
 	sad_znaniy_programmatic_matrix();
 }
 add_action( 'save_post_calendar_event', 'sad_znaniy_programmatic_matrix_on_save' );
+
+/**
+ * Один раз прогоняет матрицу, чтобы заполнить метки каннибализации
+ * у уже существующих страниц (после обновления темы).
+ */
+function sad_znaniy_programmatic_maybe_scan() {
+	if ( '1' === get_option( 'sad_znaniy_pg_cannibal_version' ) ) {
+		return;
+	}
+	sad_znaniy_programmatic_matrix();
+	update_option( 'sad_znaniy_pg_cannibal_version', '1', false );
+}
+add_action( 'init', 'sad_znaniy_programmatic_maybe_scan', 25 );
 
 /**
  * Отдаёт sitemap.xml (статические + «живые» программатик-страницы).
@@ -503,10 +535,214 @@ function sad_znaniy_programmatic_status( $page ) {
 	if ( (int) $page['count'] < 5 ) {
 		return 'empty';
 	}
+	if ( ! empty( $page['cannibal'] ) && empty( $page['cannibal_dismissed'] ) && empty( $page['enabled'] ) ) {
+		return 'needs';
+	}
 	if ( ! empty( $page['enabled'] ) && sad_znaniy_intro_sentences( $page['intro'] ) >= 2 ) {
 		return 'live';
 	}
 	return 'draft';
+}
+
+/**
+ * Сколько живых страниц включено за последние 7 дней (лимит 10/неделю).
+ *
+ * @param array $pages Все страницы матрицы.
+ * @return int
+ */
+function sad_znaniy_programmatic_week_live_count( $pages ) {
+	$since = strtotime( current_time( 'mysql' ) ) - 7 * DAY_IN_SECONDS;
+	$count = 0;
+	foreach ( (array) $pages as $page ) {
+		if ( empty( $page['enabled_at'] ) ) {
+			continue;
+		}
+		if ( strtotime( (string) $page['enabled_at'] ) < $since ) {
+			continue;
+		}
+		if ( 'live' === sad_znaniy_programmatic_status( $page ) ) {
+			$count++;
+		}
+	}
+	return $count;
+}
+
+/**
+ * Варианты названия растения для поиска пересечений в заголовках статей.
+ *
+ * @param int $plant_id ID растения.
+ * @return string[]
+ */
+function sad_znaniy_programmatic_plant_variants( $plant_id ) {
+	$title = mb_strtolower( (string) get_the_title( (int) $plant_id ), 'UTF-8' );
+	$title = str_replace( 'ё', 'е', $title );
+	if ( '' === $title ) {
+		return array();
+	}
+
+	$first    = explode( ' ', $title )[0];
+	$variants = array( $first );
+	$length   = mb_strlen( $first, 'UTF-8' );
+	if ( $length > 4 ) {
+		$variants[] = mb_substr( $first, 0, $length - 1, 'UTF-8' );
+	}
+
+	$synonyms = array(
+		'томат'     => array( 'помидор' ),
+		'огурец'    => array( 'огурц' ),
+		'клубника'  => array( 'клубник' ),
+		'роза'      => array( 'роз' ),
+		'гортензия' => array( 'гортензи' ),
+		'яблоня'    => array( 'яблон' ),
+		'морковь'   => array( 'морков' ),
+		'смородина' => array( 'смородин' ),
+		'малина'    => array( 'малин' ),
+		'крыжовник' => array( 'крыжовник' ),
+		'клематис'  => array( 'клематис' ),
+		'ежевика'   => array( 'ежевик' ),
+		'абрикос'   => array( 'абрикос' ),
+		'пион'      => array( 'пион' ),
+		'чеснок'    => array( 'чеснок' ),
+		'перец'     => array( 'перц' ),
+		'вишня'     => array( 'вишн' ),
+	);
+	if ( isset( $synonyms[ $first ] ) ) {
+		$variants = array_merge( $variants, $synonyms[ $first ] );
+	}
+
+	return array_values( array_unique( $variants ) );
+}
+
+/**
+ * Формы названия месяца для поиска в заголовках статей.
+ *
+ * @param int $month Месяц (1–12).
+ * @return string[]
+ */
+function sad_znaniy_programmatic_month_forms( $month ) {
+	$map = array(
+		1  => array( 'январ' ),
+		2  => array( 'феврал' ),
+		3  => array( 'март' ),
+		4  => array( 'апрел' ),
+		5  => array( 'май', 'мае', 'мая' ),
+		6  => array( 'июн' ),
+		7  => array( 'июл' ),
+		8  => array( 'август' ),
+		9  => array( 'сентябр' ),
+		10 => array( 'октябр' ),
+		11 => array( 'ноябр' ),
+		12 => array( 'декабр' ),
+	);
+	return isset( $map[ (int) $month ] ) ? $map[ (int) $month ] : array();
+}
+
+/**
+ * Признаки региона для поиска в заголовках статей.
+ *
+ * @param string $region Ключ региона.
+ * @return string[]
+ */
+function sad_znaniy_programmatic_region_stems( $region ) {
+	$map = array(
+		'south' => array( 'юг' ),
+		'mid'   => array( 'средн' ),
+		'ural'  => array( 'урал' ),
+		'sib'   => array( 'сибир' ),
+		'dv'    => array( 'дальн', 'восток' ),
+	);
+	return isset( $map[ (string) $region ] ) ? $map[ (string) $region ] : array();
+}
+
+/**
+ * Ищет возможное пересечение программатик-страницы с опубликованными статьями.
+ *
+ * Правила сужены по интенту: сезонные работы, посадка и уход в тот же месяц.
+ * Возвращает максимум две статьи, чтобы метка была читаемой.
+ *
+ * @param array          $page  Запись страницы.
+ * @param WP_Post[]|null $posts Опубликованные статьи (или null — загрузить).
+ * @return array[] [ id, title, url ]
+ */
+function sad_znaniy_programmatic_cannibal_matches( $page, $posts = null ) {
+	if ( (int) $page['count'] < 5 ) {
+		return array();
+	}
+
+	if ( null === $posts ) {
+		$posts = get_posts(
+			array(
+				'post_type'      => 'post',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'no_found_rows'  => true,
+			)
+		);
+	}
+
+	$family = (string) $page['family'];
+	$month  = (int) $page['month'];
+	$region = (string) $page['region'];
+	$plant  = ! empty( $page['plant'] ) ? sad_znaniy_programmatic_plant_variants( (int) $page['plant'] ) : array();
+	$mforms = $month ? sad_znaniy_programmatic_month_forms( $month ) : array();
+	$rstems = $region ? sad_znaniy_programmatic_region_stems( $region ) : array();
+
+	$season_work = array( 'что посадить', 'посадить', 'посевы', 'работы', 'календарь', 'грядк', 'подзим' );
+	$plant_work  = array( 'когда сажать', 'посадк', 'рассад', 'выращиван' );
+	$care_work   = array( 'подкормк', 'полив', 'обрезк', 'уход', 'формиров', 'пасынк', 'укрыт', 'после сбора' );
+	$seasons     = array(
+		'весн'        => array( 3, 4, 5 ),
+		'лет'         => array( 6, 7, 8 ),
+		'осен'        => array( 9, 10, 11 ),
+		'зим'         => array( 12, 1, 2 ),
+		'после сбора' => array( 7, 8 ),
+	);
+
+	$has = static function ( $needles, $haystack ) {
+		foreach ( (array) $needles as $needle ) {
+			if ( '' !== $needle && false !== mb_strpos( $haystack, $needle ) ) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	$matches = array();
+	foreach ( $posts as $post ) {
+		$title = mb_strtolower( (string) $post->post_title, 'UTF-8' );
+		$title = str_replace( 'ё', 'е', $title );
+
+		$ok = false;
+		if ( 'region-month' === $family ) {
+			$ok = $has( $season_work, $title ) && ( $has( $mforms, $title ) || $has( $rstems, $title ) );
+		} elseif ( 'plant-region' === $family ) {
+			$ok = $has( $plant_work, $title ) && $has( $plant, $title );
+		} elseif ( 'plant-month' === $family ) {
+			$season_ok = $has( $mforms, $title );
+			if ( ! $season_ok ) {
+				foreach ( $seasons as $needle => $months ) {
+					if ( in_array( $month, $months, true ) && false !== mb_strpos( $title, $needle ) ) {
+						$season_ok = true;
+						break;
+					}
+				}
+			}
+			$ok = $has( $care_work, $title ) && $has( $plant, $title ) && $season_ok;
+		}
+
+		if ( $ok ) {
+			$matches[] = array(
+				'id'    => (int) $post->ID,
+				'title' => (string) $post->post_title,
+				'url'   => get_permalink( $post ),
+			);
+			if ( count( $matches ) >= 2 ) {
+				break;
+			}
+		}
+	}
+
+	return $matches;
 }
 
 /**

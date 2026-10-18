@@ -893,12 +893,12 @@ function sad_znaniy_seo_keys_counts() {
  *
  * @return array ['pages' => array[], 'grid' => array[]].
  */
-function sad_znaniy_seo_map_rows() {
+function sad_znaniy_seo_map_rows( $min_count = 0 ) {
 	$pages = get_option( 'sad_znaniy_programmatic_pages', array() );
-	$out   = array();
+	$all   = array();
 
 	foreach ( (array) $pages as $page ) {
-		$out[] = array(
+		$all[] = array(
 			'url'     => (string) $page['url'],
 			'family'  => (string) $page['family'],
 			'phrase'  => (string) $page['phrase'],
@@ -910,15 +910,27 @@ function sad_znaniy_seo_map_rows() {
 	}
 
 	usort(
-		$out,
+		$all,
 		static function ( $a, $b ) {
 			return strcmp( $a['url'], $b['url'] );
 		}
 	);
 
 	$exists = array();
-	foreach ( $out as $row ) {
+	foreach ( $all as $row ) {
 		$exists[ $row['url'] ] = $row;
+	}
+
+	$out = $all;
+	if ( (int) $min_count > 0 ) {
+		$out = array_values(
+			array_filter(
+				$out,
+				static function ( $row ) use ( $min_count ) {
+					return (int) $row['count'] >= (int) $min_count;
+				}
+			)
+		);
 	}
 
 	// Полная сетка семейства 1: 5 регионов × 12 месяцев = 60.
@@ -999,12 +1011,14 @@ function sad_znaniy_seo_send_text( $filename, $content, $mime = 'text/markdown' 
  * @return string
  */
 function sad_znaniy_seo_map_markdown() {
-	$map  = sad_znaniy_seo_map_rows();
-	$fam  = sad_znaniy_seo_family_labels();
-	$stat = array(
+	$map_all = sad_znaniy_seo_map_rows();
+	$map     = sad_znaniy_seo_map_rows( 5 );
+	$fam     = sad_znaniy_seo_family_labels();
+	$stat    = array(
 		'live'  => 'живая',
 		'draft' => 'черновик',
 		'empty' => 'пустая',
+		'needs' => 'нужно решение',
 		'none'  => 'нет данных',
 	);
 
@@ -1012,10 +1026,18 @@ function sad_znaniy_seo_map_markdown() {
 		'live'  => 0,
 		'draft' => 0,
 		'empty' => 0,
+		'needs' => 0,
 	);
 	foreach ( $map['pages'] as $row ) {
 		if ( isset( $counts[ $row['status'] ] ) ) {
 			$counts[ $row['status'] ]++;
+		}
+	}
+
+	$empty_all = 0;
+	foreach ( $map_all['pages'] as $row ) {
+		if ( (int) $row['count'] < 5 ) {
+			$empty_all++;
 		}
 	}
 
@@ -1025,11 +1047,12 @@ function sad_znaniy_seo_map_markdown() {
 	$lines[] = 'Сгенерировано: ' . current_time( 'Y-m-d H:i' ) . ' (экран «📊 SEO-Хаб → Ключи», экспорт).';
 	$lines[] = '';
 	$lines[] = sprintf(
-		'Всего страниц: %d (живых: %d, черновиков: %d, пустых: %d).',
+		'Показаны страницы с ≥5 событиями: %d (живых: %d, черновиков: %d, нужно решение: %d). Пустых (<5) не показано: %d.',
 		count( $map['pages'] ),
 		$counts['live'],
 		$counts['draft'],
-		$counts['empty']
+		$counts['needs'],
+		$empty_all
 	);
 	$lines[] = '';
 	$lines[] = '## Страницы (из данных календаря)';
@@ -1061,10 +1084,15 @@ function sad_znaniy_seo_map_markdown() {
 			. ' | ' . $stat[ $cell['status'] ] . ' |';
 	}
 
-	$keys = sad_znaniy_seo_keys_query( array( 'order' => 'DESC' ) );
+	$keys = sad_znaniy_seo_keys_query(
+		array(
+			'order' => 'DESC',
+			'limit' => 100,
+		)
+	);
 	if ( $keys ) {
 		$lines[] = '';
-		$lines[] = '## Фразы (Вордстат)';
+		$lines[] = '## ТОП-100 фраз (Вордстат)';
 		$lines[] = '';
 		$lines[] = '| Фраза | Частота | URL | Связанная страница | Статус |';
 		$lines[] = '|---|---|---|---|---|';
