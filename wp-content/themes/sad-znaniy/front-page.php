@@ -96,7 +96,7 @@ $section_links = array(
 				<span class="circle-go" aria-hidden="true">→</span>
 			</a>
 
-			<a href="#" class="tool-card">
+			<a href="<?php echo esc_url( home_url( '/konstruktor-buketa/' ) ); ?>" class="tool-card">
 				<span class="tile-ico" aria-hidden="true">
 					<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 3v2M12 15v2M5 10h2M17 10h2M7 5l1.4 1.4M15.6 13.6 17 15M7 15l1.4-1.4M15.6 6.4 17 5"/><path d="M8 21h8M10 18h4"/></svg>
 				</span>

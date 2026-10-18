@@ -162,3 +162,35 @@ function sad_znaniy_enqueue_planner_assets() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_planner_assets' );
+/**
+ * Подключает стили и скрипт конструктора букета только на его странице.
+ */
+function sad_znaniy_enqueue_bouquet_assets() {
+    if ( ! function_exists( 'sad_znaniy_is_bouquet_page' ) || ! sad_znaniy_is_bouquet_page() ) {
+        return;
+    }
+
+    $uri = get_template_directory_uri();
+
+    wp_enqueue_style(
+        'sad-znaniy-bouquet',
+        $uri . '/assets/css/bouquet.css',
+        array( 'sad-znaniy-main' ),
+        sad_znaniy_asset_ver( 'assets/css/bouquet.css' )
+    );
+
+    wp_enqueue_script(
+        'sad-znaniy-bouquet',
+        $uri . '/assets/js/bouquet.js',
+        array(),
+        sad_znaniy_asset_ver( 'assets/js/bouquet.js' ),
+        true
+    );
+
+    wp_localize_script(
+        'sad-znaniy-bouquet',
+        'sadZnaniyBouquet',
+        sad_znaniy_bouquet_contract()
+    );
+}
+add_action( 'wp_enqueue_scripts', 'sad_znaniy_enqueue_bouquet_assets' );

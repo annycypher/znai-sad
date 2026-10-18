@@ -237,7 +237,7 @@ function sad_znaniy_bouquet_rule_matches( $rule, $counts, $total, $occasion ) {
                 $sum += (int) $counts[ $slug ];
             }
         }
-        return $total > 0 && ( $sum / $total ) * 100 > (int) $rule['percent'];
+        return $total >= 3 && ( $sum / $total ) * 100 > (int) $rule['percent'];
     }
 
     if ( 0 === strpos( $scope, 'occasion:' ) ) {
@@ -995,9 +995,36 @@ function sad_znaniy_bouquet_rest_recommend( $req ) {
     $to       = (string) $req->get_param( 'to' );
     $items    = $req->get_param( 'items' );
     if ( is_string( $items ) ) {
-        $items = array_filter( array_map( 'trim', explode( ',', $items ) ) );
+        $parsed = array();
+        foreach ( explode( ',', $items ) as $part ) {
+            $part = trim( (string) $part );
+            if ( '' === $part ) {
+                continue;
+            }
+            if ( false !== strpos( $part, ':' ) ) {
+                $pair     = explode( ':', $part, 2 );
+                $parsed[] = array( 'slug' => (string) $pair[0], 'count' => (int) $pair[1] );
+            } else {
+                $parsed[] = array( 'slug' => $part, 'count' => 1 );
+            }
+        }
+        $items = $parsed;
     }
-    return rest_ensure_response( sad_znaniy_bouquet_recommend( $occasion, $to, (array) $items ) );
+
+    $items = (array) $items;
+    $data  = sad_znaniy_bouquet_recommend( $occasion, $to, $items );
+
+    $data['reroll'] = (int) $req->get_param( 'reroll' );
+    $data['title']  = sad_znaniy_bouquet_generate_title(
+        array(
+            'occasion' => $data['occasion'],
+            'to'       => $data['to'],
+            'items'    => $items,
+            'reroll'   => $data['reroll'],
+        )
+    );
+
+    return rest_ensure_response( $data );
 }
 
 /**
