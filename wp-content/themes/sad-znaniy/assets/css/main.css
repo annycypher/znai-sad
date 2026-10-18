@@ -30,9 +30,24 @@ ul{ list-style:none; }
     radial-gradient(560px 420px at 4% 26%,  rgba(150,160,168,.30), transparent 70%),
     radial-gradient(720px 520px at 55% 96%, rgba(122,168,138,.20), transparent 70%);
 }
-.leaf{ position:fixed; z-index:0; pointer-events:none; color:var(--accent); opacity:.09; filter:blur(2px); }
-.leaf-1{ left:-70px; bottom:-40px; width:260px; transform:rotate(-14deg); }
-.leaf-2{ right:-60px; top:6%; width:210px; transform:rotate(18deg); }
+/* ===== Подложка сайта: ладонь от краёв окна, под контентом ===== */
+.deco-palm{
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 100vw;
+    height: 100%;
+    transform: translateX(-50%);
+    z-index: 0;
+    pointer-events: none;
+    background: url('../img/decor/deco-palm-1120.webp') no-repeat center top;
+    background-size: 100% auto;
+    opacity: .5;
+    border-radius: var(--r-lg);
+}
+/* Контент панели — над подложкой; без z-index, чтобы не ломать стек модалок */
+.frame > main,
+.frame > .footer{ position: relative; }
 
 .frame{
     --pad-inner:44px;
@@ -781,4 +796,12 @@ body.bvi{ filter:grayscale(1) contrast(1.15); font-size:20px; }
     .plant-language__media{ margin-bottom: 12px; }
     .plant-language__head{ display: block; }
     .plant-language__all{ display: inline-block; margin-top: 8px; }
+}
+
+/* Подложка: на узких экранах крупнее и плотнее, в печати не нужна */
+@media (max-width: 860px){
+    .deco-palm{ background-size: 130% auto; opacity: .6; }
+}
+@media print{
+    .deco-palm{ display: none !important; }
 }

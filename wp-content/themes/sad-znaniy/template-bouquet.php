@@ -22,7 +22,6 @@ foreach ( $sz_flowers as $sz_slug => $sz_flower ) {
 $sz_month    = (int) current_time( 'n' );
 $sz_readonly = ! empty( $sz_contract['readonly'] );
 ?>
-<div class="bk-bg" aria-hidden="true"></div>
 <section class="section bk-hero">
     <div class="bk-hero__inner">
         <p class="bk-kicker">Язык цветов</p>

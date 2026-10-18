@@ -31,10 +31,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</symbol>
 </svg>
 
-<svg class="leaf leaf-1" aria-hidden="true"><use href="#logo-sad"/></svg>
-<svg class="leaf leaf-2" aria-hidden="true"><use href="#logo-sad"/></svg>
-
 <div class="frame">
+
+	<div class="deco-palm" aria-hidden="true"></div>
 
 	<!-- ================= ШАПКА ================= -->
 	<header class="topbar">

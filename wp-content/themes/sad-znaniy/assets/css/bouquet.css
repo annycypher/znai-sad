@@ -48,24 +48,6 @@
     background: var(--emerald);
 }
 
-/* Подложка страницы: декоративная ладонь за контентом (исходник — _design/deco-palm-1120.webp) */
-.bk-bg{
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background: url('../img/decor/deco-palm-1120.webp') no-repeat center top;
-    background-size: 1120px auto;
-    opacity: .5;
-    border-radius: var(--r-lg);
-    pointer-events: none;
-}
-/* Контент страницы — выше подложки */
-.bk-hero,
-.bk-layout{
-    position: relative;
-    z-index: 1;
-}
-
 .bk-layout{
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -747,7 +729,6 @@
 
 @media (max-width: 1024px){
     .bk-layout{ grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; }
-    .bk-bg{ background-size: 900px auto; }
 }
 
 @media (max-width: 860px){
@@ -795,7 +776,6 @@
     .bk-side.is-open .bk-mobile-toggle::after{ content: '▴'; }
     .bk-seo{ padding: 16px; }
     .bk-seo__meanings{ columns: 1; }
-    .bk-bg{ background-size: 140% auto; opacity: .6; }
     .bk-grid{ grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
     .bk-flower__ring{ width: 72px; height: 72px; }
     .bk-flower__letter{ font-size: 26px; }
@@ -914,7 +894,7 @@ body.bk-gate-open{ overflow: hidden; }
     html, body{ background: #fff !important; }
     body{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .topbar, .footer, .ambient, .leaf, .skip-link, .site-rail,
-    .bk-bg, .bk-hero, .bk-layout, .bk-seo, .bk-card, .bk-gate{ display: none !important; }
+    .bk-hero, .bk-layout, .bk-seo, .bk-card, .bk-gate{ display: none !important; }
     .frame, .inner{
         padding: 0 !important;
         margin: 0 !important;
