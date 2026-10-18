@@ -421,7 +421,7 @@
 		var x = c.getContext( '2d' );
 		x.fillStyle = '#F4F5F7';
 		x.fillRect( 0, 0, c.width, c.height );
-		x.fillStyle = '#2E6B4F';
+		x.fillStyle = '#68B96E';
 		x.font = 'bold 22px system-ui';
 		x.fillText( 'Сад знаний', 50, 60 );
 		x.fillStyle = '#20241F';
@@ -440,7 +440,7 @@
 			roundRect( x, 50, y, 800, 44, 12 );
 			x.fill();
 			x.stroke();
-			var color = getComputedStyle( document.documentElement ).getPropertyValue( '--c-' + type ).trim() || '#3FA46F';
+			var color = getComputedStyle( document.documentElement ).getPropertyValue( '--c-' + type ).trim() || '#68B96E';
 			x.fillStyle = color;
 			x.beginPath();
 			x.arc( 78, y + 22, 8, 0, 7 );
@@ -448,7 +448,7 @@
 			x.fillStyle = '#20241F';
 			x.font = '18px system-ui';
 			x.fillText( ( card.dataset.d1 + '–' + card.dataset.d2 + '. ' + title ).slice( 0, 58 ), 100, y + 29 );
-			x.fillStyle = done ? '#3FA46F' : '#c9ced4';
+			x.fillStyle = done ? '#68B96E' : '#c9ced4';
 			roundRect( x, 790, y + 12, 20, 20, 6 );
 			x.fill();
 			if ( done ) {

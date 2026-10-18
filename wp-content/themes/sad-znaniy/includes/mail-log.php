@@ -78,7 +78,7 @@ function sad_znaniy_mail_catch( $return, $atts ) {
 	$html = '<!doctype html><html lang="ru"><head><meta charset="utf-8">'
 		. '<title>' . esc_html( $subject ) . '</title>'
 		. '<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;color:#1f2937}'
-		. '.head{background:#f3f4f6;border-left:4px solid #0E9F6E;padding:12px 16px;margin-bottom:18px}'
+		. '.head{background:#f3f4f6;border-left:4px solid #68B96E;padding:12px 16px;margin-bottom:18px}'
 		. 'pre{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px}</style></head><body>'
 		. '<div class="head"><strong>Письмо с локалки (не отправлено, перехвачено)</strong><br>'
 		. 'Кому: ' . esc_html( $to ) . '<br>Тема: ' . esc_html( $subject ) . '<br>Время: ' . esc_html( current_time( 'd.m.Y H:i:s' ) )

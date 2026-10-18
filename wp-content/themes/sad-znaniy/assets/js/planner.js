@@ -88,8 +88,8 @@
 			Object.keys( TYPES ).forEach( function ( k ) {
 				colorCache[ k ] = cs.getPropertyValue( '--pln-' + k ).trim() || '#999999';
 			} );
-			colorCache.handle = cs.getPropertyValue( '--pln-handle' ).trim() || 'rgba(46,107,79,.35)';
-			colorCache.handleInk = cs.getPropertyValue( '--pln-handle-ink' ).trim() || '#2E6B4F';
+			colorCache.handle = cs.getPropertyValue( '--pln-handle' ).trim() || 'rgba(104,185,110,.35)';
+			colorCache.handleInk = cs.getPropertyValue( '--pln-handle-ink' ).trim() || '#68B96E';
 		}
 		return colorCache[ t ] || '#999999';
 	}
@@ -261,7 +261,7 @@
 	}
 	function drawGrid( g, ox, oy, s ) {
 		if ( s >= 7 ) {
-			g.strokeStyle = 'rgba(46,107,79,.06)';
+			g.strokeStyle = 'rgba(104,185,110,.06)';
 			g.lineWidth = 1;
 			g.beginPath();
 			var m;
@@ -270,7 +270,7 @@
 			g.stroke();
 		}
 		if ( s >= 3 ) {
-			g.strokeStyle = 'rgba(46,107,79,.16)';
+			g.strokeStyle = 'rgba(104,185,110,.16)';
 			g.lineWidth = 1.2;
 			g.beginPath();
 			var m1;
@@ -279,7 +279,7 @@
 			g.stroke();
 		}
 		if ( s >= 2.2 ) {
-			g.strokeStyle = 'rgba(46,107,79,.28)';
+			g.strokeStyle = 'rgba(104,185,110,.28)';
 			g.lineWidth = 1.4;
 			g.beginPath();
 			var m5;
@@ -287,14 +287,14 @@
 			for ( m5 = 5; m5 < plot.h; m5 += 5 ) { g.moveTo( ox, oy + m5 * s ); g.lineTo( ox + plot.w * s, oy + m5 * s ); }
 			g.stroke();
 		}
-		g.strokeStyle = 'rgba(46,107,79,.5)';
+		g.strokeStyle = 'rgba(104,185,110,.5)';
 		g.lineWidth = 2;
 		g.strokeRect( ox, oy, plot.w * s, plot.h * s );
 	}
 	/* подпись «Ш × Д м» под элементом с короткой выносной линией */
 	function drawElemLabel( g, x, y, w, h, text ) {
 		var mx = x + w / 2;
-		g.strokeStyle = 'rgba(46,107,79,.55)';
+		g.strokeStyle = 'rgba(104,185,110,.55)';
 		g.lineWidth = 1;
 		g.beginPath();
 		g.moveTo( mx, y + h + 3 );
@@ -310,7 +310,7 @@
 	}
 	/* выносные линии выделенного элемента — снизу и справа (как раньше) */
 	function drawSelDims( g, x, y, w, h, it ) {
-		g.strokeStyle = 'rgba(46,107,79,.65)';
+		g.strokeStyle = 'rgba(104,185,110,.65)';
 		g.fillStyle = handleInk();
 		g.lineWidth = 1;
 		g.font = '10.5px system-ui';

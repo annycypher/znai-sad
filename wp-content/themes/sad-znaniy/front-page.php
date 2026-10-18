@@ -338,7 +338,7 @@ $section_links = array(
 					<rect x=".5" y=".5" width="319" height="199" rx="14" fill="none" stroke="#fff" stroke-width="2"/>
 					<rect x="205" y="28" width="88" height="58" rx="6" fill="#2E3A31"/>
 					<polygon points="200,28 249,6 298,28" fill="#222B25"/>
-					<rect x="235" y="50" width="20" height="26" rx="2" fill="#E7F0E9"/>
+					<rect x="235" y="50" width="20" height="26" rx="2" fill="#EDF7EE"/>
 					<rect x="25" y="32" width="92" height="16" rx="5" fill="#9FB8A5"/>
 					<rect x="25" y="58" width="92" height="16" rx="5" fill="#9FB8A5"/>
 					<rect x="25" y="84" width="92" height="16" rx="5" fill="#9FB8A5"/>

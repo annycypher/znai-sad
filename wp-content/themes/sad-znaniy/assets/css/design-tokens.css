@@ -8,14 +8,17 @@
     --bg:            #E3E6EA;
     --ink:           #20241F;
     --muted:         #5C645D;
-    --accent:        #2E6B4F;
-    --accent-soft:   #E7F0E9;
+    --accent:        #68B96E;
+    --accent-ink:    #68B96E;   /* текст/ссылки/иконки — единый зелёный */
+    --accent-on:     #FFFFFF;   /* текст на зелёной заливке — как было */
+    --accent-dark:   #5CAF63;   /* hover и градиенты */
+    --accent-soft:   #EDF7EE;
 
     /* Изумрудный — фон плиток-иконок «Инструменты» и «Полезные калькуляторы» */
-    --emerald:        #0E9F6E;
-    --emerald-dark:   #0B8459;
+    --emerald:        #68B96E;
+    --emerald-dark:   #5CAF63;
     --on-emerald:     #FFFFFF;
-    --emerald-shadow: 0 8px 18px rgba(14,159,110,.34);
+    --emerald-shadow: 0 8px 18px rgba(104,185,110,.34);
 
     --glass:         linear-gradient(150deg, rgba(255,255,255,.78), rgba(248,250,250,.52));
     --glass-strong:  rgba(255,255,255,.88);
@@ -67,6 +70,6 @@
     --pln-warn-green:  #27AE60;
 
     /* зоны захвата на canvas */
-    --pln-handle:     rgba(46,107,79,.35);
-    --pln-handle-ink: #2E6B4F;
+    --pln-handle:     rgba(104,185,110,.35);
+    --pln-handle-ink: #68B96E;
 }

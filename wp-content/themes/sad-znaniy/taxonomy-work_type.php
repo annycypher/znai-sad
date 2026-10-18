@@ -29,7 +29,7 @@ if ( '' === $sz_slug || ! taxonomy_exists( 'work_type' ) ) {
 $sz_types   = sad_znaniy_work_types();
 $sz_name    = isset( $sz_types[ $sz_slug ] ) ? $sz_types[ $sz_slug ] : $sz_term->name;
 $sz_colors  = sad_znaniy_work_type_colors();
-$sz_color   = isset( $sz_colors[ $sz_slug ] ) ? $sz_colors[ $sz_slug ] : '#3FA46F';
+$sz_color   = isset( $sz_colors[ $sz_slug ] ) ? $sz_colors[ $sz_slug ] : '#68B96E';
 $sz_h1      = sad_znaniy_work_type_h1( $sz_slug );
 $sz_tool    = sad_znaniy_work_type_tool( $sz_slug );
 $sz_faq     = sad_znaniy_work_type_faq( $sz_slug );
@@ -188,7 +188,7 @@ ksort( $sz_months );
 				}
 				?>
 				<a href="<?php echo esc_url( $sz_link ); ?>" class="sx-tile">
-					<span class="tile-ico" aria-hidden="true" style="background:<?php echo esc_attr( isset( $sz_colors[ $sz_key ] ) ? $sz_colors[ $sz_key ] : '#3FA46F' ); ?>;"></span>
+					<span class="tile-ico" aria-hidden="true" style="background:<?php echo esc_attr( isset( $sz_colors[ $sz_key ] ) ? $sz_colors[ $sz_key ] : '#68B96E' ); ?>;"></span>
 					<strong><?php echo esc_html( $sz_label ); ?></strong>
 				</a>
 			<?php endforeach; ?>

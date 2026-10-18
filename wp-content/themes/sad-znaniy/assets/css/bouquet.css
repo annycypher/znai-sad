@@ -20,7 +20,7 @@
     padding: 5px 12px;
     border-radius: var(--r-pill);
     background: var(--accent-soft);
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: .12em;
@@ -55,17 +55,23 @@
     background: var(--emerald);
 }
 
-.bk-decor{
+/* Подложка страницы: декоративная ладонь за контентом (исходник — _design/deco-palm-1120.webp) */
+.bk-bg{
     position: absolute;
-    top: -10px;
-    width: 180px;
-    opacity: .55;
-    pointer-events: none;
+    inset: 0;
     z-index: 0;
+    background: url('../img/decor/deco-palm-1120.webp') no-repeat center top;
+    background-size: 1120px auto;
+    opacity: .5;
+    border-radius: var(--r-lg);
+    pointer-events: none;
 }
-.bk-decor--left{ left: -70px; }
-.bk-decor--right{ right: -70px; transform: scaleX(-1); }
-.bk-decor img{ display: block; width: 100%; height: auto; }
+/* Контент страницы — выше подложки */
+.bk-hero,
+.bk-layout{
+    position: relative;
+    z-index: 1;
+}
 
 .bk-layout{
     display: grid;
@@ -99,7 +105,7 @@
     height: 26px;
     border-radius: 50%;
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-on);
     font-size: 13px;
     font-weight: 700;
     flex: 0 0 auto;
@@ -126,9 +132,9 @@
 .bk-chip:hover{ transform: translateY(-1px); box-shadow: var(--neu-sm); }
 .bk-chip[aria-pressed='true']{
     background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(46,107,79,.25);
+    border-color: var(--accent-ink);
+    color: var(--accent-on);
+    box-shadow: 0 8px 18px rgba(104,185,110,.25);
 }
 
 .bk-filter{
@@ -141,7 +147,7 @@
     min-height: 36px;
     padding: 0 12px;
     border-radius: var(--r-pill);
-    border: 1px solid rgba(46,107,79,.14);
+    border: 1px solid rgba(104,185,110,.14);
     background: rgba(255,255,255,.55);
     color: var(--muted);
     font: inherit;
@@ -150,8 +156,8 @@
 }
 .bk-filter__chip.is-active{
     background: var(--accent-soft);
-    border-color: rgba(46,107,79,.28);
-    color: var(--accent);
+    border-color: rgba(104,185,110,.28);
+    color: var(--accent-ink);
     font-weight: 600;
 }
 .bk-subhead{
@@ -166,7 +172,7 @@
     font-size: 13px;
     letter-spacing: .08em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--accent-ink);
 }
 .bk-subhead__note{
     color: var(--muted);
@@ -214,7 +220,7 @@
 .bk-flower:hover .bk-flower__ring,
 .bk-flower:focus-visible .bk-flower__ring{
     transform: translateY(-2px) scale(1.04);
-    box-shadow: 0 0 0 3px #fff, 0 14px 28px rgba(46,107,79,.22);
+    box-shadow: 0 0 0 3px #fff, 0 14px 28px rgba(104,185,110,.22);
 }
 .bk-flower__media{
     display: flex;
@@ -240,7 +246,7 @@
     height: 100%;
     border-radius: 50%;
     background: linear-gradient(150deg, #fff, var(--accent-soft));
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 30px;
     font-weight: 700;
     letter-spacing: .02em;
@@ -278,7 +284,7 @@
     color: var(--muted);
     box-shadow: 0 2px 6px rgba(100,112,124,.18);
 }
-.bk-flower__season.is-in{ color: var(--accent); }
+.bk-flower__season.is-in{ color: var(--accent-ink); }
 .bk-flower__season.is-out{ color: #A45A2A; }
 .bk-flower__name{
     max-width: 100%;
@@ -301,7 +307,7 @@
     -webkit-box-orient: vertical;
 }
 .bk-flower.is-added .bk-flower__ring{
-    box-shadow: 0 0 0 3px var(--accent), 0 10px 24px rgba(46,107,79,.28);
+    box-shadow: 0 0 0 3px var(--accent), 0 10px 24px rgba(104,185,110,.28);
 }
 .bk-flower.is-pulse .bk-flower__ring{ animation: bk-pulse .42s ease; }
 .bk-recommended{
@@ -309,7 +315,7 @@
     padding: 12px;
     border-radius: var(--r-md);
     background: linear-gradient(150deg, rgba(231,240,233,.9), rgba(255,255,255,.55));
-    border: 1px solid rgba(46,107,79,.12);
+    border: 1px solid rgba(104,185,110,.12);
 }
 
 /* ===== Мини-карточка ===== */
@@ -338,7 +344,7 @@
     line-height: 1;
     cursor: pointer;
 }
-.bk-card__close:hover{ background: var(--accent-soft); color: var(--accent); }
+.bk-card__close:hover{ background: var(--accent-soft); color: var(--accent-ink); }
 .bk-card__head{
     display: flex;
     gap: 12px;
@@ -358,7 +364,7 @@
 .bk-card__media .bk-flower__letter{ font-size: 26px; }
 .bk-card__meaning{
     margin: 0 0 2px;
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: .08em;
@@ -381,7 +387,7 @@
     padding: 2px 8px;
     border-radius: var(--r-pill);
     background: var(--accent-soft);
-    color: var(--accent);
+    color: var(--accent-ink);
 }
 .bk-card__desc{
     margin: 12px 0;
@@ -395,7 +401,7 @@
     gap: 6px;
     margin-bottom: 12px;
     padding-top: 10px;
-    border-top: 1px dashed rgba(46,107,79,.2);
+    border-top: 1px dashed rgba(104,185,110,.2);
 }
 .bk-card__variants::before{
     content: 'Оттенки значения';
@@ -409,9 +415,9 @@
     min-height: 36px;
     padding: 0 10px;
     border-radius: var(--r-pill);
-    border: 1px solid rgba(46,107,79,.18);
+    border: 1px solid rgba(104,185,110,.18);
     background: #fff;
-    color: var(--accent);
+    color: var(--accent-ink);
     font: inherit;
     font-size: 12px;
     cursor: pointer;
@@ -442,7 +448,7 @@
     padding: 3px 8px;
     border-radius: var(--r-pill);
     background: var(--accent-soft);
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 10px;
     font-weight: 700;
     letter-spacing: .08em;
@@ -488,7 +494,7 @@
     width: 100%;
     height: 100%;
     background: linear-gradient(150deg, #fff, var(--accent-soft));
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 20px;
     font-weight: 700;
 }
@@ -504,10 +510,10 @@
     padding: 0 5px;
     border-radius: var(--r-pill);
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-on);
     font-size: 10px;
     font-weight: 700;
-    box-shadow: 0 4px 10px rgba(46,107,79,.3);
+    box-shadow: 0 4px 10px rgba(104,185,110,.3);
 }
 .bk-stem.is-pulse .bk-stem__media{ animation: bk-pulse .42s ease; }
 .bk-stem.is-solo{
@@ -540,7 +546,7 @@
     padding: 8px 10px;
     border-radius: var(--r-sm);
     background: var(--accent-soft);
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 12px;
     line-height: 1.4;
 }
@@ -578,8 +584,8 @@
     padding: 10px 12px;
     border-radius: var(--r-sm);
     background: linear-gradient(150deg, var(--accent-soft), #fff);
-    border: 1px solid rgba(46,107,79,.16);
-    color: var(--accent);
+    border: 1px solid rgba(104,185,110,.16);
+    color: var(--accent-ink);
     font-size: 12.5px;
     line-height: 1.5;
 }
@@ -613,7 +619,7 @@
     border-radius: var(--r-md);
     border: 1px solid var(--glass-border);
     background: var(--glass-strong);
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 20px;
     cursor: pointer;
 }
@@ -634,7 +640,7 @@
 .bk-status{
     min-height: 18px;
     margin-top: 8px;
-    color: var(--accent);
+    color: var(--accent-ink);
     font-size: 12px;
 }
 .bk-status.is-error{ color: #B3261E; }
@@ -647,7 +653,7 @@
     border: 0;
     border-radius: var(--r-pill);
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-on);
     font: inherit;
     font-size: 13px;
     font-weight: 700;
@@ -667,7 +673,7 @@
 
 @media (max-width: 1024px){
     .bk-layout{ grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; }
-    .bk-decor{ width: 140px; }
+    .bk-bg{ background-size: 900px auto; }
 }
 
 @media (max-width: 860px){
@@ -691,7 +697,7 @@
         box-shadow: 0 -18px 50px rgba(32,36,31,.24);
     }
     .bk-mobile-toggle{ display: block; }
-    .bk-decor{ display: none; }
+    .bk-bg{ background-size: 140% auto; opacity: .6; }
     .bk-grid{ grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
     .bk-flower__ring{ width: 72px; height: 72px; }
     .bk-flower__letter{ font-size: 26px; }
@@ -796,14 +802,14 @@
     border: 0;
     border-radius: var(--r-pill);
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-on);
     font: inherit;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
 }
 .bk-gate__reg{ margin: 12px 0 0; font-size: 12.5px; }
-.bk-gate__reg a{ color: var(--accent); font-weight: 600; }
+.bk-gate__reg a{ color: var(--accent-ink); font-weight: 600; }
 .bk-gate__note{ color: var(--muted); }
 body.bk-gate-open{ overflow: hidden; }
 /* ===== Печать: 2 страницы A4 ===== */
@@ -813,7 +819,7 @@ body.bk-gate-open{ overflow: hidden; }
     html, body{ background: #fff !important; }
     body{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .topbar, .footer, .ambient, .leaf, .skip-link, .site-rail,
-    .bk-hero, .bk-layout, .bk-card, .bk-gate{ display: none !important; }
+    .bk-bg, .bk-hero, .bk-layout, .bk-card, .bk-gate{ display: none !important; }
     .frame, .inner{
         padding: 0 !important;
         margin: 0 !important;
@@ -832,6 +838,18 @@ body.bk-gate-open{ overflow: hidden; }
         page-break-after: always;
     }
     .bk-print__page:last-child{ break-after: auto; page-break-after: auto; }
+    /* Подложка PDF: та же ладонь, что на странице, — деликатная, под текстом */
+    .bk-print__page::before{
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url('../img/decor/deco-palm-1120.webp') no-repeat center top;
+        background-size: 100% auto;
+        opacity: .25;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .bk-print__page > *:not(.bk-print__decor){ position: relative; z-index: 1; }
     .bk-print__head{
         display: flex;
         justify-content: space-between;
@@ -842,7 +860,7 @@ body.bk-gate-open{ overflow: hidden; }
         margin-bottom: 5mm;
     }
     .bk-print__brand{ display: flex; align-items: center; gap: 3mm; }
-    .bk-print__logo{ width: 11mm; height: 12.8mm; color: #2E6B4F; }
+    .bk-print__logo{ width: 11mm; height: 12.8mm; color: var(--accent-ink); }
     .bk-print__brand-txt{ font-size: 11pt; font-weight: 700; }
     .bk-print__user{ text-align: right; font-size: 9pt; color: #444; line-height: 1.35; }
     .bk-print__title{ font-size: 22pt; line-height: 1.15; margin: 0 0 2mm; }
@@ -868,8 +886,8 @@ body.bk-gate-open{ overflow: hidden; }
         width: 5mm;
         height: 5mm;
         border-radius: 50%;
-        background: #E7F0E9;
-        color: #2E6B4F;
+        background: var(--accent-soft);
+        color: var(--accent-ink);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -920,12 +938,12 @@ body.bk-gate-open{ overflow: hidden; }
         border-bottom: 1px dotted #ddd;
     }
     .bk-print__flower b{ font-size: 10pt; }
-    .bk-print__flower em{ color: #2E6B4F; font-style: normal; font-size: 8.5pt; }
+    .bk-print__flower em{ color: var(--accent-ink); font-style: normal; font-size: 8.5pt; }
     .bk-print__flower p{ margin: 1mm 0 0; font-size: 9pt; color: #333; line-height: 1.35; }
-    .bk-print__flower a{ color: #2E6B4F; font-size: 8.5pt; text-decoration: none; }
+    .bk-print__flower a{ color: var(--accent-ink); font-size: 8.5pt; text-decoration: none; }
     .bk-print__links{ margin: 0 0 5mm; padding-left: 5mm; font-size: 9.5pt; }
     .bk-print__links li{ margin-bottom: 1.5mm; }
-    .bk-print__links a{ color: #2E6B4F; }
+    .bk-print__links a{ color: var(--accent-ink); }
     .bk-print__tools{
         margin-top: 6mm;
         padding: 3mm 4mm;
@@ -934,6 +952,6 @@ body.bk-gate-open{ overflow: hidden; }
         font-size: 9pt;
         color: #444;
     }
-    .bk-print__tools strong{ display: block; margin-bottom: 1mm; color: #2E6B4F; }
+    .bk-print__tools strong{ display: block; margin-bottom: 1mm; color: var(--accent-ink); }
     .bk-print__footer{ margin-top: 6mm; color: #777; font-size: 8.5pt; }
 }

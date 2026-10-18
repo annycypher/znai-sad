@@ -41,6 +41,21 @@ function sad_znaniy_bouquet_template( $template ) {
 add_filter( 'template_include', 'sad_znaniy_bouquet_template' );
 
 /**
+ * Класс body для страницы конструктора — точка привязки страничных стилей
+ * (подложка, декор), чтобы не задевать остальной сайт.
+ *
+ * @param array $classes Классы body.
+ * @return array
+ */
+function sad_znaniy_bouquet_body_class( $classes ) {
+    if ( sad_znaniy_is_bouquet_page() ) {
+        $classes[] = 'sz-bouquet';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'sad_znaniy_bouquet_body_class' );
+
+/**
  * Создаёт служебную страницу «Конструктор букета» один раз.
  */
 function sad_znaniy_bouquet_maybe_create_page() {

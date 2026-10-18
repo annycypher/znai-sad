@@ -22,13 +22,8 @@ foreach ( $sz_flowers as $sz_slug => $sz_flower ) {
 $sz_month    = (int) current_time( 'n' );
 $sz_readonly = ! empty( $sz_contract['readonly'] );
 ?>
+<div class="bk-bg" aria-hidden="true"></div>
 <section class="section bk-hero">
-    <div class="bk-decor bk-decor--left" aria-hidden="true">
-        <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/decor/branch-left.svg' ); ?>" alt="" loading="lazy">
-    </div>
-    <div class="bk-decor bk-decor--right" aria-hidden="true">
-        <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/decor/branch-right.svg' ); ?>" alt="" loading="lazy">
-    </div>
     <div class="bk-hero__inner">
         <p class="bk-kicker">Язык цветов</p>
         <h1 class="h-cap">Конструктор букета</h1>

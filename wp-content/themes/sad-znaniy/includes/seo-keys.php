@@ -1404,7 +1404,7 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		<h2>4. Ключи</h2>
 		<p>
 			Всего: <b><?php echo (int) $counts['all']; ?></b>
-			· <span style="color:#2e6b4f;">живых: <?php echo (int) $counts['live']; ?></span>
+			· <span style="color:#68b96e;">живых: <?php echo (int) $counts['live']; ?></span>
 			· <span style="color:#3a5ba0;">готовых: <?php echo (int) $counts['ready']; ?></span>
 			· <span style="color:#2f6fa8;">привязано: <?php echo (int) $counts['related']; ?></span>
 			· <span style="color:#999;">слабых: <?php echo (int) $counts['weak']; ?></span>
@@ -1471,9 +1471,9 @@ function sad_znaniy_seo_keys_render( $notice = '' ) {
 		</table>
 		<style>
 			.sz-status{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
-			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-ready{background:#eef3ff;color:#3a5ba0}.sz-weak{background:#f1f1f1;color:#999}.sz-manual{background:#fdf3e0;color:#a9714b}.sz-related{background:#eaf2fb;color:#2f6fa8}.sz-junk{background:#f7e6e6;color:#a24b4b}
+			.sz-live{background:#edf7ee;color:#68b96e}.sz-ready{background:#eef3ff;color:#3a5ba0}.sz-weak{background:#f1f1f1;color:#999}.sz-manual{background:#fdf3e0;color:#a9714b}.sz-related{background:#eaf2fb;color:#2f6fa8}.sz-junk{background:#f7e6e6;color:#a24b4b}
 			.sz-drop{border:2px dashed #c9ced4;border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer;background:#fafbfc;transition:border-color .15s,background .15s;max-width:760px}
-			.sz-drop.over{border-color:#2e6b4f;background:#e7f0e9}
+			.sz-drop.over{border-color:#68b96e;background:#edf7ee}
 			.sz-drop p{margin:4px 0;color:#5c645d}
 			.sz-drop p:first-child{font-weight:600;color:#20241f}
 			.sz-drop-sub{font-size:12px}

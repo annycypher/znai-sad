@@ -331,7 +331,7 @@ function sad_znaniy_work_type_slug_map() {
 function sad_znaniy_work_type_colors() {
 	return array(
 		'posev'      => '#E8B34B',
-		'posadka'    => '#3FA46F',
+		'posadka'    => '#68B96E',
 		'poliv'      => '#4A90D9',
 		'podkormka'  => '#9B6FD0',
 		'obrezka'    => '#A9714B',

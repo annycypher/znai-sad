@@ -271,9 +271,9 @@ add_action( 'send_headers', 'sad_znaniy_security_headers' );
 function sad_znaniy_security_local_avatar( $args, $id_or_email ) {
 	$size = isset( $args['size'] ) ? max( 16, (int) $args['size'] ) : 48;
 	$svg  = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $size . '" height="' . $size . '">'
-		. '<rect width="100%" height="100%" rx="50%" fill="#0E9F6E" fill-opacity="0.12"/>'
+		. '<rect width="100%" height="100%" rx="50%" fill="#68B96E" fill-opacity="0.12"/>'
 		. '<text x="50%" y="62%" font-family="Arial, sans-serif" font-size="' . (int) round( $size * 0.5 ) . '"'
-		. ' fill="#0E9F6E" text-anchor="middle">С</text></svg>';
+		. ' fill="#68B96E" text-anchor="middle">С</text></svg>';
 
 	$args['url']          = 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 	$args['found_avatar'] = true;
@@ -534,7 +534,7 @@ function sad_znaniy_security_handle_actions() {
  */
 function sad_znaniy_security_status_line( $name, $ok, $detail ) {
 	return '<tr><td><strong>' . esc_html( $name ) . '</strong></td>'
-		. '<td>' . ( $ok ? '<span style="color:#0E9F6E">✔ включено</span>' : '<span style="color:#b32d2e">✗ выключено</span>' ) . '</td>'
+		. '<td>' . ( $ok ? '<span style="color:#68B96E">✔ включено</span>' : '<span style="color:#b32d2e">✗ выключено</span>' ) . '</td>'
 		. '<td>' . esc_html( $detail ) . '</td></tr>';
 }
 

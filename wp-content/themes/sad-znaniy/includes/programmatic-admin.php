@@ -199,7 +199,7 @@ function sad_znaniy_programmatic_admin_page() {
 		</details>
 		<style>
 			.sz-status{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
-			.sz-live{background:#e7f0e9;color:#2e6b4f}.sz-draft{background:#fdf3e0;color:#a9714b}.sz-empty{background:#f1f1f1;color:#999}.sz-needs,.sz-need{background:#fdeaea;color:#a94442}
+			.sz-live{background:#edf7ee;color:#68b96e}.sz-draft{background:#fdf3e0;color:#a9714b}.sz-empty{background:#f1f1f1;color:#999}.sz-needs,.sz-need{background:#fdeaea;color:#a94442}
 		</style>
 		<?php sad_znaniy_programmatic_admin_notices( $notices ); ?>
 		<?php sad_znaniy_programmatic_admin_summary( $all, $week ); ?>

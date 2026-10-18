@@ -302,14 +302,14 @@ function sad_znaniy_social_render_stats() {
 			}
 			ctx.stroke();
 		}
-		line( sent, '#2e6b4f' );
+		line( sent, '#68b96e' );
 		line( err, '#b32d2e' );
 		ctx.fillStyle = '#646970';
 		ctx.font = '11px sans-serif';
 		ctx.fillText( 'максимум за день: ' + max, 6, 12 );
 	} )();
 	</script>
-	<p class="description"><span style="color:#2e6b4f;">&#9632;</span> <?php esc_html_e( 'опубликовано', 'sad-znaniy' ); ?> &nbsp; <span style="color:#b32d2e;">&#9632;</span> <?php esc_html_e( 'ошибки', 'sad-znaniy' ); ?></p>
+	<p class="description"><span style="color:#68b96e;">&#9632;</span> <?php esc_html_e( 'опубликовано', 'sad-znaniy' ); ?> &nbsp; <span style="color:#b32d2e;">&#9632;</span> <?php esc_html_e( 'ошибки', 'sad-znaniy' ); ?></p>
 	<?php
 }
 
@@ -341,7 +341,7 @@ function sad_znaniy_social_render_queue_table() {
 	);
 	$badges   = array(
 		'pending' => '#2271b1',
-		'sent'    => '#2e6b4f',
+		'sent'    => '#68b96e',
 		'error'   => '#b32d2e',
 		'manual'  => '#996800',
 		'skip'    => '#646970',

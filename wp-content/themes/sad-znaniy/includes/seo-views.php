@@ -368,7 +368,7 @@ function sad_znaniy_seo_hub_eff_page() {
 						<td>
 							<?php
 							if ( $item['trend'] > 0 ) {
-								echo '<span style="color:#2e6b4f;">↑ ' . (int) $item['trend'] . '%</span>';
+								echo '<span style="color:#68b96e;">↑ ' . (int) $item['trend'] . '%</span>';
 							} elseif ( $item['trend'] < 0 ) {
 								echo '<span style="color:#a94442;">↓ ' . (int) abs( $item['trend'] ) . '%</span>';
 							} else {

@@ -859,9 +859,9 @@
                     var sy = (image.height - size) / 2;
                     ctx.drawImage(image, sx, sy, size, size, x - radius, y - radius, radius * 2, radius * 2);
                 } else {
-                    ctx.fillStyle = '#E7F0E9';
+                    ctx.fillStyle = '#EDF7EE';
                     ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-                    ctx.fillStyle = '#2E6B4F';
+                    ctx.fillStyle = '#68B96E';
                     ctx.font = '700 ' + Math.round(radius * 0.8) + 'px sans-serif';
                     ctx.fillText(flower ? flower.initial : '', x, y + 2);
                 }
@@ -875,7 +875,7 @@
                 ctx.beginPath();
                 ctx.arc(x, y, radius, 0, Math.PI * 2);
                 ctx.lineWidth = 2;
-                ctx.strokeStyle = '#2E6B4F';
+                ctx.strokeStyle = '#68B96E';
                 ctx.stroke();
 
                 if (count) {
@@ -883,7 +883,7 @@
                     var by = y + radius * 0.62;
                     ctx.beginPath();
                     ctx.arc(bx, by, 18, 0, Math.PI * 2);
-                    ctx.fillStyle = '#2E6B4F';
+                    ctx.fillStyle = '#68B96E';
                     ctx.fill();
                     ctx.fillStyle = '#ffffff';
                     ctx.font = '700 16px sans-serif';
