@@ -72,3 +72,6 @@ require_once SAD_ZNANIY_DIR . '/includes/bouquet-page.php';
 require_once SAD_ZNANIY_DIR . '/includes/bouquet-mail.php';
 
 require_once SAD_ZNANIY_DIR . '/includes/bouquet-plant.php';
+
+require_once SAD_ZNANIY_DIR . '/includes/yandex-metrika.php';
+
