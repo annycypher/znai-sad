@@ -593,6 +593,13 @@ function sad_znaniy_security_page() {
  * @return string
  */
 function sad_znaniy_security_base_dir() {
+	// Боевой сервер: каталог сайта на хостинге лежит на два уровня ниже домашнего
+	// (домен → public_html), поэтому базу для бэкапов задаём константой в
+	// wp-config.php — иначе выбралась бы общая папка аккаунта с чужими бэкапами.
+	if ( defined( 'SZ_BACKUP_BASE' ) && is_dir( SZ_BACKUP_BASE ) && is_writable( SZ_BACKUP_BASE ) ) {
+		return rtrim( SZ_BACKUP_BASE, '/\\' );
+	}
+
 	$webroot = rtrim( ABSPATH, '/\\' );
 	$one_up  = dirname( $webroot );
 	$two_up  = dirname( $one_up );
