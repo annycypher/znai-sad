@@ -172,6 +172,23 @@
 
 **На будущее:** чтобы заработала git-схема из раздела выше, нужно создать на сервере `_repo` и выдать серверу доступ к GitHub; до тех пор деплой идёт локальным `pscp`.
 
+### Почта сайта: SMTP spaceweb (06.11.2026)
+
+Ящик `info@znai-sad.ru` создан на хостинге; сайт переведён с PHP `mail()` на SMTP.
+
+| Что | Факт |
+|---|---|
+| Код | новый `includes/mail-smtp.php`: `phpmailer_init` переводит PHPMailer на SMTP, фильтры `wp_mail_from` / `wp_mail_from_name` подменяют отправителя на ящик домена (иначе письма уходят от `wordpress@<хост>` и ломают SPF/DKIM) |
+| Реквизиты | только в `wp-config.php` (вне git): `SZ_SMTP_HOST` `smtp.spaceweb.ru`, `SZ_SMTP_PORT` `465`, `SZ_SMTP_SECURE` `ssl`, `SZ_SMTP_USER`/`SZ_SMTP_FROM` `info@znai-sad.ru`, `SZ_SMTP_FROM_NAME` «Сад знаний», `SZ_SMTP_PASS`, `SZ_SMTP_TIMEOUT` |
+| Бэкап конфига | `~/znai-sad/backups/wp-config-before-smtp-2026-11-06.php` (600) |
+| Установка | блок вставлен перед маркером `/* That's all, stop editing… */`, файл скопирован через `cat > wp-config.php` — права остались `600`, `php8.3 -l` без ошибок |
+| `admin_email` | `info@znai-sad.ru` — локально и на боевом (было `krsk.3d@gmail.com`) |
+| Тест отправки | `wp eval-file`: `wp_mail: OK`, `mailer: smtp`, `smtp.spaceweb.ru:465 secure=ssl auth=yes`, `from: Сад знаний <info@znai-sad.ru>`, `error: (нет)`; тест-скрипт удалён из `/tmp` |
+| Локальная копия | константы не заданы, поэтому письма по-прежнему перехватывает `mail-log.php` (`WP_ENVIRONMENT_TYPE = local`) — наружу ничего не уходит |
+| Живучесть | тема проверяет `defined()` при каждом письме: убрали блок из `wp-config` — вернулись к `wp_mail()` без правки кода |
+
+IMAP/POP3 сайту не нужны — они только для почтовых программ владельца (`imap.spaceweb.ru:143/993`, `pop3.spaceweb.ru:110/995`).
+
 ### Доработка лимитера входов (6.11.2026, вне батча B)
 
 Запрос владельца по брутфорсу с IP `138.68.142.96` (DigitalOcean) — выполнено отдельно, к внешнему SEO-контуру не относится.
