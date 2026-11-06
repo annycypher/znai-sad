@@ -149,6 +149,35 @@
 | 4. Лог | `ls -l /home/n/novidesiru/znai-sad/logs/` (файла нет = ошибок не было) | без новых ошибок |
 | 5. Крон | `php8.3 wp-cli.phar --path=public_html cron event list` | без просроченных |
 
+### Крон сайта на sweb (06.11.2026)
+
+SSH `crontab` на хостинге недоступен (`/var/spool/cron` отсутствует, `crontab -l` → Permission denied) — задачи ставятся **только в панели sweb** (`cp.sweb.ru` → «Планировщик заданий»). Время панели — MSK (UTC+3).
+
+| Что | Значение |
+|---|---|
+| Задача в панели | `znai-sad-wp-cron`, расписание `*/5 * * * *` (каждые 5 минут) |
+| Команда | `/home/n/novidesiru/znai-sad-cron-driver.sh` |
+| Драйвер | там же, `chmod 700`, sha256 `7950a419c085ecb4c63a66be88e2fa9ae2f8e898f5d83de4495db6ddaf767940` |
+| Лог | `~/znai-sad-cron.log` (ротация: последние 2000 строк, внутри драйвера) |
+| Маркер свежести | опция WP `sz_last_cron_run` (epoch, пишется только при `rc=0`) |
+
+Правила установки:
+
+- в поле команды панели — **только** путь к драйверу. Расписание в команду не писать: панель сама подставляет префикс `мин час день месяц день-недели`. Проверено 06.11.2026: команда, начинавшаяся с `*/5 * * * *`, дала `*/5: No such file or directory`, а расписание сохранилось как «в :05 каждого часа»;
+- коммент-маркер (`#znai-sad-wp-cron`) панель дублирует в поле «комментарий» — второй раз в команду не добавлять;
+- запуск по URL невозможен: `.htaccess` содержит `<Files "wp-cron.php"> Require local`, снаружи `https://znai-sad.ru/wp-cron.php` = **403** — только shell;
+- PHP для крона — `/usr/bin/php8.3` (не `/usr/bin/php`: там 5.2.17 без ini).
+
+Проверка (read-only):
+
+```sh
+tail -3 ~/znai-sad-cron.log          # строки с шагом 5 минут, все rc=0
+/usr/bin/php8.3 ~/wp-cli.phar --path=~/znai-sad/public_html cron event list --fields=hook,next_run_relative
+# ожидается: ни одного «now»/«ago»; sz_social_cron — до 5 минут
+```
+
+Управление задачей можно и через JSON-RPC панели (`/vh/cron`: `getTasks`, `addTask {minute,hour,day,month,weekday,command,comment}`, `removeTask {task}`) — вспомогательный клиент лежит в соседнем проекте: `calc_docs\sweb-migration\panel-api.ps1`.
+
 ### Откат
 
 ```
@@ -176,6 +205,7 @@ rsync -a --delete ... (та же команда, что выше)
 | Целостность темы на проде | базовая линия переснята | 124 файла, changed = 0, removed = 0, added = 0, время 06.11.2026 09:32 |
 | WordPress | прод 7.1.4, локаль 7.1.4 | прод обновил хостинг сам; локаль догнана 7.1.3 → 7.1.4, wp_db_version тот же (61833) |
 | Мусор в рабочем дереве | закрыт | _docs/shots/ и _design/*-*.png добавлены в .gitignore |
+| Крон сайта | включён | панель sweb, задача `znai-sad-wp-cron`, `*/5 * * * *`, драйвер `~/znai-sad-cron-driver.sh`; фактически выполнено в 13:40:01 и 13:45:01 MSK (`sz_social_cron`, `rc=0`), просрочек нет |
 | HSTS | ждёт | включаем после подтверждения Let's Encrypt («LE ок») |
 | git push | ждёт | нужен deploy key или PAT для github.com/annycypher/znai-sad |
 ## Приложение А. DNS-инструкции (не зависят от выбора хостинга)
