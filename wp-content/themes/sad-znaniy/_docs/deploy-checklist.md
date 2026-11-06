@@ -190,6 +190,28 @@ tail -3 ~/znai-sad-cron.log          # строки с шагом 5 минут, 
 
 Управление задачей можно и через JSON-RPC панели (`/vh/cron`: `getTasks`, `addTask {minute,hour,day,month,weekday,command,comment}`, `removeTask {task}`) — вспомогательный клиент лежит в соседнем проекте: `calc_docs\sweb-migration\panel-api.ps1`.
 
+### SSL/TLS и домен (этап 8.2, проверено 06.11.2026)
+
+| Что | Факт |
+|---|---|
+| Сертификат | Let's Encrypt, issuer `C=US, O=Let's Encrypt, CN=YR1`; subject `CN=znai-sad.ru` |
+| SAN | `znai-sad.ru`, `www.znai-sad.ru` |
+| Срок | выпущен 04.11.2026 15:05 MSK, действует до 02.02.2027 15:05 MSK (90 дней; автопродление — в панели sweb) |
+| Цепочка | `ssl_verify_result = 0`, ошибок проверки нет (curl и .NET SslStream) |
+| Протоколы | TLS 1.2 — работает; TLS 1.3 сервер пока не предлагает (`curl --tlsv1.3` → handshake fail). Не блокер: HSTS включён, TLS 1.2 достаточно |
+| Редиректы | `http://znai-sad.ru/` → `https://znai-sad.ru/` (**301**), `http://www.znai-sad.ru/` → `https://znai-sad.ru/` (301), `https://www.znai-sad.ru/` → `https://znai-sad.ru/` (301) |
+| HSTS | `Strict-Transport-Security: max-age=31536000` — ровно один заголовок (см. A′-2) |
+| Смешанный контент | на главной `src="http://"` = 0, `href="http://"` = 0 |
+| Smoke по https | `/`, `/stati/`, `/kalendar/`, `/kalkulyatory/`, `/planirovshchik/`, `/wp-login.php`, `/wp-login.php?action=lostpassword` — все **200** |
+
+Проверка (read-only):
+
+```sh
+echo | openssl s_client -connect znai-sad.ru:443 -servername znai-sad.ru 2>/dev/null | openssl x509 -noout -subject -issuer -dates
+curl -sI https://znai-sad.ru/ | grep -i strict-transport
+curl -s -o /dev/null -w '%{http_code} -> %{redirect_url}\n' http://znai-sad.ru/
+```
+
 ### Откат
 
 ```
