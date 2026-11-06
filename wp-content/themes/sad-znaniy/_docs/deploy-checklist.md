@@ -112,6 +112,58 @@
 
 **Приёмка 8.4:** восстановление из бэкапа прошло на тестовой копии, ритм задокументирован.
 
+## Деплой-процесс через `git remote`
+
+Составлен 06.11.2026. Правило проекта: любое изменение кода идёт **локально → проверка локально → `git commit` → выгрузка → smoke-проверка**. Прямых правок на боевом нет, кроме конфиг-мелочей по согласованию (с бэкапом файла рядом).
+
+### Реквизиты
+
+| Что | Значение |
+|---|---|
+| Репозиторий (origin) | `https://github.com/annycypher/znai-sad.git` ⏳ подтверждение владельца |
+| Локальный корень | `C:\Users\krs3d\Local Sites\sadznaniy\app\public` |
+| Локальный предпросмотр | `http://sadznaniy.local/` |
+| Боевой сервер (SSH) | `novidesiru@77.222.61.245`, webroot `/home/n/novidesiru/znai-sad/public_html` |
+| Клон на сервере | `/home/n/novidesiru/znai-sad/_repo` (вне webroot, закрыт правилом 404) ⏳ создаётся при первом деплое через git |
+| Ключ деплоя | SSH-ключ сервера добавляется в GitHub → Settings → Deploy keys (только чтение) ⏳ владелец репозитория |
+
+### Схема
+
+```
+локально: правка → php -l → демо на http://sadznaniy.local/ → git commit
+        → git push origin main
+сервер:  cd /home/n/novidesiru/znai-sad/_repo && git pull --ff-only
+        → rsync -a --delete --exclude _design --exclude _docs --exclude _tools --exclude _templates \
+             wp-content/themes/sad-znaniy/ /home/n/novidesiru/znai-sad/public_html/wp-content/themes/sad-znaniy/
+```
+
+Почему `rsync`, а не «сайт прямо из `_repo`»: webroot трогаем минимально — меняются только файлы темы; `uploads`, ядро и `wp-config.php` деплоем не затрагиваются. Исключения `_design/_docs/_tools/_templates` — папки разработки, им в web не место (они ещё и закрыты 404-правилом).
+
+### Обязательный пост-деплой (5 минут)
+
+| Шаг | Команда / проверка | Норма |
+|---|---|---|
+| 1. `.htaccess` не тронут | `sha256sum /home/n/novidesiru/znai-sad/public_html/.htaccess` | совпадает с хешем эталона `_upload/htaccess-production.txt` |
+| 2. Права | `stat -c '%a %n' wp-config.php .htaccess wp-content/uploads` | `600`, `644`, `755` |
+| 3. Smoke | `/`, `/stati/`, `/kalendar/`, `/kalkulyatory/`, `/planirovshchik/` | все `200` |
+| 4. Лог | `ls -l /home/n/novidesiru/znai-sad/logs/` (файла нет = ошибок не было) | без новых ошибок |
+| 5. Крон | `php8.3 wp-cli.phar --path=public_html cron event list` | без просроченных |
+
+### Откат
+
+```
+cd /home/n/novidesiru/znai-sad/_repo
+git log --oneline -5          # найти рабочий коммит
+git checkout <коммит>         # detached HEAD
+rsync -a --delete ... (та же команда, что выше)
+```
+После проверки вернуть ветку: `git checkout main`. Правки `.htaccess` откатываются копией из `_upload/` (`htaccess-production.txt` — эталон, `backup-<дата>-htaccess.txt` — копии перед изменением).
+
+### Что попадает в git, а что нет
+
+- В git: тема `wp-content/themes/sad-znaniy`, документы `_docs`, `PROJECT-PLAN.md`, `TZ-CAL-SEO.md`, `.clinerules`.
+- Не в git: `wp-config.php`, `*.sql`, `*.zip`, `wp-content/uploads`, `wp-content/cache`, ядро WordPress (`.gitignore`).
+
 ## Приложение А. DNS-инструкции (не зависят от выбора хостинга)
 
 **Кто за что отвечает.** Домен живёт у **регистратора**, сайт — на **хостинге**; между собой они связаны DNS-записями. Пока домен не делегирован, ни один A/CNAME не подействует.
