@@ -10,7 +10,13 @@
  *     и базовый CSP для фронтенда (админку не трогаем — Gutenberg);
  *   • Gravatar заменён локальной заглушкой — сайт не делает внешних запросов;
  *   • свой лимитер попыток входа: 5 неудач → блокировка 15 минут, журнал,
- *     экран «🛡 Безопасность» с разблокировкой IP.
+ *     экран «🛡 Безопасность» с разблокировкой IP;
+ *   • эскалация блокировок (батч B, 06.11.2026): 3-й блок за 24 часа → 24 часа,
+ *     с 6-го блока → 30 дней и постоянный список в logs/ (вне webroot);
+ *   • письма о блокировках — не чаще одного в час на IP, с агрегатом попыток,
+ *     логинов и user-agent; попадание в постоянный список — отдельным письмом;
+ *   • лимитер покрывает wp-login.php (вход), wp-login.php?action=lostpassword
+ *     (подбор через сброс пароля) и POST с паролем к закрытым записям.
  *
  * Параметры лимитера меняются фильтром sad_znaniy_security_settings.
  *
@@ -27,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string
  */
 function sad_znaniy_security_schema_version() {
-	return '1';
+	return '2';
 }
 
 /**
@@ -59,11 +65,17 @@ function sad_znaniy_security_settings() {
 	return apply_filters(
 		'sad_znaniy_security_settings',
 		array(
-			'max_attempts' => 5,
-			'window'       => 15,
-			'lock'         => 15,
-			'log_days'     => 60,
-			'notify'       => true,
+			'max_attempts'    => 5,
+			'window'          => 15,
+			'lock'            => 15,
+			'escalate_after'  => 3,
+			'escalate_lock'   => 1440,
+			'escalate_window' => 24,
+			'permanent_after' => 6,
+			'permanent_lock'  => 43200,
+			'notify_interval' => 3600,
+			'log_days'        => 60,
+			'notify'          => true,
 		)
 	);
 }
@@ -90,6 +102,9 @@ function sad_znaniy_security_install() {
 			attempts int NOT NULL DEFAULT 0,
 			last_attempt datetime NULL DEFAULT NULL,
 			lock_until datetime NULL DEFAULT NULL,
+			locks int NOT NULL DEFAULT 0,
+			locks_start datetime NULL DEFAULT NULL,
+			permanent tinyint(1) NOT NULL DEFAULT 0,
 			PRIMARY KEY  (ip),
 			KEY lock_until (lock_until)
 		) {$charset};"
@@ -294,7 +309,7 @@ function sad_znaniy_security_get_row( $ip ) {
 	global $wpdb;
 	$table = sad_znaniy_security_table_attempts();
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$row = $wpdb->get_row( $wpdb->prepare( "SELECT attempts, last_attempt, lock_until FROM {$table} WHERE ip = %s", $ip ), ARRAY_A );
+	$row = $wpdb->get_row( $wpdb->prepare( "SELECT attempts, last_attempt, lock_until, locks, locks_start, permanent FROM {$table} WHERE ip = %s", $ip ), ARRAY_A );
 	return is_array( $row ) ? $row : null;
 }
 
@@ -346,6 +361,418 @@ function sad_znaniy_security_log( $ip, $login, $status ) {
 	}
 }
 
+/* === 5a. Постоянный список IP (logs/, вне webroot) ======================= */
+
+/**
+ * Файл постоянного списка. Лежит в logs/ вне webroot; если папки нет —
+ * рядом с базовой папкой сайта (тоже вне webroot).
+ *
+ * @return string
+ */
+function sad_znaniy_security_permanent_file() {
+	$dir = sad_znaniy_security_base_dir() . '/logs';
+	if ( ! is_dir( $dir ) ) {
+		wp_mkdir_p( $dir );
+	}
+	if ( is_dir( $dir ) && is_writable( $dir ) ) {
+		return $dir . '/permanent-ips.json';
+	}
+	return sad_znaniy_security_base_dir() . '/permanent-ips.json';
+}
+
+/**
+ * Постоянный список: ip => запись (since, locks, attempts, logins, agent).
+ *
+ * @return array
+ */
+function sad_znaniy_security_permanent_all() {
+	$file = sad_znaniy_security_permanent_file();
+	if ( ! is_file( $file ) ) {
+		return array();
+	}
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+	$raw  = file_get_contents( $file );
+	$data = json_decode( (string) $raw, true );
+	return is_array( $data ) ? $data : array();
+}
+
+/**
+ * Сохраняет постоянный список (через временный файл, права 600).
+ *
+ * @param array $data Список.
+ * @return bool
+ */
+function sad_znaniy_security_permanent_save( $data ) {
+	$file = sad_znaniy_security_permanent_file();
+	$json = wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	if ( ! is_string( $json ) ) {
+		return false;
+	}
+	$tmp = $file . '.tmp';
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+	$written = file_put_contents( $tmp, $json, LOCK_EX );
+	if ( false === $written ) {
+		return false;
+	}
+	@chmod( $tmp, 0600 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+	return (bool) rename( $tmp, $file );
+}
+
+/**
+ * Есть ли IP в постоянном списке.
+ *
+ * @param string $ip IP.
+ * @return bool
+ */
+function sad_znaniy_security_permanent_has( $ip ) {
+	$all = sad_znaniy_security_permanent_all();
+	return isset( $all[ $ip ] );
+}
+
+/**
+ * Добавляет IP в постоянный список.
+ *
+ * @param string $ip      IP.
+ * @param array  $context locks, attempts, logins, agent.
+ * @return void
+ */
+function sad_znaniy_security_permanent_add( $ip, $context = array() ) {
+	$all = sad_znaniy_security_permanent_all();
+
+	$logins = array();
+	if ( ! empty( $context['logins'] ) && is_array( $context['logins'] ) ) {
+		$logins = array_slice( array_values( array_unique( array_map( 'strval', $context['logins'] ) ) ), 0, 10 );
+	}
+
+	$all[ $ip ] = array(
+		'since'    => current_time( 'mysql', true ),
+		'locks'    => isset( $context['locks'] ) ? (int) $context['locks'] : 0,
+		'attempts' => isset( $context['attempts'] ) ? (int) $context['attempts'] : 0,
+		'logins'   => $logins,
+		'agent'    => isset( $context['agent'] ) ? substr( (string) $context['agent'], 0, 190 ) : '',
+	);
+
+	sad_znaniy_security_permanent_save( $all );
+}
+
+/**
+ * Убирает IP из постоянного списка.
+ *
+ * @param string $ip IP.
+ * @return void
+ */
+function sad_znaniy_security_permanent_remove( $ip ) {
+	$all = sad_znaniy_security_permanent_all();
+	if ( ! isset( $all[ $ip ] ) ) {
+		return;
+	}
+	unset( $all[ $ip ] );
+	sad_znaniy_security_permanent_save( $all );
+}
+
+/* === 5b. Агрегат попыток и письма ======================================== */
+
+/**
+ * Сводка по IP из журнала: сколько неудач, какие логины, последний user-agent.
+ *
+ * @param string $ip        IP.
+ * @param string $since_gmt Начало периода (GMT, mysql).
+ * @return array
+ */
+function sad_znaniy_security_ip_stats( $ip, $since_gmt ) {
+	global $wpdb;
+	$table = sad_znaniy_security_table_log();
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$rows = $wpdb->get_results( $wpdb->prepare( "SELECT login_name, status, agent FROM {$table} WHERE ip = %s AND created_at >= %s ORDER BY id ASC", $ip, $since_gmt ), ARRAY_A );
+
+	$attempts = 0;
+	$logins   = array();
+	$agent    = '';
+
+	if ( is_array( $rows ) ) {
+		foreach ( $rows as $row ) {
+			if ( 'success' === (string) $row['status'] ) {
+				continue;
+			}
+			$attempts++;
+			$login = (string) $row['login_name'];
+			if ( '' !== $login && ! in_array( $login, $logins, true ) ) {
+				$logins[] = $login;
+			}
+			if ( '' !== (string) $row['agent'] ) {
+				$agent = (string) $row['agent'];
+			}
+		}
+	}
+
+	return array(
+		'attempts' => $attempts,
+		'logins'   => array_slice( $logins, 0, 10 ),
+		'agent'    => $agent,
+	);
+}
+
+/**
+ * Когда по этому IP последний раз уходило письмо (Unix-время, 0 — не было).
+ *
+ * @param string $ip IP.
+ * @return int
+ */
+function sad_znaniy_security_notify_last( $ip ) {
+	$state = get_option( 'sad_znaniy_security_notify_state', array() );
+	$state = is_array( $state ) ? $state : array();
+	return isset( $state[ $ip ] ) ? (int) $state[ $ip ] : 0;
+}
+
+/**
+ * Запоминает время письма (и чистит записи старше 7 дней).
+ *
+ * @param string $ip IP.
+ * @param int    $ts Время.
+ * @return void
+ */
+function sad_znaniy_security_notify_mark( $ip, $ts ) {
+	$state = get_option( 'sad_znaniy_security_notify_state', array() );
+	$state = is_array( $state ) ? $state : array();
+
+	$state[ $ip ] = (int) $ts;
+	$cut          = time() - 7 * DAY_IN_SECONDS;
+	foreach ( $state as $key => $value ) {
+		if ( (int) $value < $cut ) {
+			unset( $state[ $key ] );
+		}
+	}
+
+	update_option( 'sad_znaniy_security_notify_state', $state, false );
+}
+
+/**
+ * Тело письма о блокировке.
+ *
+ * @param string $ip        IP.
+ * @param int    $duration  Длительность блока в минутах.
+ * @param int    $locks     Номер блокировки в серии.
+ * @param array  $stats     Сводка попыток.
+ * @param bool   $permanent Попал в постоянный список.
+ * @return string
+ */
+function sad_znaniy_security_notify_body( $ip, $duration, $locks, $stats, $permanent ) {
+	$minutes = (int) $duration;
+	$human   = $minutes >= 1440 ? sprintf( '%d сут.', (int) round( $minutes / 1440 ) ) : sprintf( '%d мин.', $minutes );
+
+	$lines   = array();
+	$lines[] = 'IP: ' . $ip;
+	$lines[] = sprintf( 'Блокировка: %s (по счёту %d в текущей серии)', $human, (int) $locks );
+	$lines[] = sprintf( 'Неудачных попыток за период: %d', (int) $stats['attempts'] );
+	$lines[] = 'Логины: ' . ( $stats['logins'] ? implode( ', ', $stats['logins'] ) : 'не определено' );
+	$lines[] = 'User-Agent: ' . ( '' !== $stats['agent'] ? $stats['agent'] : 'не определён' );
+
+	if ( $permanent ) {
+		$lines[] = '';
+		$lines[] = 'IP добавлен в постоянный список (logs/): повторные блокировки → 30 дней.';
+		$lines[] = 'Файл списка: ' . sad_znaniy_security_permanent_file();
+	}
+
+	$lines[] = '';
+	$lines[] = 'Управление: ' . admin_url( 'tools.php?page=sz-security' );
+
+	return implode( "\n", $lines );
+}
+
+/**
+ * Письмо о блокировке: не чаще одного в час на IP (остальное агрегируется).
+ *
+ * @param string $ip       IP.
+ * @param int    $duration Минуты блокировки.
+ * @param int    $locks    Номер блокировки.
+ * @return bool
+ */
+function sad_znaniy_security_notify_block( $ip, $duration, $locks ) {
+	$settings = sad_znaniy_security_settings();
+	if ( empty( $settings['notify'] ) ) {
+		return false;
+	}
+
+	$interval = max( 60, (int) $settings['notify_interval'] );
+	$last     = sad_znaniy_security_notify_last( $ip );
+
+	if ( $last && ( time() - $last ) < $interval ) {
+		return false; // в этот час письмо уже было — копим статистику молча
+	}
+
+	$since = gmdate( 'Y-m-d H:i:s', $last ? $last : ( time() - $interval ) );
+	$stats = sad_znaniy_security_ip_stats( $ip, $since );
+	$site  = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+
+	$sent = wp_mail(
+		get_option( 'admin_email' ),
+		sprintf( '[%s] Блокировка входа: %s', $site, $ip ),
+		sad_znaniy_security_notify_body( $ip, $duration, $locks, $stats, false )
+	);
+
+	if ( $sent ) {
+		sad_znaniy_security_notify_mark( $ip, time() );
+	}
+
+	return (bool) $sent;
+}
+
+/**
+ * Отдельное письмо: IP ушёл в постоянный список (всегда, без троттлинга).
+ *
+ * @param string $ip    IP.
+ * @param int    $locks Номер блокировки.
+ * @return bool
+ */
+function sad_znaniy_security_notify_permanent( $ip, $locks ) {
+	$settings = sad_znaniy_security_settings();
+	if ( empty( $settings['notify'] ) ) {
+		return false;
+	}
+
+	$stats = sad_znaniy_security_ip_stats( $ip, gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) );
+	$site  = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+
+	$sent = wp_mail(
+		get_option( 'admin_email' ),
+		sprintf( '[%s] IP в постоянном списке: %s', $site, $ip ),
+		sad_znaniy_security_notify_body( $ip, (int) $settings['permanent_lock'], $locks, $stats, true )
+	);
+
+	if ( $sent ) {
+		sad_znaniy_security_notify_mark( $ip, time() );
+	}
+
+	return (bool) $sent;
+}
+
+/**
+ * Человеческий текст блокировки для формы входа.
+ *
+ * @param int  $left_seconds Осталось секунд.
+ * @param bool $permanent    IP в постоянном списке.
+ * @return string
+ */
+function sad_znaniy_security_lock_message( $left_seconds, $permanent ) {
+	if ( $permanent ) {
+		return 'Этот IP в постоянном списке блокировки (30 дней) из-за повторных попыток подбора пароля. Напишите администратору сайта.';
+	}
+	if ( $left_seconds > DAY_IN_SECONDS ) {
+		return sprintf(
+			'Слишком много неудачных попыток входа. Доступ заблокирован на %d сут.',
+			(int) ceil( $left_seconds / DAY_IN_SECONDS )
+		);
+	}
+	return sprintf(
+		'Слишком много неудачных попыток входа. Следующая попытка возможна через %d мин.',
+		max( 1, (int) ceil( $left_seconds / 60 ) )
+	);
+}
+
+/* === 5c. Учёт неудачи и эскалация ======================================== */
+
+/**
+ * Считает неудачную попытку и по порогу ставит блокировку нужной длины.
+ * Используется и формой входа, и сбросом пароля.
+ *
+ * @param string $ip    IP.
+ * @param string $login Логин из формы.
+ * @return void
+ */
+function sad_znaniy_security_register_failure( $ip, $login ) {
+	global $wpdb;
+	$settings = sad_znaniy_security_settings();
+	$table    = sad_znaniy_security_table_attempts();
+	$row      = sad_znaniy_security_get_row( $ip );
+	$now      = current_time( 'mysql', true );
+	$status   = 'fail';
+
+	// Внутри активной блокировки не считаем: иначе эскалация прыгает на каждом
+	// запросе бота, а счётчик «5 неудач» теряет смысл.
+	if ( $row && sad_znaniy_security_lock_time( $row ) > time() ) {
+		return;
+	}
+
+	$attempts = 1;
+	$locks    = 0;
+	$start    = 0;
+
+	if ( $row ) {
+		$last     = ! empty( $row['last_attempt'] ) ? strtotime( (string) $row['last_attempt'] . ' +00:00' ) : 0;
+		$expired  = ! $last || ( time() - $last ) > ( (int) $settings['window'] * 60 );
+		$attempts = $expired ? 1 : (int) $row['attempts'] + 1;
+		$locks    = isset( $row['locks'] ) ? (int) $row['locks'] : 0;
+		$start    = ! empty( $row['locks_start'] ) ? strtotime( (string) $row['locks_start'] . ' +00:00' ) : 0;
+	}
+
+	// Серия блокировок живёт 24 часа: окно истекло — считаем заново.
+	if ( ! $start || ( time() - $start ) > ( (int) $settings['escalate_window'] * HOUR_IN_SECONDS ) ) {
+		$locks = 0;
+		$start = time();
+	}
+
+	$update = array(
+		'attempts'     => $attempts,
+		'last_attempt' => $now,
+		'lock_until'   => ( $row && ! empty( $row['lock_until'] ) ) ? $row['lock_until'] : null,
+		'locks'        => $locks,
+		'locks_start'  => gmdate( 'Y-m-d H:i:s', $start ),
+		'permanent'    => 0,
+	);
+
+	$lock_min  = 0;
+	$permanent = false;
+
+	if ( $attempts >= (int) $settings['max_attempts'] ) {
+		$locks++;
+
+		if ( $locks >= (int) $settings['permanent_after'] ) {
+			$lock_min  = (int) $settings['permanent_lock'];
+			$permanent = true;
+		} elseif ( $locks >= (int) $settings['escalate_after'] ) {
+			$lock_min = (int) $settings['escalate_lock'];
+		} else {
+			$lock_min = (int) $settings['lock'];
+		}
+
+		// Счётчик неудач сбрасываем: следующий блок — после новых 5 неудач.
+		$update['attempts']   = 0;
+		$update['locks']      = $locks;
+		$update['permanent']  = $permanent ? 1 : 0;
+		$update['lock_until'] = gmdate( 'Y-m-d H:i:s', time() + $lock_min * 60 );
+		$status               = 'locked';
+	}
+
+	if ( $row ) {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->update( $table, $update, array( 'ip' => $ip ) );
+	} else {
+		$update['ip'] = $ip;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->insert( $table, $update, array( '%d', '%s', '%s', '%d', '%s', '%d', '%s' ) );
+	}
+
+	if ( 'locked' === $status ) {
+		if ( $permanent ) {
+			$stats = sad_znaniy_security_ip_stats( $ip, gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) );
+			sad_znaniy_security_permanent_add(
+				$ip,
+				array(
+					'locks'    => $locks,
+					'attempts' => (int) $stats['attempts'],
+					'logins'   => $stats['logins'],
+					'agent'    => $stats['agent'],
+				)
+			);
+			sad_znaniy_security_notify_permanent( $ip, $locks );
+		} else {
+			sad_znaniy_security_notify_block( $ip, $lock_min, $locks );
+		}
+	}
+
+	sad_znaniy_security_log( $ip, $login, $status );
+}
+
 /**
  * Блокируем вход с IP, который исчерпал попытки (до проверки пароля).
  *
@@ -359,91 +786,89 @@ function sad_znaniy_security_check_lock( $user, $username, $password ) {
 		return $user;
 	}
 
-	$ip    = sad_znaniy_security_client_ip();
-	$until = sad_znaniy_security_lock_time( sad_znaniy_security_get_row( $ip ) );
-	$left  = $until - time();
+	$ip      = sad_znaniy_security_client_ip();
+	$until   = sad_znaniy_security_lock_time( sad_znaniy_security_get_row( $ip ) );
+	$left    = $until - time();
+	$perm    = sad_znaniy_security_permanent_has( $ip );
 
-	if ( $left > 0 ) {
+	if ( $left > 0 || $perm ) {
 		sad_znaniy_security_log( $ip, $username, 'locked' );
-		return new WP_Error(
-			'sz_login_locked',
-			sprintf(
-				'Слишком много неудачных попыток входа. Следующая попытка возможна через %d мин.',
-				max( 1, (int) ceil( $left / 60 ) )
-			)
-		);
+		return new WP_Error( 'sz_login_locked', sad_znaniy_security_lock_message( $left, $perm ) );
 	}
 	return $user;
 }
-add_filter( 'authenticate', 'sad_znaniy_security_check_lock', 5, 3 );
+// Приоритет 999: наш фильтр должен идти ПОСЛЕ wp_authenticate_username_password,
+// иначе ядро перезапишет нашу ошибку (и пустит с верным паролем при блокировке).
+add_filter( 'authenticate', 'sad_znaniy_security_check_lock', 999, 3 );
 
 /**
- * Считаем неудачную попытку; на пятой — блокировка и письмо админу.
+ * Считаем неудачную попытку; по порогам — блокировка нужной длины и письмо.
  *
  * @param string        $username Логин из формы.
  * @param WP_Error|null $error    Ошибка входа.
  * @return void
  */
 function sad_znaniy_security_login_failed( $username, $error = null ) {
-	global $wpdb;
-	$settings = sad_znaniy_security_settings();
-	$ip       = sad_znaniy_security_client_ip();
-	$table    = sad_znaniy_security_table_attempts();
-	$row      = sad_znaniy_security_get_row( $ip );
-	$now      = current_time( 'mysql', true );
-	$status   = 'fail';
-
-	if ( $row ) {
-		$last     = ! empty( $row['last_attempt'] ) ? strtotime( (string) $row['last_attempt'] . ' +00:00' ) : 0;
-		$expired  = ! $last || ( time() - $last ) > ( (int) $settings['window'] * 60 );
-		$attempts = $expired ? 1 : (int) $row['attempts'] + 1;
-		$update   = array(
-			'attempts'     => $attempts,
-			'last_attempt' => $now,
-			'lock_until'   => null,
-		);
-
-		if ( $attempts >= (int) $settings['max_attempts'] ) {
-			$update['lock_until'] = gmdate( 'Y-m-d H:i:s', time() + ( (int) $settings['lock'] * 60 ) );
-			$status               = 'locked';
-		}
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$wpdb->update( $table, $update, array( 'ip' => $ip ) );
-	} else {
-		$attempts = 1;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$wpdb->insert(
-			$table,
-			array(
-				'ip'           => $ip,
-				'attempts'     => 1,
-				'last_attempt' => $now,
-				'lock_until'   => null,
-			),
-			array( '%s', '%d', '%s', '%s' )
-		);
-	}
-
-	if ( 'locked' === $status && ! empty( $settings['notify'] ) ) {
-		wp_mail(
-			get_option( 'admin_email' ),
-			'[' . wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) . '] Блокировка входа',
-			sprintf(
-				"IP %s заблокирован на %d минут после %d неудачных попыток входа.\nЛогин из формы: %s\nРазблокировать: %s",
-				$ip,
-				(int) $settings['lock'],
-				(int) $settings['max_attempts'],
-				$username,
-				admin_url( 'tools.php?page=sz-security' )
-			)
-		);
-	}
-
-	sad_znaniy_security_log( $ip, $username, $status );
-	unset( $attempts, $error );
+	sad_znaniy_security_register_failure( sad_znaniy_security_client_ip(), (string) $username );
+	unset( $error );
 }
 add_action( 'wp_login_failed', 'sad_znaniy_security_login_failed', 10, 2 );
+
+/**
+ * Сброс пароля — второй канал подбора: проверяем блокировку до отправки письма
+ * и считаем попытку, если такого пользователя/почты нет (перебор логинов).
+ *
+ * @param WP_Error       $errors    Ошибки формы.
+ * @param WP_User|false  $user_data Найденный пользователь.
+ * @return void
+ */
+function sad_znaniy_security_lostpassword( $errors, $user_data = null ) {
+	if ( ! $errors instanceof WP_Error ) {
+		return;
+	}
+
+	$ip   = sad_znaniy_security_client_ip();
+	$left = sad_znaniy_security_lock_time( sad_znaniy_security_get_row( $ip ) ) - time();
+	$perm = sad_znaniy_security_permanent_has( $ip );
+
+	if ( $left > 0 || $perm ) {
+		sad_znaniy_security_log( $ip, '[lostpassword]', 'locked' );
+		$errors->add( 'sz_login_locked', sad_znaniy_security_lock_message( $left, $perm ) );
+		return;
+	}
+
+	if ( empty( $user_data ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$login = isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['user_login'] ) ) : '';
+		sad_znaniy_security_register_failure( $ip, '[lostpassword] ' . $login );
+	}
+}
+add_action( 'lostpassword_post', 'sad_znaniy_security_lostpassword', 10, 2 );
+
+/**
+ * POST с паролем к закрытой записи (postpass) — третья форма, где перебирают
+ * пароли. Счётчик по ней ядро не отдаёт, но действующую блокировку уважаем.
+ *
+ * @return void
+ */
+function sad_znaniy_security_postpass_guard() {
+	if ( empty( $_POST['post_password'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return;
+	}
+
+	$ip   = sad_znaniy_security_client_ip();
+	$left = sad_znaniy_security_lock_time( sad_znaniy_security_get_row( $ip ) ) - time();
+	$perm = sad_znaniy_security_permanent_has( $ip );
+
+	if ( $left > 0 || $perm ) {
+		sad_znaniy_security_log( $ip, '[postpass]', 'locked' );
+		status_header( 403 );
+		nocache_headers();
+		header( 'Content-Type: text/plain; charset=utf-8' );
+		exit( esc_html( sad_znaniy_security_lock_message( $left, $perm ) ) );
+	}
+}
+add_action( 'init', 'sad_znaniy_security_postpass_guard', 1 );
 
 /**
  * Успешный вход: снимаем счётчик и пишем в журнал.
@@ -501,7 +926,13 @@ function sad_znaniy_security_handle_actions() {
 	if ( 'unlock' === $action && '' !== $ip ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->delete( $tries, array( 'ip' => $ip ), array( '%s' ) );
-		$message = 'IP разблокирован: ' . $ip;
+		sad_znaniy_security_permanent_remove( $ip );
+		$message = 'IP разблокирован и убран из постоянного списка: ' . $ip;
+	} elseif ( 'perm_delete' === $action && '' !== $ip ) {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->delete( $tries, array( 'ip' => $ip ), array( '%s' ) );
+		sad_znaniy_security_permanent_remove( $ip );
+		$message = 'IP удалён из постоянного списка: ' . $ip;
 	} elseif ( 'unlock_all' === $action ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "TRUNCATE TABLE {$tries}" );
@@ -577,7 +1008,25 @@ function sad_znaniy_security_page() {
 	echo sad_znaniy_security_status_line( 'Принудительный HTTPS в админке', defined( 'FORCE_SSL_ADMIN' ) && FORCE_SSL_ADMIN, 'FORCE_SSL_ADMIN — включается автоматически, когда WP_ENVIRONMENT_TYPE не local' );
 	echo sad_znaniy_security_status_line( 'Заголовки безопасности', has_action( 'send_headers', 'sad_znaniy_security_headers' ), 'X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy + CSP на фронтенде' );
 	echo sad_znaniy_security_status_line( 'Локальная аватарка', has_filter( 'get_avatar_data', 'sad_znaniy_security_local_avatar' ), 'Gravatar отключён: сайт не делает внешних запросов' );
-	echo sad_znaniy_security_status_line( 'Лимитер входов', true, sprintf( '%d неудач → блок %d мин (окно %d мин), журнал %d дней', (int) $settings['max_attempts'], (int) $settings['lock'], (int) $settings['window'], (int) $settings['log_days'] ) );
+	echo sad_znaniy_security_status_line( 'Лимитер входов', true, sprintf( '%d неудач → блок %d мин (окно %d мин), журнал %d дней; покрыты вход, сброс пароля и пароль к закрытым записям', (int) $settings['max_attempts'], (int) $settings['lock'], (int) $settings['window'], (int) $settings['log_days'] ) );
+	echo sad_znaniy_security_status_line(
+		'Эскалация блокировок',
+		true,
+		sprintf(
+			'%d-й блок за %d ч → %d мин; с %d-го блока → %d сут. и постоянный список (сейчас в нём %d IP)',
+			(int) $settings['escalate_after'],
+			(int) $settings['escalate_window'],
+			(int) $settings['escalate_lock'],
+			(int) $settings['permanent_after'],
+			(int) round( (int) $settings['permanent_lock'] / 1440 ),
+			count( sad_znaniy_security_permanent_all() )
+		)
+	);
+	echo sad_znaniy_security_status_line(
+		'Письма о блокировках',
+		! empty( $settings['notify'] ),
+		sprintf( 'не чаще 1 письма в %d мин на IP, с агрегатом попыток; попадание в постоянный список — отдельным письмом', (int) round( (int) $settings['notify_interval'] / 60 ) )
+	);
 	echo sad_znaniy_security_status_line( 'Лог ошибок вне webroot', '' !== $log_path && false === strpos( $log_path, 'wp-content' ), $log_path ? $log_path : 'не задан' );
 	echo sad_znaniy_security_status_line( 'Загрузки (uploads)', is_dir( $uploads['basedir'] ), $uploads['basedir'] );
 	echo '</tbody></table>';
@@ -718,6 +1167,29 @@ function sad_znaniy_security_page_tables() {
 	echo '<input type="hidden" name="sz_security_action" value="unlock_all">'
 		. '<button class="button">Сбросить все счётчики</button>'
 		. '</form>';
+
+	$perm_list = sad_znaniy_security_permanent_all();
+	echo '<h2>Постоянный список (30 дней)</h2>';
+	if ( empty( $perm_list ) ) {
+		echo '<p>Список пуст — IP с шестью блокировками за сутки пока не было.</p>';
+	} else {
+		echo '<form method="post"><table class="widefat striped"><thead><tr><th>IP</th><th>Когда попал</th><th>Блокировок</th><th>Попыток за сутки</th><th>Логины</th><th>Устройство</th><th></th></tr></thead><tbody>';
+		wp_nonce_field( 'sz_security_action' );
+		foreach ( $perm_list as $perm_ip => $perm_row ) {
+			$perm_row    = is_array( $perm_row ) ? $perm_row : array();
+			$perm_logins = ! empty( $perm_row['logins'] ) && is_array( $perm_row['logins'] ) ? implode( ', ', $perm_row['logins'] ) : '—';
+			echo '<tr><td><code>' . esc_html( (string) $perm_ip ) . '</code></td><td>'
+				. esc_html( sad_znaniy_security_local_time( isset( $perm_row['since'] ) ? (string) $perm_row['since'] : '' ) ) . '</td><td>'
+				. (int) ( isset( $perm_row['locks'] ) ? $perm_row['locks'] : 0 ) . '</td><td>'
+				. (int) ( isset( $perm_row['attempts'] ) ? $perm_row['attempts'] : 0 ) . '</td><td>'
+				. esc_html( $perm_logins ) . '</td><td>'
+				. esc_html( mb_substr( (string) ( isset( $perm_row['agent'] ) ? $perm_row['agent'] : '' ), 0, 40 ) ) . '</td><td>'
+				. '<input type="hidden" name="sz_security_action" value="perm_delete"><input type="hidden" name="sz_security_ip" value="' . esc_attr( (string) $perm_ip ) . '">'
+				. '<button class="button button-small">Удалить из списка</button></td></tr>';
+		}
+		echo '</tbody></table></form>';
+	}
+	echo '<p class="description">Файл списка (вне webroot): <code>' . esc_html( sad_znaniy_security_permanent_file() ) . '</code>. Удаление из списка сразу снимает и блокировку в таблице попыток.</p>';
 
 	echo '<h2>Журнал входов (последние 25)</h2>';
 	if ( empty( $entries ) ) {
