@@ -149,6 +149,29 @@
 | 4. Лог | `ls -l /home/n/novidesiru/znai-sad/logs/` (файла нет = ошибок не было) | без новых ошибок |
 | 5. Крон | `php8.3 wp-cli.phar --path=public_html cron event list` | без просроченных |
 
+### Деплой 06.11.2026 — фавиконы (вариант В5)
+
+Коммиты `26a57d4` (иконки + `includes/favicons.php`) и `bcd9bc9` (`favicon.ico` в корне).
+
+| Что | Факт |
+|---|---|
+| Способ | `pscp` на боевой сервер. Схема `git pull` + `rsync` пока не применима: клона `_repo` на сервере нет, а деплой-ключ GitHub выпущен только локально и серверу недоступен |
+| Бэкап | `~/znai-sad/backups/theme-before-favicons-2026-11-06.tar.gz` (1,6 МБ, вся тема) |
+| Загружено | `wp-content/themes/sad-znaniy/includes/favicons.php`, `wp-content/themes/sad-znaniy/functions.php` (+1 строка `require_once`), 5 файлов в `assets/img/favicons/`, `favicon.ico` в webroot |
+| md5 (прод = локально) | `favicon.ico` 5a0ddd90… · `favicon.svg` e54b115a… · `favicon-32.png` f3482a3c… · `favicon-16.png` b1495997… · `apple-touch-icon.png` b2eaa49c… · `favicons.php` c0af34d3… · `functions.php` 49c98510… |
+| Синтаксис | `php8.3 -l` по `favicons.php` и `functions.php` — без ошибок |
+| `.htaccess` | sha256 `33fb1c36…22a30` — совпал с преддеплойным, файл не тронут |
+| Права | `wp-config.php` 600, `.htaccess` 644, `uploads` 755 |
+| Smoke | `/`, `/stati/`, `/kalendar/`, `/kalkulyatory/`, `/planirovshchik/` → 200 |
+| Иконки на боевом | `/favicon.ico` 200 `image/vnd.microsoft.icon` 4398 Б (больше не заглушка WP) · `favicon.svg` 200 `image/svg+xml` · `favicon-32.png` 200 · `apple-touch-icon.png` 200; в `<head>` пять `<link>` с `?ver=1793982937…` |
+| Логи | `logs/` пуст — новых ошибок нет |
+| Крон | 11 событий, просроченных нет |
+| Dev-папки | `_design` на проде отсутствует |
+
+`deploy/favicons-2026-11-06.zip` (SHA256 `2B926C6B…12DEC0`) — запасной артефакт для загрузки через панель, в этом деплое не использовался.
+
+**На будущее:** чтобы заработала git-схема из раздела выше, нужно создать на сервере `_repo` и выдать серверу доступ к GitHub; до тех пор деплой идёт локальным `pscp`.
+
 ### Доработка лимитера входов (6.11.2026, вне батча B)
 
 Запрос владельца по брутфорсу с IP `138.68.142.96` (DigitalOcean) — выполнено отдельно, к внешнему SEO-контуру не относится.
