@@ -353,12 +353,5 @@ $section_links = array(
 		</div>
 	</section>
 
-	<!-- ================= БАННЕР ПЕРЕД ПОДВАЛОМ ================= -->
-	<section class="home-banner">
-		<div class="inner">
-			<img src="<?php echo esc_url( $img . '/bannersad.jpg' ); ?>" alt="<?php esc_attr_e( 'Сад знаний — полезная база садовода: календарь работ, калькуляторы и планировщик', 'sad-znaniy' ); ?>" width="1200" height="800" loading="lazy" decoding="async">
-		</div>
-	</section>
-
 <?php
 get_footer();
