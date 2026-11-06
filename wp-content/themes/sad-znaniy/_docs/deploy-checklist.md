@@ -120,12 +120,12 @@
 
 | Что | Значение |
 |---|---|
-| Репозиторий (origin) | `https://github.com/annycypher/znai-sad.git` ⏳ подтверждение владельца |
+| Репозиторий (origin) | `git@github-znai-sad:annycypher/znai-sad.git` (он же `https://github.com/annycypher/znai-sad`) — доступ подтверждён 06.11.2026 |
 | Локальный корень | `C:\Users\krs3d\Local Sites\sadznaniy\app\public` |
 | Локальный предпросмотр | `http://sadznaniy.local/` |
 | Боевой сервер (SSH) | `novidesiru@77.222.61.245`, webroot `/home/n/novidesiru/znai-sad/public_html` |
 | Клон на сервере | `/home/n/novidesiru/znai-sad/_repo` (вне webroot, закрыт правилом 404) ⏳ создаётся при первом деплое через git |
-| Ключ деплоя | SSH-ключ сервера добавляется в GitHub → Settings → Deploy keys (только чтение) ⏳ владелец репозитория |
+| Ключ деплоя | Локальный ключ `~/.ssh/id_znai_sad` (ed25519, без пароля) + алиас `github-znai-sad` в `~/.ssh/config`; в GitHub → Settings → Deploy keys добавлен **с правом записи**. Проверено `git push` 06.11.2026: `1f87a5c..0470c54 main -> main`, `ahead=0` |
 
 ### Схема
 
@@ -207,7 +207,7 @@ rsync -a --delete ... (та же команда, что выше)
 | Мусор в рабочем дереве | закрыт | _docs/shots/ и _design/*-*.png добавлены в .gitignore |
 | Крон сайта | включён | панель sweb, задача `znai-sad-wp-cron`, `*/5 * * * *`, драйвер `~/znai-sad-cron-driver.sh`; тики 13:40:01, 13:45:01, 13:50:01 и 14:05:01 MSK — `rc=0`, маркер `sz_last_cron_run` пишется, просрочек нет. Правка задачи руками в панели (13:50–14:00) дважды ломала её: `5` вместо `*/5` в «Минутах» и попадание в «Команду» префикса расписания либо вывода `wp cron event list`. Исправлено через JSON-RPC `/vh/cron` (`removeTask` / `addTask`) |
 | HSTS | ждёт | включаем после подтверждения Let's Encrypt («LE ок») |
-| git push | ждёт | нужен deploy key или PAT для github.com/annycypher/znai-sad |
+| git push | готово | deploy key с правом записи добавлен владельцем 06.11.2026; `origin` переведён на `git@github-znai-sad:annycypher/znai-sad.git`; отправлено `1f87a5c..0470c54 main -> main`, `ahead=0 behind=0`, рабочее дерево чистое |
 ## Приложение А. DNS-инструкции (не зависят от выбора хостинга)
 
 **Кто за что отвечает.** Домен живёт у **регистратора**, сайт — на **хостинге**; между собой они связаны DNS-записями. Пока домен не делегирован, ни один A/CNAME не подействует.
