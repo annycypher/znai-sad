@@ -430,7 +430,48 @@ function sad_znaniy_programmatic_maybe_scan() {
 add_action( 'init', 'sad_znaniy_programmatic_maybe_scan', 25 );
 
 /**
- * Отдаёт sitemap.xml (статические + «живые» программатик-страницы).
+ * Ядерные карты сайта (wp-sitemap.xml) отключены: у проекта своя /sitemap.xml
+ * (статические + «живые» программатик-страницы + лунный календарь).
+ */
+add_filter( 'wp_sitemaps_enabled', '__return_false' );
+
+/**
+ * Общий lastmod для статических URL: последняя правка контента (GMT, ISO 8601).
+ *
+ * @return string
+ */
+function sad_znaniy_sitemap_lastmod_default() {
+	$stamp = 0;
+	$mod   = (string) get_lastpostmodified( 'gmt' );
+	if ( '' !== $mod ) {
+		$stamp = (int) strtotime( $mod . ' GMT' );
+	}
+	if ( $stamp <= 0 ) {
+		$stamp = time();
+	}
+	return gmdate( 'c', $stamp );
+}
+
+/**
+ * Тег <lastmod> для URL карты сайта.
+ *
+ * @param string|int $value Дата (ISO, MySQL) или метка времени.
+ * @return string Пустая строка, если дату не удалось разобрать.
+ */
+function sad_znaniy_sitemap_lastmod_tag( $value ) {
+	if ( '' === (string) $value ) {
+		return '';
+	}
+	$stamp = is_numeric( $value ) ? (int) $value : (int) strtotime( (string) $value );
+	if ( $stamp <= 0 ) {
+		return '';
+	}
+	return '<lastmod>' . esc_html( gmdate( 'c', $stamp ) ) . '</lastmod>';
+}
+
+/**
+ * Отдаёт sitemap.xml (статические + «живые» программатик-страницы + лунный календарь).
+ * Для каждой ссылки — дата последнего изменения.
  */
 function sad_znaniy_programmatic_sitemap() {
 	if ( 1 !== (int) get_query_var( 'sad_sitemap' ) ) {
@@ -441,21 +482,27 @@ function sad_znaniy_programmatic_sitemap() {
 	header( 'Content-Type: application/xml; charset=utf-8' );
 
 	$pages  = get_option( 'sad_znaniy_programmatic_pages', array() );
-	$static = array( home_url( '/' ), home_url( '/kalendar/' ), home_url( '/rasteniya/' ) );
+	$last   = sad_znaniy_sitemap_lastmod_default();
+	$static = array(
+		home_url( '/' )           => $last,
+		home_url( '/kalendar/' )  => $last,
+		home_url( '/rasteniya/' ) => $last,
+	);
 
 	echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 	echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-	foreach ( $static as $u ) {
-		echo "\t<url><loc>" . esc_url( $u ) . "</loc></url>\n";
+	foreach ( $static as $u => $mod ) {
+		echo "\t<url><loc>" . esc_url( $u ) . '</loc>' . sad_znaniy_sitemap_lastmod_tag( $mod ) . "</url>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- собрано esc_* выше.
 	}
 	foreach ( $pages as $page ) {
 		if ( 'live' === sad_znaniy_programmatic_status( $page ) ) {
-			echo "\t<url><loc>" . esc_url( $page['url'] ) . "</loc></url>\n";
+			$mod = ! empty( $page['enabled_at'] ) ? (string) $page['enabled_at'] : $last;
+			echo "\t<url><loc>" . esc_url( $page['url'] ) . '</loc>' . sad_znaniy_sitemap_lastmod_tag( $mod ) . "</url>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- собрано esc_* выше.
 		}
 	}
 	if ( function_exists( 'sad_znaniy_moon_sitemap_urls' ) ) {
 		foreach ( sad_znaniy_moon_sitemap_urls() as $moon_url ) {
-			echo "\t<url><loc>" . esc_url( $moon_url ) . "</loc></url>\n";
+			echo "\t<url><loc>" . esc_url( $moon_url ) . '</loc>' . sad_znaniy_sitemap_lastmod_tag( $last ) . "</url>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- собрано esc_* выше.
 		}
 	}
 	echo '</urlset>';
@@ -464,16 +511,36 @@ function sad_znaniy_programmatic_sitemap() {
 add_action( 'template_redirect', 'sad_znaniy_programmatic_sitemap', 1 );
 
 /**
- * Дописывает ссылку на sitemap в robots.txt.
+ * Полный robots.txt проекта (Этап 8.2).
  *
- * @param string $output Содержимое robots.txt.
+ * Одна строка Sitemap — только https://znai-sad.ru/sitemap.xml:
+ * ядерная карта wp-sitemap.xml отключена и в robots не светится.
+ *
+ * Параметры фильтров (/kalendar/?region=…&month=…) не закрываем:
+ * у SSR-страниц есть rel=canonical на чистый URL.
+ *
+ * @param string $output Содержимое robots.txt, собранное WordPress.
  * @return string
  */
 function sad_znaniy_programmatic_robots( $output ) {
-	$output .= "\nSitemap: " . home_url( '/sitemap.xml' ) . "\n";
-	return $output;
+	$lines = array(
+		'User-agent: *',
+		'Disallow: /wp-admin/',
+		'Allow: /wp-admin/admin-ajax.php',
+		'Disallow: /wp-login.php',
+		'Disallow: /wp-json/',
+		'Disallow: /moi-plany/',
+		'Disallow: /author/',
+		'Disallow: /feed/',
+		'Disallow: /*?s=',
+		'',
+		'Sitemap: ' . home_url( '/sitemap.xml' ),
+	);
+
+	return implode( "\n", $lines ) . "\n";
 }
-add_filter( 'robots_txt', 'sad_znaniy_programmatic_robots' );
+add_filter( 'robots_txt', 'sad_znaniy_programmatic_robots', 20 );
+
 
 /**
  * Параметры растения для блока на программатик-странице.
