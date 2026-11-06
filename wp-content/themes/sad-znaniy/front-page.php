@@ -333,24 +333,7 @@ $section_links = array(
 				<a href="#" class="btn btn-light" style="padding:10px 22px; min-height:42px; font-size:12.5px;">Подробнее</a>
 			</div>
 			<div class="plan-mini">
-				<svg viewBox="0 0 320 200" role="img" aria-label="Схема участка в планировщике">
-					<rect width="320" height="200" rx="14" fill="#EFF1F3"/>
-					<rect x=".5" y=".5" width="319" height="199" rx="14" fill="none" stroke="#fff" stroke-width="2"/>
-					<rect x="205" y="28" width="88" height="58" rx="6" fill="#2E3A31"/>
-					<polygon points="200,28 249,6 298,28" fill="#222B25"/>
-					<rect x="235" y="50" width="20" height="26" rx="2" fill="#EDF7EE"/>
-					<rect x="25" y="32" width="92" height="16" rx="5" fill="#9FB8A5"/>
-					<rect x="25" y="58" width="92" height="16" rx="5" fill="#9FB8A5"/>
-					<rect x="25" y="84" width="92" height="16" rx="5" fill="#9FB8A5"/>
-					<circle cx="160" cy="56" r="15" fill="#7FA689"/><rect x="157" y="68" width="6" height="13" fill="#6E6252"/>
-					<circle cx="158" cy="112" r="12" fill="#7FA689" opacity=".85"/><rect x="156" y="121" width="5" height="11" fill="#6E6252"/>
-					<rect x="30" y="132" width="70" height="32" rx="6" fill="#fff" stroke="#9FB8A5" stroke-width="2"/>
-					<path d="M30 148h70M65 132v32" stroke="#9FB8A5" stroke-width="1.4"/>
-					<path d="M122 200 C 132 156, 178 136, 212 98" fill="none" stroke="#D8DDE0" stroke-width="13" stroke-linecap="round"/>
-					<text x="248" y="108" font-size="11" fill="#5C645D" font-family="sans-serif">Дом</text>
-					<text x="40" y="78" font-size="10" fill="#fff" font-family="sans-serif">Грядки</text>
-					<text x="42" y="152" font-size="10" fill="#41544A" font-family="sans-serif">Теплица</text>
-				</svg>
+				<img src="<?php echo esc_url( $img . '/plan-uchastka.jpg' ); ?>" alt="План участка: дом, теплица, грядки и дорожки" loading="lazy" width="800" height="533">
 				<p style="text-align:center; font-size:13px; margin:9px 0 13px;">Схема участка в планировщике</p>
 				<div style="text-align:center;"><a href="<?php echo esc_url( home_url( '/planirovshchik/' ) ); ?>" class="btn btn-dark" style="padding:10px 22px; min-height:42px; font-size:12.5px;">Попробовать</a></div>
 			</div>

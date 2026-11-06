@@ -406,6 +406,7 @@ a:hover > .circle-go, .tile:hover .circle-go, .tool-card:hover .circle-go{ trans
 .about-panel h2{ font-size:20px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; margin-bottom:10px; }
 .about-panel p{ font-size:14.5px; color:var(--muted); margin-bottom:16px; }
 .plan-mini svg{ width:100%; height:auto; border-radius:var(--r-md); box-shadow:var(--neu-sm); border:1px solid rgba(255,255,255,.9); }
+.plan-mini img{ display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; border-radius:var(--r-md); box-shadow:var(--neu-sm); border:1px solid rgba(255,255,255,.9); }
 .contact-list li{ display:flex; align-items:center; gap:11px; padding:7px 0; font-size:14px; }
 .contact-list svg{ color:var(--accent-ink); flex-shrink:0; }
 .contact-list a{ transition:color .2s; }
