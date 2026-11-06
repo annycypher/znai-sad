@@ -243,9 +243,9 @@ add_action( 'template_redirect', 'sad_znaniy_security_block_author', 5 );
  * @return void
  */
 function sad_znaniy_security_headers() {
-	header( 'X-Content-Type-Options: nosniff' );
+	// X-Content-Type-Options и Referrer-Policy ставит .htaccess (Header always set),
+	// чтобы заголовки не дублировались в ответе — батч A′-2 (06.11.2026).
 	header( 'X-Frame-Options: SAMEORIGIN' );
-	header( 'Referrer-Policy: strict-origin-when-cross-origin' );
 	header( 'Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()' );
 	header( 'Cross-Origin-Opener-Policy: same-origin' );
 

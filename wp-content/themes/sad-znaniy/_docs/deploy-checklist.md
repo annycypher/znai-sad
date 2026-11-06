@@ -206,7 +206,7 @@ rsync -a --delete ... (та же команда, что выше)
 | WordPress | прод 7.1.4, локаль 7.1.4 | прод обновил хостинг сам; локаль догнана 7.1.3 → 7.1.4, wp_db_version тот же (61833) |
 | Мусор в рабочем дереве | закрыт | _docs/shots/ и _design/*-*.png добавлены в .gitignore |
 | Крон сайта | включён | панель sweb, задача `znai-sad-wp-cron`, `*/5 * * * *`, драйвер `~/znai-sad-cron-driver.sh`; тики 13:40:01, 13:45:01, 13:50:01 и 14:05:01 MSK — `rc=0`, маркер `sz_last_cron_run` пишется, просрочек нет. Правка задачи руками в панели (13:50–14:00) дважды ломала её: `5` вместо `*/5` в «Минутах» и попадание в «Команду» префикса расписания либо вывода `wp cron event list`. Исправлено через JSON-RPC `/vh/cron` (`removeTask` / `addTask`) |
-| HSTS | ждёт | включаем после подтверждения Let's Encrypt («LE ок») |
+| HSTS | включён 06.11.2026 14:23 MSK | `Header always set Strict-Transport-Security "max-age=31536000"` в `.htaccess`; дубли `X-Content-Type-Options` и `Referrer-Policy` убраны из `includes/security.php` (`php -l` чист, файл на проде совпадает по SHA с локальным). Проверка curl: HSTS = 1, `X-Content-Type-Options` = 1, `Referrer-Policy` = 1, 5 страниц smoke — все 200. Новый SHA эталона `33fb1c36…4d29`, копия прежнего — `_upload/backup-2026-11-06-htaccess.txt` |
 | git push | готово | deploy key с правом записи добавлен владельцем 06.11.2026; `origin` переведён на `git@github-znai-sad:annycypher/znai-sad.git`; отправлено `1f87a5c..0470c54 main -> main`, `ahead=0 behind=0`, рабочее дерево чистое |
 ## Приложение А. DNS-инструкции (не зависят от выбора хостинга)
 
@@ -285,12 +285,23 @@ RedirectMatch 404 \.(sql|zip|log|bak|old|ps1|md)$
 
 # --- Базовые заголовки (страховка, если PHP-заголовки не доедут) ---
 <IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000"
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 ```
 
 Важно: правило `\.md$` закрывает и `_docs` — документы остаются в репозитории, в web им не место.
+
+#### История эталона `.htaccess`
+
+Эталон — `_upload/htaccess-production.txt` (побайтовая копия боевого файла). Перед любой правкой снимается копия `_upload/backup-<дата>-htaccess.txt`, после правки эталон перезаписывается, в таблицу добавляется строка.
+
+| Дата (MSK) | Что изменилось | SHA-256 боевого `.htaccess` | Копия перед правкой |
+|---|---|---|---|
+| 04.11.2026 | первичная настройка после переноса: лимиты PHP, 404-правила, wp-cron, базовые заголовки | `cabe5a9181c0659d7f5718f008428d03c62926ffd3fc28c6644652081c759872` | `htaccess-panel-backup.txt` (версия от панели) |
+| 06.11.2026 09:38 | батч A′: сверка эталона с боевым, правок нет | `cabe5a91…` (без изменений) | — |
+| 06.11.2026 14:23 | батч A′-2: добавлен HSTS `max-age=31536000`; дубли `X-Content-Type-Options` и `Referrer-Policy` убраны из `includes/security.php` (остаются только в `.htaccess`) | `33fb1c3612b288c35389b18d7ee177faafd2afedcfa7cfb96aedf72030022a30` | `backup-2026-11-06-htaccess.txt` |
 
 ### В.2. Nginx (если сервер nginx или nginx+apache — правила в блок `server`)
 
