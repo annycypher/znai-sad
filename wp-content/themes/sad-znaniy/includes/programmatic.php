@@ -500,7 +500,18 @@ function sad_znaniy_programmatic_sitemap() {
 			echo "\t<url><loc>" . esc_url( $page['url'] ) . '</loc>' . sad_znaniy_sitemap_lastmod_tag( $mod ) . "</url>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- собрано esc_* выше.
 		}
 	}
-	if ( function_exists( 'sad_znaniy_moon_sitemap_urls' ) ) {
+	// Статьи (post): все опубликованные, lastmod — дата последней правки (GMT).
+	$items = get_posts(
+		array(
+			'post_type'      => 'post',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'no_found_rows'  => true,
+		)
+	);
+	foreach ( $items as $item ) {
+		echo "\t<url><loc>" . esc_url( get_permalink( $item ) ) . '</loc>' . sad_znaniy_sitemap_lastmod_tag( (string) $item->post_modified_gmt ) . "</url>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- собрано esc_* выше.
+	}	if ( function_exists( 'sad_znaniy_moon_sitemap_urls' ) ) {
 		foreach ( sad_znaniy_moon_sitemap_urls() as $moon_url ) {
 			echo "\t<url><loc>" . esc_url( $moon_url ) . '</loc>' . sad_znaniy_sitemap_lastmod_tag( $last ) . "</url>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- собрано esc_* выше.
 		}
