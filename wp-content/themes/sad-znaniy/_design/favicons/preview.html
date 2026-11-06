@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фавиконы «Сад знаний» — 5 вариантов (Этап 1)</title>
+<style>
+  :root{
+    --ink:#20241F; --muted:#5C645D; --accent:#68B96E; --accent-dark:#5CAF63;
+    --accent-soft:#EDF7EE; --bg:#E3E6EA; --line:rgba(32,36,31,.12);
+    --check-a:#ffffff; --check-b:#eceff1;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; padding:32px 20px 56px;
+    background:var(--bg); color:var(--ink);
+    font:16px/1.55 system-ui, "Segoe UI", Arial, sans-serif;
+  }
+  .wrap{ max-width:1120px; margin:0 auto; }
+  h1{ font-size:clamp(22px,2.6vw,30px); line-height:1.2; margin:0 0 8px; letter-spacing:.01em; }
+  .lead{ margin:0 0 8px; color:var(--muted); max-width:78ch; }
+  .lead b{ color:var(--ink); font-weight:600; }
+  .diag{
+    margin:20px 0 28px; padding:16px 18px; background:#fff; border-radius:14px;
+    border:1px solid var(--line); font-size:14.5px;
+  }
+  .diag ul{ margin:8px 0 0; padding-left:20px; }
+  .diag li{ margin:3px 0; }
+  code{
+    background:var(--accent-soft); border-radius:5px; padding:1px 5px;
+    font:13px/1.4 ui-monospace, Consolas, monospace;
+  }
+  .grid{ display:grid; gap:20px; grid-template-columns:repeat(auto-fill, minmax(500px, 1fr)); }
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:20px; display:flex; flex-direction:column; gap:16px;
+  }
+  .card h2{ font-size:19px; margin:0; display:flex; align-items:baseline; gap:10px; }
+  .tag{
+    font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#fff; background:var(--accent-dark); border-radius:999px; padding:3px 9px;
+  }
+  .what{ margin:0; font-size:14.5px; color:var(--muted); }
+  .what b{ color:var(--ink); font-weight:600; }
+  .row{ display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
+  .master{
+    width:180px; height:180px; border-radius:12px; border:1px solid var(--line);
+    background-image:
+      linear-gradient(45deg, var(--check-b) 25%, transparent 25%, transparent 75%, var(--check-b) 75%),
+      linear-gradient(45deg, var(--check-b) 25%, transparent 25%, transparent 75%, var(--check-b) 75%);
+    background-size:16px 16px; background-position:0 0, 8px 8px;
+  }
+  .master img{ width:100%; height:100%; display:block; image-rendering:auto; }
+  .sizes{ display:flex; flex-direction:column; gap:10px; }
+  .size-line{ display:flex; align-items:center; gap:12px; }
+  .size-line span{ font-size:12.5px; color:var(--muted); min-width:52px; font-variant-numeric:tabular-nums; }
+  .size-line img{ display:block; }
+  .zoom{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    font-size:12px; color:var(--muted);
+  }
+  .zoom img{
+    width:128px; height:128px; image-rendering:pixelated;
+    border-radius:10px; border:1px solid var(--line); background:#fff;
+  }
+  .tabs{ display:flex; flex-direction:column; gap:10px; }
+  .tab{
+    display:flex; align-items:center; gap:10px; width:100%; max-width:460px;
+    padding:8px 14px 8px 12px; border-radius:10px 10px 0 0; font-size:13.5px;
+  }
+  .tab img{ width:16px; height:16px; display:block; flex:none; }
+  .tab .title{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tab.light{ background:#dee1e6; color:#3c4043; }
+  .tab.dark{ background:#2b2b2b; color:#e8eaed; }
+  .files{ font-size:13px; color:var(--muted); }
+  .files a{ color:var(--accent-dark); text-decoration:none; border-bottom:1px solid rgba(92,175,99,.35); }
+  .files a:hover{ border-bottom-color:var(--accent-dark); }
+  footer{ margin-top:32px; font-size:13.5px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Фавиконы «Сад знаний» — 5 вариантов</h1>
+  <p class="lead">
+    Этап 1: мастера <b>512×512</b>, только локально (<code>_design/favicons/</code>), на сайт ничего не выложено.
+    Источник — векторный знак темы (<code>assets/img/favicon.svg</code>, viewBox <code>0 0 44.17 51.39</code>),
+    цвета — из <code>assets/css/design-tokens.css</code>. Шрифт вордмарка и монограммы — фирменный
+    Golos Text из <code>assets/fonts/*.woff2</code>.
+  </p>
+
+  <div class="diag">
+    <b>Диагностика до работы</b>
+    <ul>
+      <li>В <code>head</code> сайта нет ни <code>rel="icon"</code>, ни <code>apple-touch-icon</code>; опция WordPress
+          «Иконка сайта» (<code>site_icon</code>) — <b>не задана</b>; файла <code>favicon.ico</code> в проекте нет.
+          Сейчас браузер показывает пустую иконку-заглушку.</li>
+      <li>Логотип — не картинка, а инлайн-символ <code>.logo-mark</code> + текст «САД ЗНАНИЙ» в шапке.
+          Значит «не растягивать исходник выше ×2» не актуально: исходник векторный, масштабируется без потерь.</li>
+      <li>Инструменты: ImageMagick и расширение GD у PHP в системе недоступны, Pillow не читает SVG/WOFF2.
+          Поэтому мастера отрисованы локальным Chrome в headless-режиме (тот же вектор + фирменный шрифт),
+          уменьшения 16/32/64/180 px — Pillow (Lanczos). Сеть не используется.</li>
+    </ul>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2><span class="tag">В1</span> Полный логотип</h2>
+      <p class="what">Символ + вордмарк «САД ЗНАНИЙ» — точная копия lockup'а из шапки
+        (Golos Text 700, межбуквенный <code>.1em</code>). Плюс: сразу узнаётся сайт.
+        Минус: во вкладке 16 px вордмарк превращается в полоску, знак мелкий.
+        <br><b>Цвет:</b> <code>#20241F</code> (<code>--ink</code>).</p>
+      <div class="row">
+        <div class="master"><img src="variants/v1.png" alt="В1, мастер 512×512"></div>
+        <div class="sizes">
+          <div class="size-line"><span>180 px</span><img src="preview/v1-180.png" width="180" height="180" alt="В1, 180 px"></div>
+          <div class="size-line"><span>64 px</span><img src="preview/v1-64.png" width="64" height="64" alt="В1, 64 px"></div>
+          <div class="size-line"><span>32 px</span><img src="preview/v1-32.png" width="32" height="32" alt="В1, 32 px"></div>
+          <div class="size-line"><span>16 px</span><img src="preview/v1-16.png" width="16" height="16" alt="В1, 16 px"></div>
+        </div>
+        <div class="zoom"><img src="preview/v1-16.png" alt="В1, 16 px, увеличение ×8"><span>16 px ×8</span></div>
+        <div class="zoom"><img src="preview/v1-32.png" alt="В1, 32 px, увеличение ×4"><span>32 px ×4</span></div>
+      </div>
+      <div class="tabs">
+        <div class="tab light"><img src="preview/v1-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+        <div class="tab dark"><img src="preview/v1-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+      </div>
+      <p class="files">Файлы: <a href="variants/v1.png">мастер 512×512 PNG</a></p>
+    </section>
+
+    <section class="card">
+      <h2><span class="tag">В2</span> Только символ</h2>
+      <p class="what">Знак «росток в капле» крупно, поля ~10 %. Плюс: читается во всех размерах,
+        нет зависимости от шрифта — есть векторный мастер. Минус: не называет сайт.
+        <br><b>Цвет:</b> <code>#20241F</code> (<code>--ink</code>).</p>
+      <div class="row">
+        <div class="master"><img src="variants/v2.png" alt="В2, мастер 512×512"></div>
+        <div class="sizes">
+          <div class="size-line"><span>180 px</span><img src="preview/v2-180.png" width="180" height="180" alt="В2, 180 px"></div>
+          <div class="size-line"><span>64 px</span><img src="preview/v2-64.png" width="64" height="64" alt="В2, 64 px"></div>
+          <div class="size-line"><span>32 px</span><img src="preview/v2-32.png" width="32" height="32" alt="В2, 32 px"></div>
+          <div class="size-line"><span>16 px</span><img src="preview/v2-16.png" width="16" height="16" alt="В2, 16 px"></div>
+        </div>
+        <div class="zoom"><img src="preview/v2-16.png" alt="В2, 16 px, увеличение ×8"><span>16 px ×8</span></div>
+        <div class="zoom"><img src="preview/v2-32.png" alt="В2, 32 px, увеличение ×4"><span>32 px ×4</span></div>
+      </div>
+      <div class="tabs">
+        <div class="tab light"><img src="preview/v2-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+        <div class="tab dark"><img src="preview/v2-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+      </div>
+      <p class="files">Файлы: <a href="variants/v2.png">мастер 512×512 PNG</a>,
+        <a href="variants/v2.svg">векторный мастер SVG</a></p>
+    </section>
+
+    <section class="card">
+      <h2><span class="tag">В3</span> Монограмма «СЗ» на зелёной плашке</h2>
+      <p class="what">Плашка на весь холст, скругление 22 %, белые «СЗ» (Golos Text 700).
+        Плюс: максимальная читаемость в 16 px, цвет сразу выделяет вкладку среди серых.
+        Минус: буквы в шрифте — векторного мастера нет.
+        <br><b>Цвета:</b> плашка <code>#68B96E</code> (<code>--accent</code>), буквы <code>#FFFFFF</code>
+        (<code>--accent-on</code>).</p>
+      <div class="row">
+        <div class="master"><img src="variants/v3.png" alt="В3, мастер 512×512"></div>
+        <div class="sizes">
+          <div class="size-line"><span>180 px</span><img src="preview/v3-180.png" width="180" height="180" alt="В3, 180 px"></div>
+          <div class="size-line"><span>64 px</span><img src="preview/v3-64.png" width="64" height="64" alt="В3, 64 px"></div>
+          <div class="size-line"><span>32 px</span><img src="preview/v3-32.png" width="32" height="32" alt="В3, 32 px"></div>
+          <div class="size-line"><span>16 px</span><img src="preview/v3-16.png" width="16" height="16" alt="В3, 16 px"></div>
+        </div>
+        <div class="zoom"><img src="preview/v3-16.png" alt="В3, 16 px, увеличение ×8"><span>16 px ×8</span></div>
+        <div class="zoom"><img src="preview/v3-32.png" alt="В3, 32 px, увеличение ×4"><span>32 px ×4</span></div>
+      </div>
+      <div class="tabs">
+        <div class="tab light"><img src="preview/v3-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+        <div class="tab dark"><img src="preview/v3-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+      </div>
+      <p class="files">Файлы: <a href="variants/v3.png">мастер 512×512 PNG</a></p>
+    </section>
+
+    <section class="card">
+      <h2><span class="tag">В4</span> Символ на тёмной плашке</h2>
+      <p class="what">Плашка с градиентом шапки, знак акцентным зелёным. Плюс: фирменная пара цветов,
+        знак читается и в 16 px, есть векторный мастер. Минус: тёмная иконка менее заметна в тёмной теме браузера.
+        <br><b>Цвета:</b> плашка <code>#3A423B → #22271F</code> (градиент шапки),
+        знак <code>#68B96E</code> (<code>--accent</code>).</p>
+      <div class="row">
+        <div class="master"><img src="variants/v4.png" alt="В4, мастер 512×512"></div>
+        <div class="sizes">
+          <div class="size-line"><span>180 px</span><img src="preview/v4-180.png" width="180" height="180" alt="В4, 180 px"></div>
+          <div class="size-line"><span>64 px</span><img src="preview/v4-64.png" width="64" height="64" alt="В4, 64 px"></div>
+          <div class="size-line"><span>32 px</span><img src="preview/v4-32.png" width="32" height="32" alt="В4, 32 px"></div>
+          <div class="size-line"><span>16 px</span><img src="preview/v4-16.png" width="16" height="16" alt="В4, 16 px"></div>
+        </div>
+        <div class="zoom"><img src="preview/v4-16.png" alt="В4, 16 px, увеличение ×8"><span>16 px ×8</span></div>
+        <div class="zoom"><img src="preview/v4-32.png" alt="В4, 32 px, увеличение ×4"><span>32 px ×4</span></div>
+      </div>
+      <div class="tabs">
+        <div class="tab light"><img src="preview/v4-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+        <div class="tab dark"><img src="preview/v4-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+      </div>
+      <p class="files">Файлы: <a href="variants/v4.png">мастер 512×512 PNG</a>,
+        <a href="variants/v4.svg">векторный мастер SVG</a></p>
+    </section>
+
+    <section class="card">
+      <h2><span class="tag">В5</span> Белый символ на зелёной плашке</h2>
+      <p class="what">Тот же знак, что в В4, но белым на акцентном зелёном — сразу видно, «что за сайт».
+        Плюс: самый заметный вариант во вкладке, фирменный зелёный работает как маркер, есть векторный мастер.
+        Минус: контраст белого к зелёному ≈ 2,4:1, поэтому в 16 px тонкие лепестки чуть мягче, чем в В4.
+        <br><b>Цвета:</b> плашка <code>#68B96E</code> (<code>--accent</code>),
+        знак <code>#FFFFFF</code> (<code>--accent-on</code>).</p>
+      <div class="row">
+        <div class="master"><img src="variants/v5.png" alt="В5, мастер 512×512"></div>
+        <div class="sizes">
+          <div class="size-line"><span>180 px</span><img src="preview/v5-180.png" width="180" height="180" alt="В5, 180 px"></div>
+          <div class="size-line"><span>64 px</span><img src="preview/v5-64.png" width="64" height="64" alt="В5, 64 px"></div>
+          <div class="size-line"><span>32 px</span><img src="preview/v5-32.png" width="32" height="32" alt="В5, 32 px"></div>
+          <div class="size-line"><span>16 px</span><img src="preview/v5-16.png" width="16" height="16" alt="В5, 16 px"></div>
+        </div>
+        <div class="zoom"><img src="preview/v5-16.png" alt="В5, 16 px, увеличение ×8"><span>16 px ×8</span></div>
+        <div class="zoom"><img src="preview/v5-32.png" alt="В5, 32 px, увеличение ×4"><span>32 px ×4</span></div>
+      </div>
+      <div class="tabs">
+        <div class="tab light"><img src="preview/v5-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+        <div class="tab dark"><img src="preview/v5-16.png" alt=""><span class="title">Сад знаний — полезная база садовода</span></div>
+      </div>
+      <p class="files">Файлы: <a href="variants/v5.png">мастер 512×512 PNG</a>,
+        <a href="variants/v5.svg">векторный мастер SVG</a></p>
+    </section>
+  </div>
+
+  <footer>
+    Что дальше (Этап 2, после выбора варианта): ico 16/32/48, PNG 32, apple-touch-icon 180 без прозрачности,
+    <code>favicon.svg</code> из векторного мастера и подключение в <code>&lt;head&gt;</code>.
+    Пересборка мастеров: <code>py _design/favicons/_tools/build.py</code>.
+  </footer>
+</div>
+</body>
+</html>

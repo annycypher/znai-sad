@@ -1,0 +1,30 @@
+/* ==========================================================
+   Мастера фавиконов «Сад знаний» — общие стили страниц рендера.
+   Холст 512×512, фон прозрачный (Chrome: --default-background-color=00000000).
+
+   Шрифт Golos Text регистрируется скриптом font.js (FontFace из буфера):
+   @font-face из CSS в headless-Chromium остаётся в статусе «loading» и
+   не применяется, хотя файл скачивается. Признак готовности —
+   атрибут <html data-fonts="golos">, его ставит font.js.
+   ========================================================== */
+
+html, body{ margin:0; padding:0; background:transparent; }
+body{ width:512px; height:512px; overflow:hidden; }
+
+.canvas{
+    width:512px; height:512px; box-sizing:border-box;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:#20241F;
+}
+.plate{
+    width:512px; height:512px;
+    display:flex; align-items:center; justify-content:center;
+}
+.mark{ display:block; }
+.name{
+    font-family:'Golos Text', sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    line-height:1;
+    white-space:nowrap;
+}

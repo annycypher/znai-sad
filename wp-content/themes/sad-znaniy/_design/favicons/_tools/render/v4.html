@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>В4 — символ на тёмной плашке</title>
+<link rel="stylesheet" href="render.css">
+</head>
+<body>
+  <!-- Плашка на весь холст, скругление 112 px. Фон — тот же тёмный градиент, что у
+       шапки (main.css: linear-gradient(#3A423B → #22271F)), символ — --accent #68B96E.
+       Символ 300 px по высоте → поля 106 px снизу/сверху (≈ 21 %) — плашка работает
+       как «подложка», поэтому воздуха больше, чем в В2. -->
+  <div class="plate" style="background:linear-gradient(160deg,#3A423B,#22271F); border-radius:112px">
+    <img class="mark" src="../../source/logo-sad-green.svg" alt="" width="258" height="300">
+  </div>
+</body>
+</html>

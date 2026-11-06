@@ -23,6 +23,7 @@ require_once SAD_ZNANIY_DIR . '/includes/helpers.php';
 require_once SAD_ZNANIY_DIR . '/includes/cache.php';
 require_once SAD_ZNANIY_DIR . '/includes/ical.php';
 require_once SAD_ZNANIY_DIR . '/includes/assets.php';
+require_once SAD_ZNANIY_DIR . '/includes/favicons.php';
 require_once SAD_ZNANIY_DIR . '/includes/menus.php';
 require_once SAD_ZNANIY_DIR . '/includes/cpt-calendar-event.php';
 require_once SAD_ZNANIY_DIR . '/includes/cpt-plant.php';
