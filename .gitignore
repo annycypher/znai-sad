@@ -39,3 +39,7 @@ local-xdebuginfo.php
 .htaccess
 .DS_Store
 Thumbs.db
+
+# --- Снимки приёмки и черновые макеты: остаются локально ---
+/wp-content/themes/sad-znaniy/_docs/shots/
+/wp-content/themes/sad-znaniy/_design/*-*.png

@@ -164,6 +164,20 @@ rsync -a --delete ... (та же команда, что выше)
 - В git: тема `wp-content/themes/sad-znaniy`, документы `_docs`, `PROJECT-PLAN.md`, `TZ-CAL-SEO.md`, `.clinerules`.
 - Не в git: `wp-config.php`, `*.sql`, `*.zip`, `wp-content/uploads`, `wp-content/cache`, ядро WordPress (`.gitignore`).
 
+### Журнал батча A′ (6.11.2026)
+
+| Задача | Статус | Факт |
+|---|---|---|
+| Баннер-полоса перед подвалом на главной | готово | 1200x800, 231.3 КБ; главная 200, 76 995 Б; .tg-banner и подвал не тронуты |
+| robots.txt через фильтр robots_txt | готово | один блок User-agent: *, ровно одна строка Sitemap: https://znai-sad.ru/sitemap.xml |
+| Ядерная карта wp-sitemap.xml | отключена | wp_sitemaps_enabled = false, /wp-sitemap.xml отдаёт 404 |
+| sitemap.xml | 141 URL | 3 статических + 48 статей + программатик (live) + лунный календарь; lastmod у каждой; все 141 — 2xx |
+| Статьи в карте сайта | вариант 1 | все опубликованные записи, lastmod = post_modified_gmt; canonical статьи совпадает с loc |
+| Целостность темы на проде | базовая линия переснята | 124 файла, changed = 0, removed = 0, added = 0, время 06.11.2026 09:32 |
+| WordPress | прод 7.1.4, локаль 7.1.4 | прод обновил хостинг сам; локаль догнана 7.1.3 → 7.1.4, wp_db_version тот же (61833) |
+| Мусор в рабочем дереве | закрыт | _docs/shots/ и _design/*-*.png добавлены в .gitignore |
+| HSTS | ждёт | включаем после подтверждения Let's Encrypt («LE ок») |
+| git push | ждёт | нужен deploy key или PAT для github.com/annycypher/znai-sad |
 ## Приложение А. DNS-инструкции (не зависят от выбора хостинга)
 
 **Кто за что отвечает.** Домен живёт у **регистратора**, сайт — на **хостинге**; между собой они связаны DNS-записями. Пока домен не делегирован, ни один A/CNAME не подействует.
