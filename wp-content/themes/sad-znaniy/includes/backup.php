@@ -170,7 +170,7 @@ function sad_znaniy_backup_dump_php( $file ) {
  * @return array
  */
 function sad_znaniy_backup_skip() {
-	return array( '_tools/', '_docs/', '_design/', '_game-test/', 'deploy/', 'backups/', 'cache/', 'upgrade/', 'ai1wm-backups/', 'node_modules/', '.git/', 'debug.log', '.DS_Store', 'Thumbs.db', '.sql', '.zip', '.log' );
+	return array( '_docs/', '_design/', '_game-test/', 'deploy/', 'backups/', 'cache/', 'upgrade/', 'ai1wm-backups/', 'node_modules/', '.git/', 'debug.log', '.DS_Store', 'Thumbs.db', '.sql', '.zip', '.log' );
 }
 
 /**

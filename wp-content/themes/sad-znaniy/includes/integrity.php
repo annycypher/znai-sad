@@ -195,7 +195,7 @@ function sad_znaniy_integrity_check_core() {
  */
 function sad_znaniy_integrity_theme_hashes() {
 	$dir    = rtrim( get_template_directory(), '/\\' );
-	$skip   = array( '/_tools/', '/_docs/', '/_design/', '/node_modules/', '/.git/' );
+	$skip   = array( '/_docs/', '/_design/', '/node_modules/', '/.git/' );
 	$map    = array();
 	$it     = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS ) );
 	foreach ( $it as $file ) {
