@@ -189,6 +189,21 @@
 
 IMAP/POP3 сайту не нужны — они только для почтовых программ владельца (`imap.spaceweb.ru:143/993`, `pop3.spaceweb.ru:110/995`).
 
+### Деплой через git: настройка и первый прогон (16.11.2026)
+
+| Что | Факт |
+|---|---|
+| Ключ сервера | `~/.ssh/id_github_znai_sad` (ed25519, без пароля, 600), добавлен в GitHub как deploy key **«sad-znaniy-server»**, `SHA256:L7IGHnGEW5aOzbAy9vdOp0/0aweE+5eItUnF7auqqAs`, **без права записи**. Ключ `sad-znaniy` (`SHA256:m+eUuzd0…`, read/write) — это ключ рабочего ПК для `push`, сервер им не пользуется |
+| known_hosts / config | `ssh-keyscan -t ed25519,rsa github.com` → 4 записи; `~/.ssh/config`: `Host github.com` + `IdentityFile` + `IdentitiesOnly yes` |
+| Клон | `/home/n/novidesiru/znai-sad/_repo` ← `git clone git@github.com:annycypher/znai-sad.git`; HEAD `7963364`, `main...origin/main` |
+| Скрипт деплоя | `~/znai-sad/deploy.sh` (750): `git pull --ff-only` → `rsync -a --delete` темы с `--exclude _design,_docs,_tools,_templates` → проверки (права, sha256 `.htaccess`, `php8.3 -l functions.php`, дата) |
+| Dry-run до прогона | 1 удаление — `assets/img/calculators/` (пустая папка, 0 файлов; код и так показывает иконку при отсутствии файла), 1 новый файл — `ADMINGUIDE.md`, 143 файла отличались **только переводами строк** CRLF↔LF (проверено `diff -rq --strip-trailing-cr`: содержимое идентично) |
+| Первый прогон | `== готово: 7963364`; `.htaccess` sha256 `33fb1c36…22a30` — без изменений; права `600/644/755`; `php8.3 -l` без ошибок |
+| Идемпотентность | повторный `rsync --dry-run` → 0 изменений |
+| Smoke | `/`, `/stati/`, `/kalendar/`, `/kalkulyatory/`, `/planirovshchik/` → 200; `logs/` пуст; `_templates` и `_tools` на месте (исключены из синхронизации) |
+
+**Рабочий порядок с этого дня:** локально правка → проверка на `http://sadznaniy.local/` → `git commit` → `git push origin main` → на сервере `~/znai-sad/deploy.sh`. Прямых правок в webroot больше не делаем (кроме конфигов вроде `wp-config.php`, которые в git не входят).
+
 ### Доработка лимитера входов (6.11.2026, вне батча B)
 
 Запрос владельца по брутфорсу с IP `138.68.142.96` (DigitalOcean) — выполнено отдельно, к внешнему SEO-контуру не относится.
